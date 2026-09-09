@@ -154,7 +154,9 @@ forecast.
 PYTHON_ETL/
 ├── etl_scripts/src/
 │   ├── development/eda.ipynb   the analysis, end to end
-│   └── config.json             every threshold, rule and semantic decision
+│   ├── config.json             every threshold, rule and semantic decision
+│   └── ft_engineering.py       tested cleaning and feature pipeline
+├── tests/                      pytest pipeline checks
 ├── docs/figures/               figures used in this README
 ├── dataset.csv                 source extract the analysis is built on
 ├── ResultsReport.pdf           the written report
@@ -167,6 +169,49 @@ PYTHON_ETL/
 ./setup.sh                       # or  .\setup.ps1  on Windows
 .venv/bin/python -m jupyter lab etl_scripts/src/development/eda.ipynb
 ```
+
+The predictive workflow creates a chronological 70/30 split, fits preprocessing on the
+older training rows, writes predictors and targets separately, and saves its fitted
+medians for later validation or live data:
+
+```bash
+python -m etl_scripts.src.ft_engineering split-fit \
+  --input dataset.csv \
+  --train-output train_predictors.csv \
+  --test-output test_predictors.csv \
+  --train-target-output train_target.csv \
+  --test-target-output test_target.csv \
+  --train-metadata-output train_metadata.csv \
+  --test-metadata-output test_metadata.csv \
+  --artifact preparation.joblib \
+  --diagnostics-output split_report.json
+
+python -m etl_scripts.src.ft_engineering transform \
+  --input validation.csv \
+  --output validation_predictors.csv \
+  --metadata-output validation_metadata.csv \
+  --artifact preparation.joblib
+
+python -m pytest -q tests/test_data_preparation.py
+```
+
+The split sorts raw rows by `fecha_prestamo`, assigns the oldest 70% to train and newest
+30% to test, and keeps identical timestamps in one partition. On this extract that is
+7,534 train rows through 26 May 2025 13:31 and 3,229 test rows beginning at 13:32. The
+date is returned as metadata and never used as a predictor. Use the separate `fit` command
+when an upstream process already owns the split.
+
+The pipeline enforces an explicit 19-column input contract, applies the notebook's null,
+type, sentinel, and unit rules, and builds 24 calculated variables.
+It converts hard-invalid ages and bureau scores to missing values, retains plausible
+extremes with diagnostic warnings, then learns numeric medians and the categorical
+`Missing` value from training rows only. Each of the 42 prepared values receives a stable
+missingness indicator, producing 84 columns before model-specific encoding or scaling.
+
+The target, unexpected columns, `puntaje`, `saldo_mora_codeudor`, raw
+`saldo_principal`, and all date features are excluded. The 1,000x bureau-balance scale and
+availability of non-leaking bureau fields at application time remain assumptions that
+must be confirmed before deployment.
 
 **No threshold is hard-coded in the notebook.** `config.json` carries the validation rules,
 the `unit_scale` block behind finding 4, the sentinel values that stand for "no
@@ -185,11 +230,9 @@ rules were checked against. Changing a threshold means editing that file.
   reaches the modelling frame rather than merely printing that it was excluded.
 - `saldo_total` and `saldo_principal` correlate at ρ = 0.946 and are identical in 84% of
   rows; keep one plus the interest difference.
-- **Nothing is imputed.** The notebook turns disguised unknowns *into* nulls — null tokens,
+- **Nothing is imputed in the EDA.** The notebook turns disguised unknowns *into* nulls — null tokens,
   the not-scored sentinel, the 58 trend labels that arrived as numbers — and then leaves
-  them null. Out-of-range values are counted and flagged, never patched. Choosing a fill
-  strategy is a modelling decision that needs a training split to be validated on, so it
-  belongs downstream; doing it during the EDA would bake an untested assumption into every
-  statistic in this file. The two places where it would have mattered most are called out
-  where they occur: the arrears rule (missing bureau balance ≠ no arrears) and the combined
-  score (each client is ranked on the components they actually have).
+  them null. The predictive pipeline performs its documented median/`Missing` imputation
+  only after a training split and preserves an indicator for every missing source or
+  calculated value. This keeps the EDA descriptive while giving downstream estimators a
+  complete, finite input frame.

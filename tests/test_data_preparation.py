@@ -11,11 +11,13 @@ import pytest
 
 from etl_scripts.src.ft_engineering import (
     build_data_preparation_pipeline,
+    chronological_train_test_split,
     extract_dataset,
     fit_prepare_training,
     get_pipeline_diagnostics,
     load_config,
     read_raw_data,
+    split_and_prepare,
     transform_for_prediction,
 )
 
@@ -97,6 +99,48 @@ def test_target_must_be_binary_and_is_never_imputed(raw_sample, config):
         )
 
 
+def test_chronological_split_is_deterministic_and_uses_70_30(raw_sample, config):
+    shuffled = raw_sample.sample(frac=1, random_state=7)
+    first = chronological_train_test_split(raw_sample, config)
+    second = chronological_train_test_split(shuffled, config)
+
+    assert first.train.index.tolist() == second.train.index.tolist() == [0, 1]
+    assert first.test.index.tolist() == second.test.index.tolist() == [2]
+    assert first.summary["requested_train_fraction"] == pytest.approx(0.70)
+    assert first.summary["train_rows"] == 2
+    assert first.summary["test_rows"] == 1
+    train_dates = pd.to_datetime(first.train["fecha_prestamo"], dayfirst=True)
+    test_dates = pd.to_datetime(first.test["fecha_prestamo"], dayfirst=True)
+    assert train_dates.max() < test_dates.min()
+
+
+def test_chronological_split_keeps_boundary_timestamp_together(raw_sample, config):
+    repeated = pd.concat([raw_sample, raw_sample], ignore_index=True)
+    repeated["fecha_prestamo"] = [
+        "01/01/2025",
+        "02/01/2025",
+        "03/01/2025",
+        "03/01/2025",
+        "04/01/2025",
+        "05/01/2025",
+    ]
+    split = chronological_train_test_split(repeated, config, train_fraction=0.5)
+
+    train_dates = pd.to_datetime(split.train["fecha_prestamo"], dayfirst=True)
+    test_dates = pd.to_datetime(split.test["fecha_prestamo"], dayfirst=True)
+    assert set(train_dates).isdisjoint(set(test_dates))
+    assert split.summary["boundary_adjustment_rows"] == 1
+    assert len(split.train) == 2
+    assert len(split.test) == 4
+
+
+def test_chronological_split_rejects_invalid_dates(raw_sample, config):
+    invalid = raw_sample.copy()
+    invalid.loc[1, "fecha_prestamo"] = "not-a-date"
+    with pytest.raises(ValueError, match="prevent chronological splitting"):
+        chronological_train_test_split(invalid, config)
+
+
 def test_pipeline_excludes_leakage_target_metadata_and_unknown_columns(
     raw_sample, config
 ):
@@ -168,6 +212,18 @@ def test_imputation_is_fitted_only_on_training_rows(raw_sample, config):
     assert result.iloc[0]["tendencia_ingresos"] == "Missing"
 
 
+def test_split_and_prepare_fits_imputation_on_train_only(raw_sample, config):
+    split, pipeline = split_and_prepare(raw_sample, config)
+
+    assert split.train.predictors.shape == (2, 84)
+    assert split.test.predictors.shape == (1, 84)
+    assert split.train.target is not None and split.train.target.tolist() == [1, 0]
+    assert split.test.target is not None and split.test.target.tolist() == [1]
+    assert pipeline.named_steps["impute"].fill_values_["capital_prestado"] == (
+        10_000_000
+    )
+
+
 def test_every_feature_has_a_stable_missingness_indicator(raw_sample, config):
     prepared, pipeline = fit_prepare_training(raw_sample, config)
     result = prepared.predictors
@@ -234,6 +290,48 @@ def test_cli_artifact_loads_from_imported_module(raw_sample, tmp_path):
     assert restored.get_feature_names_out().shape == (84,)
 
 
+def test_split_fit_cli_writes_both_partitions(raw_sample, tmp_path):
+    source = tmp_path / "source.csv"
+    train_output = tmp_path / "train_predictors.csv"
+    test_output = tmp_path / "test_predictors.csv"
+    train_target = tmp_path / "train_target.csv"
+    test_target = tmp_path / "test_target.csv"
+    artifact = tmp_path / "preparation.joblib"
+    diagnostics = tmp_path / "split.json"
+    raw_sample.to_csv(source, sep=";", index=False)
+
+    subprocess.run(
+        [
+            sys.executable,
+            str(PROJECT_ROOT / "etl_scripts" / "src" / "ft_engineering.py"),
+            "split-fit",
+            "--input",
+            str(source),
+            "--train-output",
+            str(train_output),
+            "--test-output",
+            str(test_output),
+            "--train-target-output",
+            str(train_target),
+            "--test-target-output",
+            str(test_target),
+            "--artifact",
+            str(artifact),
+            "--diagnostics-output",
+            str(diagnostics),
+        ],
+        cwd=PROJECT_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert pd.read_csv(train_output).shape == (2, 84)
+    assert pd.read_csv(test_output).shape == (1, 84)
+    report = pd.read_json(diagnostics, typ="series")
+    assert report["split"]["train_rows"] == 2
+    assert report["split"]["test_rows"] == 1
+
+
 def test_missing_required_predictor_fails_during_fit_and_transform(raw_sample, config):
     pipeline = build_data_preparation_pipeline(config)
     with pytest.raises(ValueError, match="saldo_total"):
@@ -256,3 +354,14 @@ def test_full_dataset_contract(config):
     assert "calc_antiguedad_dias" not in result.columns
     assert prepared.target is not None and len(prepared.target) == len(result)
     assert pipeline.get_feature_names_out().tolist() == result.columns.tolist()
+
+
+def test_full_dataset_uses_expected_chronological_70_30_split(config):
+    raw = read_raw_data(config)
+    split, _ = split_and_prepare(raw, config)
+
+    assert len(split.train.predictors) == 7_534
+    assert len(split.test.predictors) == 3_229
+    assert split.summary["boundary_adjustment_rows"] == 0
+    assert split.summary["train_end"] == "2025-05-26T13:31:00"
+    assert split.summary["test_start"] == "2025-05-26T13:32:00"

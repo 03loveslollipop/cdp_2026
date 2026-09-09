@@ -26,6 +26,8 @@ features, reported statistics, or generated artifacts.
 - Fit the shared median/`Missing` imputation on training rows only. Do not silently add
   other imputation, outlier repair, or row deletion; such decisions require explicit
   justification and validation.
+- Use the configured chronological 70/30 split unless an upstream training workflow owns
+  the split. Never fit preprocessing before partitioning the raw rows.
 - Never expose `puntaje` or any feature derived from it to the modelling frame. It is a
   documented target-leakage field.
 - Update source files before committing regenerated PNG, PDF, or PPTX artifacts.

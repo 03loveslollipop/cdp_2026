@@ -78,8 +78,14 @@
     "tipo_laboral": ["Empleado", "Independiente"]
   },
   "predictive_pipeline": {
-    "schema_version": "1.0.0",
+    "schema_version": "1.1.0",
     "_comment": "Pre-approval prediction contract. Bureau and proposed loan fields are assumed to be available at decision time because the extract has no feature snapshot timestamps. Confirm that assumption before deployment.",
+    "train_test_split": {
+      "strategy": "chronological",
+      "timestamp_column": "fecha_prestamo",
+      "train_fraction": 0.70,
+      "keep_timestamp_groups_together": true
+    },
     "required_predictors": [
       "tipo_credito",
       "capital_prestado",

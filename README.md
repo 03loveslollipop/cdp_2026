@@ -170,17 +170,21 @@ PYTHON_ETL/
 .venv/bin/python -m jupyter lab etl_scripts/src/development/eda.ipynb
 ```
 
-The predictive pipeline accepts an already-separated training partition, writes predictors
-and target separately, and saves its fitted medians for validation, test, and live data:
+The predictive workflow creates a chronological 70/30 split, fits preprocessing on the
+older training rows, writes predictors and targets separately, and saves its fitted
+medians for later validation or live data:
 
 ```bash
-python -m etl_scripts.src.ft_engineering fit \
-  --input train.csv \
-  --output train_predictors.csv \
-  --target-output train_target.csv \
-  --metadata-output train_metadata.csv \
+python -m etl_scripts.src.ft_engineering split-fit \
+  --input dataset.csv \
+  --train-output train_predictors.csv \
+  --test-output test_predictors.csv \
+  --train-target-output train_target.csv \
+  --test-target-output test_target.csv \
+  --train-metadata-output train_metadata.csv \
+  --test-metadata-output test_metadata.csv \
   --artifact preparation.joblib \
-  --diagnostics-output preparation_report.json
+  --diagnostics-output split_report.json
 
 python -m etl_scripts.src.ft_engineering transform \
   --input validation.csv \
@@ -191,9 +195,14 @@ python -m etl_scripts.src.ft_engineering transform \
 python -m pytest -q tests/test_data_preparation.py
 ```
 
-Split raw rows by `fecha_prestamo` before `fit`; the date is returned as metadata and never
-used as a predictor. The pipeline enforces an explicit 19-column input contract, applies
-the notebook's null, type, sentinel, and unit rules, and builds 24 calculated variables.
+The split sorts raw rows by `fecha_prestamo`, assigns the oldest 70% to train and newest
+30% to test, and keeps identical timestamps in one partition. On this extract that is
+7,534 train rows through 26 May 2025 13:31 and 3,229 test rows beginning at 13:32. The
+date is returned as metadata and never used as a predictor. Use the separate `fit` command
+when an upstream process already owns the split.
+
+The pipeline enforces an explicit 19-column input contract, applies the notebook's null,
+type, sentinel, and unit rules, and builds 24 calculated variables.
 It converts hard-invalid ages and bureau scores to missing values, retains plausible
 extremes with diagnostic warnings, then learns numeric medians and the categorical
 `Missing` value from training rows only. Each of the 42 prepared values receives a stable

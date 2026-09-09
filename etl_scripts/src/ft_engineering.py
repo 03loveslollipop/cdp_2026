@@ -88,6 +88,26 @@ class CreditDataset:
     excluded_columns_present: tuple[str, ...] = ()
 
 
+@dataclass(frozen=True)
+class RawCreditSplit:
+    """Raw chronological partitions and their reproducibility metadata."""
+
+    train: pd.DataFrame
+    test: pd.DataFrame
+    summary: dict[str, Any]
+
+
+@dataclass(frozen=True)
+class PreparedCreditSplit:
+    """Prepared train/test datasets and diagnostics from their shared pipeline."""
+
+    train: CreditDataset
+    test: CreditDataset
+    summary: dict[str, Any]
+    train_diagnostics: dict[str, Any]
+    test_diagnostics: dict[str, Any]
+
+
 def load_config(path: str | Path = DEFAULT_CONFIG_PATH) -> dict[str, Any]:
     """Load the project configuration."""
     return json.loads(Path(path).read_text(encoding="utf-8"))
@@ -111,6 +131,85 @@ def _numeric_input_columns(config: dict[str, Any]) -> list[str]:
         for column in predictive["required_predictors"]
         if column not in categorical
     ]
+
+
+def chronological_train_test_split(
+    raw: pd.DataFrame,
+    config: dict[str, Any] | None = None,
+    *,
+    train_fraction: float | None = None,
+) -> RawCreditSplit:
+    """Split raw rows oldest-first, keeping equal timestamps in one partition."""
+    frame = _require_frame(raw)
+    cfg = config or load_config()
+    split_config = cfg["predictive_pipeline"]["train_test_split"]
+    fraction = (
+        float(split_config["train_fraction"])
+        if train_fraction is None
+        else float(train_fraction)
+    )
+    if not 0 < fraction < 1:
+        raise ValueError("train_fraction must be strictly between 0 and 1")
+    if len(frame) < 2:
+        raise ValueError("At least two rows are required for a train/test split")
+
+    timestamp_column = split_config["timestamp_column"]
+    if timestamp_column not in frame.columns:
+        raise ValueError(
+            f"Chronological split requires timestamp column {timestamp_column!r}"
+        )
+    raw_dates = frame[timestamp_column].astype("string").str.strip()
+    raw_dates = raw_dates.mask(raw_dates.isin(_null_tokens(cfg)))
+    dates = pd.to_datetime(
+        raw_dates,
+        dayfirst=cfg["read_csv"]["date_dayfirst"],
+        format="mixed",
+        errors="coerce",
+    )
+    invalid_dates = dates.isna()
+    if invalid_dates.any():
+        indices = frame.index[invalid_dates].tolist()[:10]
+        raise ValueError(
+            f"Invalid {timestamp_column} values prevent chronological splitting; "
+            f"rows include {indices}"
+        )
+
+    order = np.argsort(dates.to_numpy(), kind="stable")
+    ordered = frame.iloc[order].copy(deep=True)
+    ordered_dates = dates.iloc[order].reset_index(drop=True)
+    nominal_train_rows = int(len(ordered) * fraction)
+    if nominal_train_rows < 1 or nominal_train_rows >= len(ordered):
+        raise ValueError("train_fraction leaves an empty train or test partition")
+
+    train_rows = nominal_train_rows
+    if split_config["keep_timestamp_groups_together"]:
+        first_test_date = ordered_dates.iloc[train_rows]
+        while train_rows > 0 and ordered_dates.iloc[train_rows - 1] == first_test_date:
+            train_rows -= 1
+        if train_rows == 0:
+            raise ValueError(
+                "The timestamp grouping rule leaves an empty training partition"
+            )
+
+    train = ordered.iloc[:train_rows].copy(deep=True)
+    test = ordered.iloc[train_rows:].copy(deep=True)
+    train_dates = ordered_dates.iloc[:train_rows]
+    test_dates = ordered_dates.iloc[train_rows:]
+    summary = {
+        "strategy": "chronological",
+        "timestamp_column": timestamp_column,
+        "requested_train_fraction": fraction,
+        "actual_train_fraction": train_rows / len(ordered),
+        "total_rows": len(ordered),
+        "train_rows": len(train),
+        "test_rows": len(test),
+        "train_start": train_dates.iloc[0].isoformat(),
+        "train_end": train_dates.iloc[-1].isoformat(),
+        "test_start": test_dates.iloc[0].isoformat(),
+        "test_end": test_dates.iloc[-1].isoformat(),
+        "boundary_adjustment_rows": nominal_train_rows - train_rows,
+    }
+    return RawCreditSplit(train=train, test=test, summary=summary)
 
 
 def extract_dataset(
@@ -630,6 +729,33 @@ def transform_for_prediction(
     )
 
 
+def split_and_prepare(
+    raw: pd.DataFrame,
+    config: dict[str, Any] | None = None,
+    *,
+    train_fraction: float | None = None,
+) -> tuple[PreparedCreditSplit, Pipeline]:
+    """Chronologically split raw rows, fit on train, and transform both partitions."""
+    cfg = config or load_config()
+    raw_split = chronological_train_test_split(
+        raw, cfg, train_fraction=train_fraction
+    )
+    train, pipeline = fit_prepare_training(raw_split.train, cfg)
+    train_diagnostics = get_pipeline_diagnostics(pipeline, train)
+    test = transform_for_prediction(raw_split.test, pipeline, cfg)
+    if test.target is None:
+        raise ValueError("The test partition must include the target for evaluation")
+    test_diagnostics = get_pipeline_diagnostics(pipeline, test)
+    prepared = PreparedCreditSplit(
+        train=train,
+        test=test,
+        summary=raw_split.summary,
+        train_diagnostics=train_diagnostics,
+        test_diagnostics=test_diagnostics,
+    )
+    return prepared, pipeline
+
+
 def read_raw_data(
     config: dict[str, Any] | None = None,
     input_path: str | Path | None = None,
@@ -667,16 +793,12 @@ def _write_dataset(
         dataset.metadata.to_csv(metadata_output, index=False)
 
 
-def _write_diagnostics(
-    pipeline: Pipeline, dataset: CreditDataset, path: Path | None
-) -> None:
+def _write_diagnostics(report: dict[str, Any], path: Path | None) -> None:
     if path is None:
         return
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
-        json.dumps(
-            get_pipeline_diagnostics(pipeline, dataset), indent=2, sort_keys=True
-        ),
+        json.dumps(report, indent=2, sort_keys=True),
         encoding="utf-8",
     )
 
@@ -694,6 +816,20 @@ def main() -> None:
     fit_parser.add_argument("--artifact", type=Path, required=True)
     fit_parser.add_argument("--diagnostics-output", type=Path)
 
+    split_parser = subparsers.add_parser(
+        "split-fit", help="Create a chronological 70/30 split and fit on train"
+    )
+    split_parser.add_argument("--input", type=Path)
+    split_parser.add_argument("--train-output", type=Path, required=True)
+    split_parser.add_argument("--test-output", type=Path, required=True)
+    split_parser.add_argument("--train-target-output", type=Path, required=True)
+    split_parser.add_argument("--test-target-output", type=Path, required=True)
+    split_parser.add_argument("--train-metadata-output", type=Path)
+    split_parser.add_argument("--test-metadata-output", type=Path)
+    split_parser.add_argument("--artifact", type=Path, required=True)
+    split_parser.add_argument("--diagnostics-output", type=Path)
+    split_parser.add_argument("--train-fraction", type=float)
+
     transform_parser = subparsers.add_parser(
         "transform", help="Transform with a fitted training artifact"
     )
@@ -707,6 +843,38 @@ def main() -> None:
 
     cfg = load_config(args.config)
     raw = read_raw_data(cfg, args.input, args.config.parent)
+    if args.command == "split-fit":
+        split, pipeline = split_and_prepare(
+            raw, cfg, train_fraction=args.train_fraction
+        )
+        args.artifact.parent.mkdir(parents=True, exist_ok=True)
+        joblib.dump(pipeline, args.artifact)
+        _write_dataset(
+            split.train,
+            args.train_output,
+            args.train_target_output,
+            args.train_metadata_output,
+        )
+        _write_dataset(
+            split.test,
+            args.test_output,
+            args.test_target_output,
+            args.test_metadata_output,
+        )
+        _write_diagnostics(
+            {
+                "split": split.summary,
+                "train": split.train_diagnostics,
+                "test": split.test_diagnostics,
+            },
+            args.diagnostics_output,
+        )
+        print(
+            f"Prepared train {len(split.train.predictors):,} rows and test "
+            f"{len(split.test.predictors):,} rows with "
+            f"{split.train.predictors.shape[1]} predictors"
+        )
+        return
     if args.command == "fit":
         dataset, pipeline = fit_prepare_training(raw, cfg)
         args.artifact.parent.mkdir(parents=True, exist_ok=True)
@@ -721,7 +889,9 @@ def main() -> None:
         getattr(args, "target_output", None),
         args.metadata_output,
     )
-    _write_diagnostics(pipeline, dataset, args.diagnostics_output)
+    _write_diagnostics(
+        get_pipeline_diagnostics(pipeline, dataset), args.diagnostics_output
+    )
     print(
         f"Prepared {len(dataset.predictors):,} rows and "
         f"{dataset.predictors.shape[1]} predictors -> {args.output}"

@@ -154,7 +154,9 @@ forecast.
 PYTHON_ETL/
 ├── etl_scripts/src/
 │   ├── development/eda.ipynb   the analysis, end to end
-│   └── config.json             every threshold, rule and semantic decision
+│   ├── config.json             every threshold, rule and semantic decision
+│   └── ft_engineering.py       tested cleaning and feature pipeline
+├── tests/                      pytest pipeline checks
 ├── docs/figures/               figures used in this README
 ├── dataset.csv                 source extract the analysis is built on
 ├── ResultsReport.pdf           the written report
@@ -167,6 +169,18 @@ PYTHON_ETL/
 ./setup.sh                       # or  .\setup.ps1  on Windows
 .venv/bin/python -m jupyter lab etl_scripts/src/development/eda.ipynb
 ```
+
+Prepare the complete modelling frame or run its tests:
+
+```bash
+python etl_scripts/src/ft_engineering.py --output prepared_data.csv
+python -m pytest -q tests/test_data_preparation.py
+```
+
+The preparation pipeline applies the notebook's null, type, sentinel, and unit rules and
+adds its calculated variables. It does not impute, remove rows, or repair outliers. The
+leaking `puntaje` column and the dropped `saldo_mora_codeudor` field are excluded from its
+output.
 
 **No threshold is hard-coded in the notebook.** `config.json` carries the validation rules,
 the `unit_scale` block behind finding 4, the sentinel values that stand for "no

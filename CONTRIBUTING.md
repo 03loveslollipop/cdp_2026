@@ -23,8 +23,9 @@ features, reported statistics, or generated artifacts.
   `etl_scripts/src/config.json`; do not duplicate them in code.
 - Keep reusable preparation logic in `etl_scripts/src/ft_engineering.py` and exploratory
   reasoning in `etl_scripts/src/development/eda.ipynb`.
-- Do not silently impute missing values, repair outliers, or drop records. Such decisions
-  require explicit justification and validation.
+- Fit the shared median/`Missing` imputation on training rows only. Do not silently add
+  other imputation, outlier repair, or row deletion; such decisions require explicit
+  justification and validation.
 - Never expose `puntaje` or any feature derived from it to the modelling frame. It is a
   documented target-leakage field.
 - Update source files before committing regenerated PNG, PDF, or PPTX artifacts.

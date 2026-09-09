@@ -77,6 +77,80 @@
     "tendencia_ingresos": ["Decreciente", "Estable", "Creciente"],
     "tipo_laboral": ["Empleado", "Independiente"]
   },
+  "predictive_pipeline": {
+    "schema_version": "1.0.0",
+    "_comment": "Pre-approval prediction contract. Bureau and proposed loan fields are assumed to be available at decision time because the extract has no feature snapshot timestamps. Confirm that assumption before deployment.",
+    "required_predictors": [
+      "tipo_credito",
+      "capital_prestado",
+      "plazo_meses",
+      "edad_cliente",
+      "tipo_laboral",
+      "salario_cliente",
+      "total_otros_prestamos",
+      "cuota_pactada",
+      "puntaje_datacredito",
+      "cant_creditosvigentes",
+      "huella_consulta",
+      "saldo_mora",
+      "saldo_total",
+      "saldo_principal",
+      "creditos_sectorFinanciero",
+      "creditos_sectorCooperativo",
+      "creditos_sectorReal",
+      "promedio_ingresos_datacredito",
+      "tendencia_ingresos"
+    ],
+    "categorical_predictors": ["tipo_credito", "tipo_laboral", "tendencia_ingresos"],
+    "metadata_columns": ["fecha_prestamo"],
+    "known_excluded_columns": ["Pago_atiempo", "puntaje", "saldo_mora_codeudor"],
+    "drop_after_derivation": ["saldo_principal"],
+    "hard_validation": {
+      "ranges": {
+        "edad_cliente": { "min": 18, "max": 90 },
+        "puntaje_datacredito": { "min": 150, "max": 950 }
+      },
+      "positive": ["tipo_credito", "capital_prestado", "plazo_meses", "cuota_pactada"],
+      "non_negative": [
+        "salario_cliente",
+        "total_otros_prestamos",
+        "saldo_mora",
+        "saldo_total",
+        "saldo_principal",
+        "cant_creditosvigentes",
+        "huella_consulta",
+        "creditos_sectorFinanciero",
+        "creditos_sectorCooperativo",
+        "creditos_sectorReal",
+        "promedio_ingresos_datacredito"
+      ],
+      "integer": [
+        "tipo_credito",
+        "plazo_meses",
+        "edad_cliente",
+        "cant_creditosvigentes",
+        "huella_consulta",
+        "creditos_sectorFinanciero",
+        "creditos_sectorCooperativo",
+        "creditos_sectorReal"
+      ]
+    },
+    "soft_validation_rules": {
+      "salario_cliente": { "min": 1000000, "max": 100000000 },
+      "capital_prestado": { "max": 50000000 },
+      "plazo_meses": { "max": 60 },
+      "cuota_pactada": { "max": 5000000 },
+      "total_otros_prestamos": { "max": 500000000 },
+      "cant_creditosvigentes": { "max": 40 },
+      "huella_consulta": { "max": 30 }
+    },
+    "imputation": {
+      "numeric_strategy": "median",
+      "categorical_fill_value": "Missing",
+      "all_missing_numeric_fallback": 0.0,
+      "missing_indicator_prefix": "missing__"
+    }
+  },
   "eda": {
     "correlation_methods": ["pearson", "spearman"],
     "top_pairs": 25,

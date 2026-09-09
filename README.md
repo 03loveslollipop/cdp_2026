@@ -170,17 +170,39 @@ PYTHON_ETL/
 .venv/bin/python -m jupyter lab etl_scripts/src/development/eda.ipynb
 ```
 
-Prepare the complete modelling frame or run its tests:
+The predictive pipeline accepts an already-separated training partition, writes predictors
+and target separately, and saves its fitted medians for validation, test, and live data:
 
 ```bash
-python etl_scripts/src/ft_engineering.py --output prepared_data.csv
+python -m etl_scripts.src.ft_engineering fit \
+  --input train.csv \
+  --output train_predictors.csv \
+  --target-output train_target.csv \
+  --metadata-output train_metadata.csv \
+  --artifact preparation.joblib \
+  --diagnostics-output preparation_report.json
+
+python -m etl_scripts.src.ft_engineering transform \
+  --input validation.csv \
+  --output validation_predictors.csv \
+  --metadata-output validation_metadata.csv \
+  --artifact preparation.joblib
+
 python -m pytest -q tests/test_data_preparation.py
 ```
 
-The preparation pipeline applies the notebook's null, type, sentinel, and unit rules and
-adds its calculated variables. It does not impute, remove rows, or repair outliers. The
-leaking `puntaje` column and the dropped `saldo_mora_codeudor` field are excluded from its
-output.
+Split raw rows by `fecha_prestamo` before `fit`; the date is returned as metadata and never
+used as a predictor. The pipeline enforces an explicit 19-column input contract, applies
+the notebook's null, type, sentinel, and unit rules, and builds 24 calculated variables.
+It converts hard-invalid ages and bureau scores to missing values, retains plausible
+extremes with diagnostic warnings, then learns numeric medians and the categorical
+`Missing` value from training rows only. Each of the 42 prepared values receives a stable
+missingness indicator, producing 84 columns before model-specific encoding or scaling.
+
+The target, unexpected columns, `puntaje`, `saldo_mora_codeudor`, raw
+`saldo_principal`, and all date features are excluded. The 1,000x bureau-balance scale and
+availability of non-leaking bureau fields at application time remain assumptions that
+must be confirmed before deployment.
 
 **No threshold is hard-coded in the notebook.** `config.json` carries the validation rules,
 the `unit_scale` block behind finding 4, the sentinel values that stand for "no
@@ -199,11 +221,9 @@ rules were checked against. Changing a threshold means editing that file.
   reaches the modelling frame rather than merely printing that it was excluded.
 - `saldo_total` and `saldo_principal` correlate at ρ = 0.946 and are identical in 84% of
   rows; keep one plus the interest difference.
-- **Nothing is imputed.** The notebook turns disguised unknowns *into* nulls — null tokens,
+- **Nothing is imputed in the EDA.** The notebook turns disguised unknowns *into* nulls — null tokens,
   the not-scored sentinel, the 58 trend labels that arrived as numbers — and then leaves
-  them null. Out-of-range values are counted and flagged, never patched. Choosing a fill
-  strategy is a modelling decision that needs a training split to be validated on, so it
-  belongs downstream; doing it during the EDA would bake an untested assumption into every
-  statistic in this file. The two places where it would have mattered most are called out
-  where they occur: the arrears rule (missing bureau balance ≠ no arrears) and the combined
-  score (each client is ranked on the components they actually have).
+  them null. The predictive pipeline performs its documented median/`Missing` imputation
+  only after a training split and preserves an indicator for every missing source or
+  calculated value. This keeps the EDA descriptive while giving downstream estimators a
+  complete, finite input frame.

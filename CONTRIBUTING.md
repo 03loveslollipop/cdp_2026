@@ -21,8 +21,9 @@ features, reported statistics, or generated artifacts.
   `feat/inquiry-features` or `fix/balance-units`.
 - Put thresholds, sentinels, column semantics, and unit rules in
   `etl_scripts/src/config.json`; do not duplicate them in code.
-- Keep reusable preparation logic in `etl_scripts/src/ft_engineering.py` and exploratory
-  reasoning in `etl_scripts/src/development/eda.ipynb`.
+- Keep reusable preparation logic in `etl_scripts/src/ft_engineering.py`, model logic in
+  focused modules such as `etl_scripts/src/heuristic_model.py`, and exploratory reasoning
+  in `etl_scripts/src/development/eda.ipynb`.
 - Fit the shared median/`Missing` imputation on training rows only. Do not silently add
   other imputation, outlier repair, or row deletion; such decisions require explicit
   justification and validation.
@@ -43,7 +44,8 @@ Run from `PYTHON_ETL/`:
 
 ```bash
 python -m pytest -q tests
-python -m py_compile etl_scripts/src/ft_engineering.py
+python -m py_compile etl_scripts/src/ft_engineering.py \
+  etl_scripts/src/heuristic_model.py
 ```
 
 For notebook or reporting changes, restart the notebook kernel, run every cell, and check

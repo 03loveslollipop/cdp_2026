@@ -23,6 +23,13 @@ workflow but is not a performance benchmark. Use a new output directory for each
 `--input`, `--config`, and `--training-config` accept alternative dataset/config paths.
 The default dataset remains the repository's `dataset.csv`.
 
+For an interactive summary-table and comparative-chart workflow, open
+`etl_scripts/src/development/model_training.ipynb`. It uses the same tested functions and
+defaults to a CPU smoke run with a timestamped ignored output directory. Start the kernel
+with `CDP_NOTEBOOK_PROFILE=full` to execute the complete configured CPU comparison. The
+notebook deliberately does not enable CUDA; GPU search experiments remain separate from
+the portable production pipeline.
+
 ## Models and shared functions
 
 `build_model(name, config, random_state, device, parameters=..., training_config=...)`

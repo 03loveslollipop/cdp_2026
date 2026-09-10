@@ -3,6 +3,8 @@
 The predictive workflow now includes [model training and evaluation](
 docs/model_training.md): eleven model families and references, temporal validation,
 default-class F1 selection, comparative graphs, and a portable fitted model object.
+The clean [training notebook](etl_scripts/src/development/model_training.ipynb) provides
+an interactive CPU-oriented entry point over that same tested workflow.
 
 A portfolio of **10,763 Colombian consumer loans** disbursed between November 2024 and
 April 2026, with a binary outcome for whether each loan was repaid on time. The default

@@ -1,5 +1,35 @@
 # Model Training Progress and Handoff
 
+## Continuation on 2026-09-10
+
+Current continuation branch: `feat/model-training-notebook`, created from
+`feat/model_training_evaluation` at `bc41ac1`.
+
+- Added `etl_scripts/src/development/model_training.ipynb` as a clean interactive entry
+  point over `build_model`, `summarize_classification`, and `train_and_evaluate`. It
+  defaults to a timestamped CPU smoke run and accepts `CDP_NOTEBOOK_PROFILE=full` for the
+  complete configured CPU workflow. It does not introduce a second training pipeline.
+- Added static notebook contract tests and documented the notebook in the README and
+  model-training guide.
+- Validation: `52 passed, 1 skipped` in a CPU-only PyTorch/XGBoost environment; the skip
+  was the CUDA-only test. The clean notebook executed successfully with nbconvert and
+  produced a complete smoke run. Its Gaussian NB selection is only a smoke result, not a
+  replacement benchmark.
+- A separate `.local_cuda_training/` laboratory was created through the checkout-local
+  `.git/info/exclude`; it is intentionally not part of this branch or push. The full
+  local TPE run completed 270/270 trials with no failures in 1,494.7 search seconds plus
+  387.7 seconds of finalist checks/refits. XGBoost trained on the RTX 3050 via CUDA and
+  was selected by the existing tolerance/stability/cost rule. Its diagnostic holdout F1
+  was 0.1253, so this run does not improve the earlier holdout benchmark. The exported
+  XGBoost artifact produced identical labels and probabilities in a separate environment
+  with CPU-only PyTorch and `xgboost-cpu`.
+- Local-run limitation: LightGBM's sampled `subsample` was inert because
+  `subsample_freq` defaulted to zero. LightGBM was not selected; the local configuration
+  now fixes the frequency for future, newly fingerprinted studies.
+
+Adaptive search remains local-only at this continuation. The tracked production module
+still has the bounded grid backend described below.
+
 ## Checkpoint and Latest Request
 
 Branch: `feat/model_training_evaluation`. Remote: `cdp_2026`

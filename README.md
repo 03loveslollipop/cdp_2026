@@ -1,5 +1,9 @@
 # Credit & Payment Behaviour — exploratory data analysis
 
+The predictive workflow now includes [model training and evaluation](
+docs/model_training.md): eleven model families and references, temporal validation,
+default-class F1 selection, comparative graphs, and a portable fitted model object.
+
 A portfolio of **10,763 Colombian consumer loans** disbursed between November 2024 and
 April 2026, with a binary outcome for whether each loan was repaid on time. The default
 rate is **4.75%**, roughly one loan in twenty.
@@ -155,8 +159,9 @@ PYTHON_ETL/
 ├── etl_scripts/src/
 │   ├── development/eda.ipynb   the analysis, end to end
 │   ├── config.json             every threshold, rule and semantic decision
-│   └── ft_engineering.py       tested cleaning and feature pipeline
-├── tests/                      pytest pipeline checks
+│   ├── ft_engineering.py       tested cleaning and feature pipeline
+│   └── heuristic_model.py      explainable EDA-based risk benchmark
+├── tests/                      pytest pipeline and model checks
 ├── docs/figures/               figures used in this README
 ├── dataset.csv                 source extract the analysis is built on
 ├── ResultsReport.pdf           the written report
@@ -212,6 +217,30 @@ The target, unexpected columns, `puntaje`, `saldo_mora_codeudor`, raw
 `saldo_principal`, and all date features are excluded. The 1,000x bureau-balance scale and
 availability of non-leaking bureau fields at application time remain assumptions that
 must be confirmed before deployment.
+
+### Heuristic benchmark
+
+`CreditRiskHeuristicClassifier` is a scikit-learn-compatible, explainable baseline over
+four EDA signals: inquiry intensity, bureau score, the gap between bureau and declared
+income, and existing arrears. It learns percentile references and probability calibration
+only from the training partition; missing components are omitted from each row's weighted
+average. Fit it directly on the shared pipeline output:
+
+```python
+from etl_scripts.src.heuristic_model import CreditRiskHeuristicClassifier
+
+model = CreditRiskHeuristicClassifier(review_fraction=0.20)
+model.fit(split.train.predictors, split.train.target)
+default_probability = model.predict_proba(split.test.predictors)[:, 0]
+review_reasons = model.explain(split.test.predictors)
+```
+
+Class `0` means default and class `1` means on-time payment. `predict_review` flags the
+highest-risk training-defined segment; `explain` exposes component scores and missingness.
+On the current chronological holdout, the heuristic reaches ROC-AUC 0.624 and captures
+26.9% of defaults in a 19.2% review queue. Treat it as a transparent benchmark, not a
+production approval or denial policy; thresholds and calibration require monitoring and
+business validation.
 
 **No threshold is hard-coded in the notebook.** `config.json` carries the validation rules,
 the `unit_scale` block behind finding 4, the sentinel values that stand for "no

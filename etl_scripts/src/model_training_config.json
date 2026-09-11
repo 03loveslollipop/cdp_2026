@@ -1,0 +1,25 @@
+{
+  "seeds": [42, 43, 44],
+  "temporal_blocks": 5,
+  "inner_train_fraction": 0.8,
+  "f1_tolerance": 0.01,
+  "review_fraction": 0.2,
+  "threads": 2,
+  "benchmark_batch_size": 256,
+  "benchmark_repeats": 5,
+  "device": "cpu",
+  "lightgbm_device": "cpu",
+  "models": {
+    "logistic_regression": {"C": [0.1, 1.0], "class_weight": [null, "balanced"]},
+    "decision_tree": {"max_depth": [3, 6], "min_samples_leaf": [30], "class_weight": [null, "balanced"]},
+    "gaussian_nb": {"var_smoothing": [1e-9, 1e-6, 0.001]},
+    "random_forest": {"n_estimators": [150], "max_depth": [6, null], "min_samples_leaf": [10], "class_weight": [null, "balanced"]},
+    "extra_trees": {"n_estimators": [150], "max_depth": [6, null], "min_samples_leaf": [10], "class_weight": [null, "balanced"]},
+    "svm": {"C": [0.1, 1.0], "gamma": ["scale"], "class_weight": [null, "balanced"]},
+    "xgboost": {"n_estimators": [150], "max_depth": [2, 4], "learning_rate": [0.05], "balanced": [false, true]},
+    "lightgbm": {"n_estimators": [150], "num_leaves": [7, 15], "learning_rate": [0.05], "balanced": [false, true]},
+    "pytorch_mlp": {"hidden_sizes": [[64, 32], [128, 64, 32]], "epochs": [50, 100], "class_weight": [null, "balanced"], "dropout": [0.2], "weight_decay": [0.01]},
+    "heuristic": {},
+    "dummy": {}
+  }
+}

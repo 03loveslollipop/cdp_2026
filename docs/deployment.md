@@ -82,8 +82,8 @@ heroku config:get CDP_AUTH_PASSWORD --app cdp-2026-credit-risk
 
 ## Monitoring
 
-The scheduled command computes rolling seven-day windows, filling up to seven missed
-daily windows on each run:
+Heroku Scheduler job `1341184` runs daily at 06:30 UTC on an Eco dyno. The command
+computes rolling seven-day windows, filling up to seven missed daily windows on each run:
 
 ```bash
 heroku run --no-tty --app cdp-2026-credit-risk -- \
@@ -121,6 +121,7 @@ heroku container:release web release --app cdp-2026-credit-risk
 `.github/workflows/heroku-container.yml` runs on every branch push, retrains from the
 deployment config, pushes both images, releases them serially, and verifies readiness.
 This deliberately makes the Heroku app a shared staging target: the most recent completed
-branch deployment wins. `.github/workflows/model-monitoring.yml` runs daily and can also
-be invoked manually. GitHub stores only `HEROKU_APP_NAME` and a dedicated one-year
-`HEROKU_API_KEY`; rotate the authorization before it expires.
+branch deployment wins. `.github/workflows/model-monitoring.yml` is a manual recovery
+path; it deliberately has no second cron because Heroku Scheduler owns the daily run.
+GitHub stores only `HEROKU_APP_NAME` and a dedicated one-year `HEROKU_API_KEY`; rotate
+the authorization before it expires.

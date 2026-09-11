@@ -37,9 +37,11 @@ remains `etl_scripts/src/model_training_evaluation.py`.
 - Added separate non-root web and release Docker images. The initial Heroku release ran
   the migration/sample command successfully and scaled exactly one Eco web dyno. Docker
   Manifest V2 Schema 2 is forced for registry compatibility.
-- Added branch-push deployment and daily monitoring GitHub Actions. The deployment job
-  retrains, pushes, releases, and checks readiness for every branch. Secrets are stored
-  in GitHub; the dedicated Heroku authorization lasts one year from this date.
+- Added a branch-push deployment GitHub Action. It retrains, pushes, releases, and checks
+  readiness for every branch. Secrets are stored in GitHub; the dedicated Heroku
+  authorization lasts one year from this date. A free Heroku Scheduler job (`1341184`)
+  runs the idempotent monitoring catch-up and retention command daily at 06:30 UTC; the
+  monitoring Action remains available as a manual recovery path without a duplicate cron.
 
 Validation completed:
 
@@ -55,6 +57,7 @@ live: liveness 200, readiness 200, unauthenticated frontend 401
 live authenticated: frontend 200, model 200, JSON prediction 200, Dash 200
 live Dash: layout 200, dependencies 200, aggregate callback 200
 live monitoring: seven catch-up windows complete; repeated window is replayed
+Heroku Scheduler: daily Eco job 1341184 saved at 06:30 UTC, not paused
 live restart: readiness returned to 200; prediction idempotency replay remained true
 release idempotency: no migrations or sample rows applied on the second run
 ```

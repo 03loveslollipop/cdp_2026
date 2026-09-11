@@ -30,8 +30,9 @@ remain a later task.
 - `etl_scripts/src/deployment_model_config.json`: winning family, fixed hyperparameters,
   runtime class order, and deployment settings.
 - `dataset.csv`: approved non-production sample, loaded idempotently into Heroku Postgres.
-- `Dockerfile.web`, `Dockerfile.release`, requirements, and GitHub Actions: implemented
-  CPU-only container build, Heroku release, branch-push CI/CD, and daily monitoring.
+- `Dockerfile.web`, `Dockerfile.release`, requirements, GitHub Actions, and Heroku
+  Scheduler: implemented CPU-only container build, Heroku release, branch-push CI/CD,
+  daily monitoring, and a manual monitoring recovery workflow.
 
 The deployed model is exposed for batch prediction. Predictor records, returned
 probabilities, decisions, and later outcomes are stored for periodic population-drift and

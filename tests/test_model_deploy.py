@@ -27,6 +27,7 @@ from etl_scripts.src.model_deploy.services.prediction_service import (
     PredictionValidationError,
 )
 from etl_scripts.src.model_deploy.settings import Settings
+from etl_scripts.src.database.passwords import hash_password
 from scripts.install_model_runtime import FAMILY_REQUIREMENTS
 
 
@@ -44,11 +45,13 @@ class FakeModel:
 class FakePredictionRepository:
     def __init__(self):
         self.saved = {}
+        self.last_values = None
 
-    def by_idempotency_key(self, key):
-        return self.saved.get(key)
+    def by_idempotency_key(self, key, requested_by_user_id):
+        return self.saved.get((requested_by_user_id, key))
 
     def save_completed(self, **values):
+        self.last_values = values
         batch = SimpleNamespace(
             id="batch-1",
             request_sha256=values["request_sha256"],
@@ -73,7 +76,9 @@ class FakePredictionRepository:
                 )
             )
         ]
-        self.saved[values["idempotency_key"]] = (batch, events)
+        self.saved[
+            (values["requested_by_user_id"], values["idempotency_key"])
+        ] = (batch, events)
         return batch, events
 
 
@@ -91,6 +96,70 @@ class FakeSessionFactory:
 
     def begin(self):
         return FakeSessionContext()
+
+
+class FakeAuthSessionFactory:
+    def __init__(self):
+        self.users = {
+            "inference-id": SimpleNamespace(
+                id="inference-id",
+                username="inference-user",
+                password_hash=hash_password("inference-secret"),
+                role="inference",
+                active=True,
+                token_version=0,
+                last_login_at=None,
+            ),
+            "owner-id": SimpleNamespace(
+                id="owner-id",
+                username="owner-user",
+                password_hash=hash_password("owner-secret"),
+                role="owner",
+                active=True,
+                token_version=0,
+                last_login_at=None,
+            ),
+        }
+
+    def __call__(self):
+        return FakeAuthSessionContext(self.users)
+
+    def begin(self):
+        return FakeAuthSessionContext(self.users)
+
+
+class FakeAuthSessionContext:
+    def __init__(self, users):
+        self.session = SimpleNamespace(users=users)
+
+    def __enter__(self):
+        return self.session
+
+    def __exit__(self, *_args):
+        return False
+
+
+class FakeAuthUserRepository:
+    def __init__(self, session):
+        self.users = session.users
+
+    def active_owner_count(self):
+        return sum(
+            user.active and user.role == "owner" for user in self.users.values()
+        )
+
+    def by_id(self, user_id):
+        return self.users.get(user_id)
+
+    def by_username(self, username):
+        return next(
+            (user for user in self.users.values() if user.username == username), None
+        )
+
+    def record_login(self, user, password_hash=None):
+        user.last_login_at = datetime.now(UTC)
+        if password_hash is not None:
+            user.password_hash = password_hash
 
 
 def artifact(model_family="random_forest"):
@@ -132,14 +201,24 @@ def auth_settings():
         .decode("utf-8")
     )
     return Settings(
-        auth_username="owner-user",
-        auth_password="owner-secret",
-        inference_username="inference-user",
-        inference_password="inference-secret",
         jwt_private_key=private_pem,
         jwt_public_key=public_pem,
         environment="development",
     )
+
+
+@pytest.fixture
+def auth_factory():
+    return FakeAuthSessionFactory()
+
+
+@pytest.fixture
+def auth_service(monkeypatch, auth_settings, auth_factory):
+    monkeypatch.setattr(
+        "etl_scripts.src.model_deploy.services.auth_service.AuthUserRepository",
+        FakeAuthUserRepository,
+    )
+    return AuthService(auth_settings, auth_factory)
 
 
 def test_artifact_loader_verifies_hash_and_class_contract(tmp_path):
@@ -167,7 +246,11 @@ def test_prediction_service_is_atomic_and_idempotent(monkeypatch):
         lambda _session: repository,
     )
     service = PredictionService(
-        artifact(), "model-1", FakeSessionFactory(), max_batch_rows=2
+        artifact(),
+        "model-1",
+        FakeSessionFactory(),
+        max_batch_rows=2,
+        requested_by_user_id="inference-id",
     )
     records = [{"a": 1, "b": None, "_external_reference": "loan-1"}]
     first = service.predict(records, "request-123")
@@ -176,19 +259,34 @@ def test_prediction_service_is_atomic_and_idempotent(monkeypatch):
     assert second["idempotent_replay"]
     assert first["items"] == second["items"]
     assert first["items"][0]["default_probability"] == 0.4
+    assert repository.last_values["requested_by_user_id"] == "inference-id"
     new_service = PredictionService(
-        artifact("xgboost"), "model-2", FakeSessionFactory(), max_batch_rows=2
+        artifact("xgboost"),
+        "model-2",
+        FakeSessionFactory(),
+        max_batch_rows=2,
+        requested_by_user_id="inference-id",
     )
     cross_deployment_replay = new_service.predict(records, "request-123")
     assert cross_deployment_replay["model_version_id"] == "model-1"
     assert cross_deployment_replay["model_family"] == "random_forest"
+    other_user_service = PredictionService(
+        artifact("xgboost"),
+        "model-2",
+        FakeSessionFactory(),
+        max_batch_rows=2,
+        requested_by_user_id="owner-id",
+    )
+    other_user_result = other_user_service.predict(records, "request-123")
+    assert not other_user_result["idempotent_replay"]
+    assert other_user_result["model_version_id"] == "model-2"
     with pytest.raises(IdempotencyConflictError):
         service.predict([{"a": 2, "b": None}], "request-123")
     with pytest.raises(PredictionValidationError, match="schema mismatch"):
         service.predict([{"a": 1}], "request-456")
     with pytest.raises(PredictionValidationError, match="JSON scalar"):
         service.predict([{"a": {"nested": 1}, "b": None}], "request-789")
-    assert len(repository.saved) == 1
+    assert len(repository.saved) == 2
 
 
 def test_model_contract_drives_generic_visual_fields():
@@ -205,12 +303,14 @@ def test_model_contract_drives_generic_visual_fields():
     ]
 
 
-def test_asymmetric_tokens_have_fixed_ttl_role_and_public_verification(auth_settings):
-    service = AuthService(auth_settings)
-    grant = service.login("inference-user", "inference-secret")
-    principal = service.authenticate_token(grant.token)
+def test_asymmetric_tokens_have_fixed_ttl_role_and_public_verification(
+    auth_settings, auth_factory, auth_service
+):
+    grant = auth_service.login("INFERENCE-user", "inference-secret")
+    principal = auth_service.authenticate_token(grant.token)
     assert principal.role is AuthRole.INFERENCE
     assert principal.username == "inference-user"
+    assert principal.user_id == "inference-id"
     claims = jwt.decode(
         grant.token,
         auth_settings.jwt_public_key,
@@ -220,18 +320,24 @@ def test_asymmetric_tokens_have_fixed_ttl_role_and_public_verification(auth_sett
     )
     assert claims["exp"] - claims["iat"] == TOKEN_TTL_SECONDS
     assert claims["role"] == "inference"
+    assert claims["sub"] == "inference-id"
+    assert claims["ver"] == 0
     assert datetime.fromtimestamp(claims["exp"], tz=UTC) == principal.expires_at
-    jwk = service.jwks()["keys"][0]
+    jwk = auth_service.jwks()["keys"][0]
     assert jwk["kty"] == "OKP"
     assert jwk["crv"] == "Ed25519"
     with pytest.raises(AuthenticationError):
-        service.login("inference-user", "wrong")
+        auth_service.login("inference-user", "wrong")
     with pytest.raises(AuthenticationError):
-        service.authenticate_token(grant.token + "altered")
+        auth_service.authenticate_token(grant.token + "altered")
+    auth_factory.users["inference-id"].token_version += 1
+    with pytest.raises(AuthenticationError):
+        auth_service.authenticate_token(grant.token)
 
 
-def test_app_jwt_roles_frontend_and_dash_routes_smoke(auth_settings):
+def test_app_jwt_roles_frontend_and_dash_routes_smoke(auth_settings, auth_service):
     app = create_app(auth_settings)
+    app.state.auth_service = auth_service
     client = TestClient(app)
     assert client.get("/health/live").status_code == 200
     assert client.get("/").status_code == 200

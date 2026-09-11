@@ -15,11 +15,16 @@ class PredictionRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def by_idempotency_key(self, key: str) -> tuple[PredictionBatch, list[PredictionEvent]] | None:
+    def by_idempotency_key(
+        self, key: str, requested_by_user_id: str | None
+    ) -> tuple[PredictionBatch, list[PredictionEvent]] | None:
         stored = self.session.execute(
             select(PredictionBatch, ModelVersion.model_family)
             .join(ModelVersion, ModelVersion.id == PredictionBatch.model_version_id)
-            .where(PredictionBatch.idempotency_key == key)
+            .where(
+                PredictionBatch.idempotency_key == key,
+                PredictionBatch.requested_by_user_id == requested_by_user_id,
+            )
         ).one_or_none()
         if stored is None:
             return None
@@ -38,6 +43,7 @@ class PredictionRepository:
         idempotency_key: str,
         request_sha256: str,
         model_version_id: str,
+        requested_by_user_id: str | None,
         duration_ms: float,
         records: list[dict],
         probabilities: list[tuple[float, float]],
@@ -50,6 +56,7 @@ class PredictionRepository:
             idempotency_key=idempotency_key,
             request_sha256=request_sha256,
             model_version_id=model_version_id,
+            requested_by_user_id=requested_by_user_id,
             status="complete",
             row_count=len(records),
             duration_ms=duration_ms,

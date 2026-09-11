@@ -25,13 +25,23 @@ class PredictionBatch(Base):
     __tablename__ = "prediction_batches"
     __table_args__ = (
         CheckConstraint("row_count >= 0", name="row_count_non_negative"),
+        UniqueConstraint(
+            "requested_by_user_id",
+            "idempotency_key",
+            name="uq_prediction_batches_user_idempotency_key",
+            postgresql_nulls_not_distinct=True,
+        ),
     )
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    idempotency_key: Mapped[str] = mapped_column(String(128), unique=True, nullable=False)
+    idempotency_key: Mapped[str] = mapped_column(String(128), nullable=False)
     request_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
     model_version_id: Mapped[str] = mapped_column(
         ForeignKey(f"{SCHEMA_NAME}.model_versions.id"), nullable=False, index=True
+    )
+    requested_by_user_id: Mapped[str | None] = mapped_column(
+        ForeignKey(f"{SCHEMA_NAME}.auth_users.id", ondelete="SET NULL"),
+        index=True,
     )
     status: Mapped[str] = mapped_column(String(24), nullable=False)
     row_count: Mapped[int] = mapped_column(Integer, nullable=False)

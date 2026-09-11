@@ -17,10 +17,6 @@ class Settings:
     artifact_dir: Path = Path("deployment_artifacts")
     max_batch_rows: int = 1000
     max_upload_bytes: int = 5_000_000
-    auth_username: str | None = None
-    auth_password: str | None = None
-    inference_username: str | None = None
-    inference_password: str | None = None
     jwt_private_key: str | None = None
     jwt_public_key: str | None = None
     jwt_issuer: str = "cdp-2026-credit-risk"
@@ -35,10 +31,6 @@ class Settings:
             artifact_dir=Path(os.getenv("CDP_ARTIFACT_DIR", "deployment_artifacts")),
             max_batch_rows=int(os.getenv("CDP_MAX_BATCH_ROWS", "1000")),
             max_upload_bytes=int(os.getenv("CDP_MAX_UPLOAD_BYTES", "5000000")),
-            auth_username=os.getenv("CDP_AUTH_USERNAME"),
-            auth_password=os.getenv("CDP_AUTH_PASSWORD"),
-            inference_username=os.getenv("CDP_INFERENCE_USERNAME"),
-            inference_password=os.getenv("CDP_INFERENCE_PASSWORD"),
             jwt_private_key=_pem_value(os.getenv("CDP_JWT_PRIVATE_KEY")),
             jwt_public_key=_pem_value(os.getenv("CDP_JWT_PUBLIC_KEY")),
             jwt_issuer=os.getenv("CDP_JWT_ISSUER", "cdp-2026-credit-risk"),
@@ -54,18 +46,12 @@ class Settings:
         if self.auth_disabled:
             return
         required = {
-            "CDP_AUTH_USERNAME": self.auth_username,
-            "CDP_AUTH_PASSWORD": self.auth_password,
-            "CDP_INFERENCE_USERNAME": self.inference_username,
-            "CDP_INFERENCE_PASSWORD": self.inference_password,
             "CDP_JWT_PRIVATE_KEY": self.jwt_private_key,
             "CDP_JWT_PUBLIC_KEY": self.jwt_public_key,
         }
         missing = [name for name, value in required.items() if not value]
         if missing:
             raise RuntimeError(f"Required authentication settings missing: {missing}")
-        if self.auth_username == self.inference_username:
-            raise RuntimeError("Owner and inference usernames must be different")
         if not self.jwt_issuer or not self.jwt_audience:
             raise RuntimeError("JWT issuer and audience must not be empty")
 

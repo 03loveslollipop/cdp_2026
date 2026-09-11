@@ -7,7 +7,7 @@ import json
 from typing import Annotated
 
 import pandas as pd
-from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Header, HTTPException, Request, UploadFile
 
 from ..dependencies import Runtime, get_runtime
 from ..models import PredictionRequest, PredictionResponse
@@ -25,12 +25,14 @@ IdempotencyKey = Annotated[
 ]
 
 
-def _service(runtime: Runtime) -> PredictionService:
+def _service(runtime: Runtime, request: Request) -> PredictionService:
+    principal = getattr(request.state, "principal", None)
     return PredictionService(
         runtime.artifact,
         runtime.model_version_id,
         runtime.session_factory,
         runtime.settings.max_batch_rows,
+        requested_by_user_id=getattr(principal, "user_id", None),
     )
 
 
@@ -46,14 +48,16 @@ def _predict(service: PredictionService, records: list[dict], key: str) -> dict:
 @router.post("", response_model=PredictionResponse)
 def predict_json(
     payload: PredictionRequest,
+    request: Request,
     idempotency_key: IdempotencyKey,
     runtime: Annotated[Runtime, Depends(get_runtime)],
 ) -> dict:
-    return _predict(_service(runtime), payload.records, idempotency_key)
+    return _predict(_service(runtime, request), payload.records, idempotency_key)
 
 
 @router.post("/csv", response_model=PredictionResponse)
 def predict_csv(
+    request: Request,
     idempotency_key: IdempotencyKey,
     runtime: Annotated[Runtime, Depends(get_runtime)],
     file: UploadFile = File(...),
@@ -68,4 +72,4 @@ def predict_csv(
     if frame.columns.duplicated().any():
         raise HTTPException(status_code=422, detail="CSV contains duplicate columns")
     records = json.loads(frame.to_json(orient="records", date_format="iso"))
-    return _predict(_service(runtime), records, idempotency_key)
+    return _predict(_service(runtime, request), records, idempotency_key)

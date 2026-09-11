@@ -27,7 +27,8 @@ remain a later task.
   views for data drift, prediction drift, matured performance, calibration, data quality,
   and job health.
 - `etl_scripts/src/database/`: implemented modular PostgreSQL connectors, models,
-  repositories, and versioned migrations in the isolated `cdp_2026` schema.
+  repositories, database-backed Argon2id users/roles, prediction ownership, and versioned
+  migrations in the isolated `cdp_2026` schema.
 - `etl_scripts/src/deployment_model_config.json`: winning family, fixed hyperparameters,
   runtime class order, and deployment settings.
 - `dataset.csv`: approved non-production sample, loaded idempotently into Heroku Postgres.

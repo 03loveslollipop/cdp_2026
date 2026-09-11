@@ -8,10 +8,10 @@ import inspect
 from sqlalchemy import Engine, text
 
 from ..connectors.postgres import SCHEMA_NAME
-from .versions import v0001_initial
+from .versions import v0001_initial, v0002_auth_users
 
 
-MIGRATIONS = (v0001_initial,)
+MIGRATIONS = (v0001_initial, v0002_auth_users)
 LOCK_NAME = "cdp_2026_schema_migrations"
 
 

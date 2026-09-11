@@ -21,7 +21,7 @@ discovery_router = APIRouter(tags=["authentication"])
 def login(payload: LoginRequest, request: Request, response: Response) -> dict:
     settings = request.app.state.settings
     try:
-        grant = get_auth_service(request.app, settings).login(
+        grant = get_auth_service(request.app).login(
             payload.username, payload.password
         )
     except AuthenticationError as error:
@@ -61,5 +61,4 @@ def logout(request: Request) -> Response:
 
 @discovery_router.get("/.well-known/jwks.json")
 def jwks(request: Request) -> dict:
-    settings = request.app.state.settings
-    return get_auth_service(request.app, settings).jwks()
+    return get_auth_service(request.app).jwks()

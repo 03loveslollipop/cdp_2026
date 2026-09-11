@@ -43,10 +43,8 @@ class TokenAuthMiddleware(BaseHTTPMiddleware):
         if token is None:
             return self._authentication_required(request)
         try:
-            principal = get_auth_service(request.app, self.settings).authenticate_token(
-                token
-            )
-        except (AuthenticationError, RuntimeError):
+            principal = get_auth_service(request.app).authenticate_token(token)
+        except AuthenticationError:
             return self._authentication_required(request)
         if required_role is AuthRole.OWNER and principal.role is not AuthRole.OWNER:
             return self._secure(

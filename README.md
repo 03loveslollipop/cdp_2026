@@ -8,8 +8,10 @@ The [model-serving and monitoring system](docs/deployment.md) is deployed as one
 authenticated Heroku Eco container app. It provides generic JSON/CSV inference through
 FastAPI, dynamic single-record and batch frontends, transactionally logged predictions
 in the isolated `cdp_2026` PostgreSQL schema, scheduled drift/performance calculations,
-and an owner-only Dash dashboard. Two-hour asymmetric JWTs enforce inference and owner
-roles. The winning family and hyperparameters live in `deployment_model_config.json`;
+and an owner-only Dash dashboard. PostgreSQL stores Argon2id-hashed users, roles,
+prediction ownership, predictors, probabilities, and outcomes. Two-hour asymmetric JWTs
+enforce inference and owner roles. The winning family and hyperparameters live in
+`deployment_model_config.json`;
 deployment retraining and serving do not require model-specific code changes.
 
 A portfolio of **10,763 Colombian consumer loans** disbursed between November 2024 and

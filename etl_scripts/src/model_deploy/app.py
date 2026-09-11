@@ -21,7 +21,7 @@ from .api import auth, health, model, outcomes, predictions
 from .dependencies import Runtime
 from .frontend.routes import FRONTEND_DIRECTORY, router as frontend_router
 from .security import TokenAuthMiddleware
-from .services.auth_service import get_auth_service
+from .services.auth_service import AuthService
 from .services.artifact_loader import load_artifact
 from .settings import Settings
 
@@ -63,8 +63,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(application: FastAPI):
         configured.validate()
-        if not configured.auth_disabled:
-            get_auth_service(application, configured)
         artifact = load_artifact(configured.artifact_dir)
         engine = create_database_engine()
         with engine.connect() as connection:
@@ -74,6 +72,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             model_version = ModelRepository(session).register(
                 artifact.manifest, artifact.reference_profiles
             )
+        if not configured.auth_disabled:
+            application.state.auth_service = AuthService(configured, factory)
         application.state.runtime = Runtime(
             settings=configured,
             artifact=artifact,
@@ -85,6 +85,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             yield
         finally:
             application.state.runtime = None
+            application.state.auth_service = None
             engine.dispose()
 
     application = FastAPI(
@@ -93,6 +94,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         lifespan=lifespan,
     )
     application.state.settings = configured
+    application.state.auth_service = None
+    application.state.runtime = None
     application.add_middleware(GZipMiddleware, minimum_size=1000)
     application.add_middleware(TokenAuthMiddleware, settings=configured)
     application.include_router(auth.router)

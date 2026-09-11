@@ -19,7 +19,7 @@ etl_scripts/src/
 │   ├── connectors/       engine and transaction setup
 │   ├── migrations/       advisory-locked, checksum-verified schema versions
 │   ├── models/           schema-qualified SQLAlchemy tables
-│   └── repositories/     model, prediction, outcome, sample, and monitoring access
+│   └── repositories/     user, model, prediction, outcome, sample, and monitoring access
 ├── model_deploy/
 │   ├── api/              health, model, prediction, and outcome routes
 │   ├── frontend/         dynamic single-record and batch CSV pages
@@ -72,8 +72,12 @@ changes.
 
 Prediction requests require an `Idempotency-Key` header of 8–128 characters. Reusing a
 key with the same canonical batch returns the stored result; reusing it for different
-data returns HTTP 409. The service validates the entire batch before inference and saves
-the completed batch and every prediction event in one transaction.
+data returns HTTP 409. Keys are scoped to the authenticated user, so one account cannot
+replay another account's stored response. The service validates the entire batch before
+inference and saves
+the completed batch and every prediction event in one transaction. Each new batch stores
+the authenticated user's database ID; deleting a user preserves historical batches while
+setting that nullable attribution to `NULL`.
 `GET /v1/model` includes `required_predictors` plus numeric/categorical field metadata.
 Both browser inference forms are built from that live contract, so changing the configured
 winner or its parameters requires no frontend code changes.
@@ -81,35 +85,56 @@ winner or its parameters requires no frontend code changes.
 ## Authentication and roles
 
 `POST /v1/auth/login` returns an EdDSA JWT with an exact 7,200-second lifetime. Tokens
-contain issuer, audience, subject, role, issue/not-before/expiry times, and a unique token
-ID. The server accepts only its configured algorithm and key ID, and publishes only the
-public key through JWKS. API routes require `Authorization: Bearer <token>`; cookies are
-not accepted as API authentication. Login also sets a secure, HTTP-only, same-site token
-cookie solely so the Dash browser callbacks can authenticate.
+contain issuer, audience, immutable user ID, username, role, token version,
+issue/not-before/expiry times, and a unique token ID. The server accepts only its
+configured algorithm and key ID, and publishes only the public key through JWKS. API
+routes require `Authorization: Bearer <token>`; cookies are not accepted as API
+authentication. Login also sets a secure, HTTP-only, same-site token cookie solely so the
+Dash browser callbacks can authenticate.
 
 | Role | Model contract | JSON/CSV inference | Submit outcomes | Monitoring UI |
 | --- | --- | --- | --- | --- |
 | `inference` (default) | Yes | Yes | No | No |
 | `owner` | Yes | Yes | Yes | Yes |
 
-The existing `CDP_AUTH_USERNAME` and `CDP_AUTH_PASSWORD` identify the owner. The default
-account uses `CDP_INFERENCE_USERNAME` and `CDP_INFERENCE_PASSWORD`. The signing pair is
-stored only in `CDP_JWT_PRIVATE_KEY` and `CDP_JWT_PUBLIC_KEY`; neither key nor either
-password is committed. Owner and inference usernames must differ. Retrieve usernames or
-passwords locally with Heroku CLI as needed:
+Users are stored in `cdp_2026.auth_users` in `postgresql-tapered-63136`. PostgreSQL holds
+only canonical usernames, Argon2id password hashes, roles, active flags, token versions,
+and audit timestamps—never recoverable plaintext passwords. Login and every authenticated
+request consult this table. Password resets, role changes, and disabling an account bump
+its token version, invalidating all JWTs previously issued to that user.
+
+Migration `0002_auth_users` bootstraps the former owner and inference config credentials
+exactly once. Existing database users are never overwritten by a later release, and the
+four temporary username/password config vars are removed after bootstrap. Only the
+Ed25519 signing pair remains in `CDP_JWT_PRIVATE_KEY` and `CDP_JWT_PUBLIC_KEY`; neither
+key nor any password is committed.
+
+Manage users through an interactive one-off dyno. Passwords are prompted twice and never
+appear in shell history or command arguments:
 
 ```bash
-heroku config:get CDP_AUTH_USERNAME --app cdp-2026-credit-risk
-heroku config:get CDP_AUTH_PASSWORD --app cdp-2026-credit-risk
-heroku config:get CDP_INFERENCE_USERNAME --app cdp-2026-credit-risk
-heroku config:get CDP_INFERENCE_PASSWORD --app cdp-2026-credit-risk
+heroku run --app cdp-2026-credit-risk -- \
+  python -m etl_scripts.src.database users list
+heroku run --app cdp-2026-credit-risk -- \
+  python -m etl_scripts.src.database users create \
+  --username analyst --role inference
+heroku run --app cdp-2026-credit-risk -- \
+  python -m etl_scripts.src.database users reset-password --username analyst
+heroku run --app cdp-2026-credit-risk -- \
+  python -m etl_scripts.src.database users set-role \
+  --username analyst --role owner
+heroku run --app cdp-2026-credit-risk -- \
+  python -m etl_scripts.src.database users disable --username analyst
 ```
+
+The administration layer refuses to disable or demote the final active owner.
 
 Example API login and authenticated metadata request:
 
 ```bash
-USERNAME="$(heroku config:get CDP_INFERENCE_USERNAME --app cdp-2026-credit-risk)"
-PASSWORD="$(heroku config:get CDP_INFERENCE_PASSWORD --app cdp-2026-credit-risk)"
+read -r -p "Username: " USERNAME
+read -r -s -p "Password: " PASSWORD
+echo
 LOGIN_JSON="$(USERNAME="$USERNAME" PASSWORD="$PASSWORD" python -c \
   'import json,os; print(json.dumps({"username": os.environ["USERNAME"], "password": os.environ["PASSWORD"]}))')"
 TOKEN="$(curl --silent --show-error \

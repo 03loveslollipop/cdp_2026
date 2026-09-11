@@ -32,11 +32,13 @@ class PredictionService:
         model_version_id: str,
         session_factory: sessionmaker[Session],
         max_batch_rows: int,
+        requested_by_user_id: str | None = None,
     ):
         self.artifact = artifact
         self.model_version_id = model_version_id
         self.session_factory = session_factory
         self.max_batch_rows = max_batch_rows
+        self.requested_by_user_id = requested_by_user_id
         self.required = list(artifact.manifest["required_predictors"])
 
     def _validate(self, records: list[dict[str, Any]]) -> tuple[list[dict], list[str | None]]:
@@ -114,7 +116,9 @@ class PredictionService:
 
     def _existing(self, key: str, request_hash: str):
         with self.session_factory() as session:
-            found = PredictionRepository(session).by_idempotency_key(key)
+            found = PredictionRepository(session).by_idempotency_key(
+                key, self.requested_by_user_id
+            )
             if found is None:
                 return None
             batch, events = found
@@ -155,7 +159,9 @@ class PredictionService:
         try:
             with self.session_factory.begin() as session:
                 repository = PredictionRepository(session)
-                found = repository.by_idempotency_key(idempotency_key)
+                found = repository.by_idempotency_key(
+                    idempotency_key, self.requested_by_user_id
+                )
                 if found is not None:
                     batch, events = found
                     if batch.request_sha256 != request_hash:
@@ -167,6 +173,7 @@ class PredictionService:
                     idempotency_key=idempotency_key,
                     request_sha256=request_hash,
                     model_version_id=self.model_version_id,
+                    requested_by_user_id=self.requested_by_user_id,
                     duration_ms=duration_ms,
                     records=normalized,
                     probabilities=[tuple(row) for row in probabilities.tolist()],

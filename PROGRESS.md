@@ -1,5 +1,38 @@
 # Model Training Progress and Handoff
 
+## PostgreSQL authentication persistence on 2026-09-11
+
+Branch: `feat/model-serving-monitoring`. Datastore: existing Heroku add-on
+`postgresql-tapered-63136`, attached as `CDP_DATABASE_URL`.
+
+- Added frozen migration `0002_auth_users`. It creates `cdp_2026.auth_users` with
+  canonical unique usernames, Argon2id password hashes, `inference`/`owner` roles,
+  active state, token-version invalidation, and audit timestamps. It does not use or
+  modify another schema.
+- Login now reads password hashes and roles from PostgreSQL. Every authenticated request
+  rechecks active state, role, and token version, so password resets, role changes, and
+  disabling an account revoke existing tokens immediately. JWT signing keys remain in
+  Heroku config; plaintext passwords are not persisted.
+- Prediction batches now reference the requesting database user. Idempotency keys are
+  scoped per user with PostgreSQL 17 `UNIQUE NULLS NOT DISTINCT`, preventing one account
+  from replaying another account's stored response. Prediction events, predictor payloads,
+  probabilities, decisions, and observed outcomes remain in the monitoring datastore.
+- The release command idempotently bootstraps existing config credentials only when the
+  users do not exist. Interactive commands list/create/reset/enable/disable users and set
+  roles without placing passwords in command arguments; the last active owner is protected.
+
+Validation completed before the shared-database migration:
+
+```text
+Python 3.12 isolated CPU environment: 69 passed, 1 CUDA-only skipped
+Ruff: database, deployment, and changed tests passed
+PostgreSQL 17 clean release: 0001 + 0002 applied once; second run applied/seeded 0
+PostgreSQL 17 hashes: 2/2 Argon2id, 0 plaintext matches
+PostgreSQL 17 isolation: unrelated schema/table and row retained
+Live before-snapshot: cdp_2026=9, ch0wn3rs_pt_prod=5, ctf_auth=1,
+ctf_ctf=8, public=13; only migration 0001 was present
+```
+
 ## JWT authentication and role isolation on 2026-09-11
 
 Branch: `feat/model-serving-monitoring`.

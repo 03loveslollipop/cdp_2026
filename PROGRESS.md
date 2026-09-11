@@ -1,5 +1,39 @@
 # Model Training Progress and Handoff
 
+## JWT authentication and role isolation on 2026-09-11
+
+Branch: `feat/model-serving-monitoring`.
+
+- Replaced HTTP Basic authentication with Ed25519-signed JWT access tokens. Login tokens
+  have a fixed two-hour lifetime and validated issuer, audience, key ID, role, timestamps,
+  subject, and unique token ID. The public verification key is available as JWKS; private
+  signing material remains only in Heroku config.
+- Added `inference` as the default role and `owner` as its privileged superset. Both roles
+  can inspect the live model contract and run JSON/CSV predictions. Only `owner` can ingest
+  observed outcomes or load the Dash monitoring routes. API routes accept bearer tokens,
+  not cookies; a secure HTTP-only same-site token cookie is limited to Dash browser traffic.
+- Added public login shells for the batch page and `/inference/`. The new single-record
+  visual form generates numeric/categorical inputs from the active artifact's reference
+  profiles and calls the same transactionally logged prediction API. It therefore requires
+  no code change when the deployment config selects another supported model or parameters.
+- Provisioned a separate inference account and matching Ed25519 pair without printing or
+  committing secrets. The existing staging credential is now the owner account.
+- Manually released CPU image v11 before the branch push. Live checks passed for login,
+  external signature verification, exact 7,200-second TTL, bearer-only API enforcement,
+  inference-role denial on outcomes/monitoring, owner inference, Dash layout/dependencies,
+  one real prediction, logout, public pages, readiness, and absence of web errors.
+
+Validation completed:
+
+```text
+Python 3.12 isolated environment: 65 passed, 1 CUDA-only skipped
+Ruff: changed deployment/authentication files passed
+JavaScript: shared authentication and both page scripts passed syntax checks
+CPU web image: built successfully and ran as non-root user app
+local container: JWT/JWKS, roles, API prediction, and Dash access passed
+live Heroku v11: readiness and full JWT/role matrix passed; no web errors
+```
+
 ## Serving and monitoring deployment on 2026-09-10
 
 Branch: `feat/model-serving-monitoring`, based directly on
@@ -30,7 +64,8 @@ remains `etl_scripts/src/model_training_evaluation.py`.
   exact dependency versions. A config-driven build script supports every learned family
   with a CPU runtime, so changing the winner or parameters does not change serving code.
 - Added strict atomic batch validation, idempotency-key conflict/replay semantics,
-  Basic authentication, outcome ingestion, and protected aggregate-only dashboards.
+  initial Basic authentication (superseded by the JWT role boundary above), outcome
+  ingestion, and protected aggregate-only dashboards.
   Monitoring computes feature/score PSI, missingness, unknown categories,
   predicted-default rate, mature outcome performance, and calibration; low-volume or
   single-class windows are explicitly `insufficient_data`.

@@ -2,9 +2,10 @@
 
 The staging system is deployed at
 [`cdp-2026-credit-risk`](https://cdp-2026-credit-risk-4b94df7c43fb.herokuapp.com/).
-It is one Heroku Eco container app containing the FastAPI API, batch-upload page, and
-Dash UI at `/monitor/`. HTTP Basic authentication protects every route except the two
-health endpoints.
+It is one Heroku Eco container app containing the FastAPI API, batch-upload page, dynamic
+single-record form at `/inference/`, and Dash UI at `/monitor/`. API clients authenticate
+with two-hour Ed25519-signed JWT bearer tokens. Role checks keep monitoring and outcome
+ingestion owner-only.
 
 This remains a staging/demo deployment. The source extract does not establish feature
 snapshot timing or outcome maturity, and the diagnostic holdout has already been
@@ -21,7 +22,7 @@ etl_scripts/src/
 │   └── repositories/     model, prediction, outcome, sample, and monitoring access
 ├── model_deploy/
 │   ├── api/              health, model, prediction, and outcome routes
-│   ├── frontend/         batch CSV page
+│   ├── frontend/         dynamic single-record and batch CSV pages
 │   ├── models/           API and artifact contracts
 │   └── services/         artifact training/loading and business workflows
 └── model_monitoring/
@@ -61,6 +62,9 @@ changes.
 ## HTTP endpoints
 
 - `GET /health/live` and `GET /health/ready`
+- `POST /v1/auth/login` with a JSON username and password
+- `POST /v1/auth/logout`
+- `GET /.well-known/jwks.json` for the public Ed25519 verification key
 - `GET /v1/model`
 - `POST /v1/predictions` with a JSON `records` array
 - `POST /v1/predictions/csv` with a `file` multipart field
@@ -70,15 +74,57 @@ Prediction requests require an `Idempotency-Key` header of 8–128 characters. R
 key with the same canonical batch returns the stored result; reusing it for different
 data returns HTTP 409. The service validates the entire batch before inference and saves
 the completed batch and every prediction event in one transaction.
-`GET /v1/model` includes the active `required_predictors` contract used by the browser's
-pre-submit CSV header preview and by API clients generating batches.
+`GET /v1/model` includes `required_predictors` plus numeric/categorical field metadata.
+Both browser inference forms are built from that live contract, so changing the configured
+winner or its parameters requires no frontend code changes.
 
-Retrieve the generated staging credentials locally without committing them:
+## Authentication and roles
+
+`POST /v1/auth/login` returns an EdDSA JWT with an exact 7,200-second lifetime. Tokens
+contain issuer, audience, subject, role, issue/not-before/expiry times, and a unique token
+ID. The server accepts only its configured algorithm and key ID, and publishes only the
+public key through JWKS. API routes require `Authorization: Bearer <token>`; cookies are
+not accepted as API authentication. Login also sets a secure, HTTP-only, same-site token
+cookie solely so the Dash browser callbacks can authenticate.
+
+| Role | Model contract | JSON/CSV inference | Submit outcomes | Monitoring UI |
+| --- | --- | --- | --- | --- |
+| `inference` (default) | Yes | Yes | No | No |
+| `owner` | Yes | Yes | Yes | Yes |
+
+The existing `CDP_AUTH_USERNAME` and `CDP_AUTH_PASSWORD` identify the owner. The default
+account uses `CDP_INFERENCE_USERNAME` and `CDP_INFERENCE_PASSWORD`. The signing pair is
+stored only in `CDP_JWT_PRIVATE_KEY` and `CDP_JWT_PUBLIC_KEY`; neither key nor either
+password is committed. Owner and inference usernames must differ. Retrieve usernames or
+passwords locally with Heroku CLI as needed:
 
 ```bash
 heroku config:get CDP_AUTH_USERNAME --app cdp-2026-credit-risk
 heroku config:get CDP_AUTH_PASSWORD --app cdp-2026-credit-risk
+heroku config:get CDP_INFERENCE_USERNAME --app cdp-2026-credit-risk
+heroku config:get CDP_INFERENCE_PASSWORD --app cdp-2026-credit-risk
 ```
+
+Example API login and authenticated metadata request:
+
+```bash
+USERNAME="$(heroku config:get CDP_INFERENCE_USERNAME --app cdp-2026-credit-risk)"
+PASSWORD="$(heroku config:get CDP_INFERENCE_PASSWORD --app cdp-2026-credit-risk)"
+LOGIN_JSON="$(USERNAME="$USERNAME" PASSWORD="$PASSWORD" python -c \
+  'import json,os; print(json.dumps({"username": os.environ["USERNAME"], "password": os.environ["PASSWORD"]}))')"
+TOKEN="$(curl --silent --show-error \
+  --header 'Content-Type: application/json' \
+  --data "$LOGIN_JSON" \
+  https://cdp-2026-credit-risk-4b94df7c43fb.herokuapp.com/v1/auth/login \
+  | python -c 'import json,sys; print(json.load(sys.stdin)["access_token"])')"
+curl --header "Authorization: Bearer ${TOKEN}" \
+  https://cdp-2026-credit-risk-4b94df7c43fb.herokuapp.com/v1/model
+unset USERNAME PASSWORD LOGIN_JSON TOKEN
+```
+
+Cookies are secure by default. Set `CDP_ENVIRONMENT=development` only for an HTTP local
+stack; staging and production must leave the secure default in effect or use their named
+environment.
 
 ## Monitoring
 

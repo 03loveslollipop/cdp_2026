@@ -1,15 +1,26 @@
 import hashlib
 import json
+from datetime import UTC, datetime
 from types import SimpleNamespace
 
 import joblib
+import jwt
 import numpy as np
 import pytest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from fastapi.testclient import TestClient
 
+from etl_scripts.src.model_deploy.api.model import model_metadata
 from etl_scripts.src.model_deploy.app import create_app
 from etl_scripts.src.model_deploy.models import LoadedArtifact
 from etl_scripts.src.model_deploy.services import artifact_loader
+from etl_scripts.src.model_deploy.services.auth_service import (
+    AuthRole,
+    AuthenticationError,
+    AuthService,
+    TOKEN_TTL_SECONDS,
+)
 from etl_scripts.src.model_deploy.services.prediction_service import (
     IdempotencyConflictError,
     PredictionService,
@@ -44,19 +55,24 @@ class FakePredictionRepository:
             model_version_id=values["model_version_id"],
             model_family="random_forest",
         )
-        events = [SimpleNamespace(
-            id=f"event-{index}",
-            row_number=index,
-            external_reference=reference,
-            predicted_label=prediction,
-            default_probability=probability[0],
-            on_time_probability=probability[1],
-        ) for index, (reference, prediction, probability) in enumerate(zip(
-            values["external_references"],
-            values["predictions"],
-            values["probabilities"],
-            strict=True,
-        ))]
+        events = [
+            SimpleNamespace(
+                id=f"event-{index}",
+                row_number=index,
+                external_reference=reference,
+                predicted_label=prediction,
+                default_probability=probability[0],
+                on_time_probability=probability[1],
+            )
+            for index, (reference, prediction, probability) in enumerate(
+                zip(
+                    values["external_references"],
+                    values["predictions"],
+                    values["probabilities"],
+                    strict=True,
+                )
+            )
+        ]
         self.saved[values["idempotency_key"]] = (batch, events)
         return batch, events
 
@@ -84,8 +100,45 @@ def artifact(model_family="random_forest"):
             "model_family": model_family,
             "artifact_sha256": "a" * 64,
             "required_predictors": ["a", "b"],
+            "threshold": 0.25,
+            "class_order": [0, 1],
+            "stage": "test",
+            "source_revision": None,
         },
-        reference_profiles={},
+        reference_profiles={
+            "a": {"type": "numeric"},
+            "b": {
+                "type": "categorical",
+                "proportions": {"first": 0.75, "second": 0.25},
+            },
+        },
+    )
+
+
+@pytest.fixture
+def auth_settings():
+    private_key = Ed25519PrivateKey.generate()
+    private_pem = private_key.private_bytes(
+        serialization.Encoding.PEM,
+        serialization.PrivateFormat.PKCS8,
+        serialization.NoEncryption(),
+    ).decode("utf-8")
+    public_pem = (
+        private_key.public_key()
+        .public_bytes(
+            serialization.Encoding.PEM,
+            serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+        .decode("utf-8")
+    )
+    return Settings(
+        auth_username="owner-user",
+        auth_password="owner-secret",
+        inference_username="inference-user",
+        inference_password="inference-secret",
+        jwt_private_key=private_pem,
+        jwt_public_key=public_pem,
+        environment="development",
     )
 
 
@@ -138,19 +191,124 @@ def test_prediction_service_is_atomic_and_idempotent(monkeypatch):
     assert len(repository.saved) == 1
 
 
-def test_app_authentication_frontend_and_dash_routes_smoke():
-    app = create_app(Settings(auth_username="user", auth_password="secret"))
+def test_model_contract_drives_generic_visual_fields():
+    runtime = SimpleNamespace(artifact=artifact(), model_version_id="model-1")
+    response = model_metadata(runtime)
+    assert response["required_predictors"] == ["a", "b"]
+    assert response["predictor_fields"] == [
+        {"name": "a", "data_type": "numeric", "suggested_values": []},
+        {
+            "name": "b",
+            "data_type": "categorical",
+            "suggested_values": ["first", "second"],
+        },
+    ]
+
+
+def test_asymmetric_tokens_have_fixed_ttl_role_and_public_verification(auth_settings):
+    service = AuthService(auth_settings)
+    grant = service.login("inference-user", "inference-secret")
+    principal = service.authenticate_token(grant.token)
+    assert principal.role is AuthRole.INFERENCE
+    assert principal.username == "inference-user"
+    claims = jwt.decode(
+        grant.token,
+        auth_settings.jwt_public_key,
+        algorithms=["EdDSA"],
+        audience=auth_settings.jwt_audience,
+        issuer=auth_settings.jwt_issuer,
+    )
+    assert claims["exp"] - claims["iat"] == TOKEN_TTL_SECONDS
+    assert claims["role"] == "inference"
+    assert datetime.fromtimestamp(claims["exp"], tz=UTC) == principal.expires_at
+    jwk = service.jwks()["keys"][0]
+    assert jwk["kty"] == "OKP"
+    assert jwk["crv"] == "Ed25519"
+    with pytest.raises(AuthenticationError):
+        service.login("inference-user", "wrong")
+    with pytest.raises(AuthenticationError):
+        service.authenticate_token(grant.token + "altered")
+
+
+def test_app_jwt_roles_frontend_and_dash_routes_smoke(auth_settings):
+    app = create_app(auth_settings)
     client = TestClient(app)
     assert client.get("/health/live").status_code == 200
-    assert client.get("/").status_code == 401
-    assert client.get("/", auth=("user", "secret")).status_code == 200
-    assert client.get("/monitor/", auth=("user", "secret")).status_code == 200
+    assert client.get("/").status_code == 200
+    assert client.get("/inference/").status_code == 200
+    assert client.get("/static/auth.js").status_code == 200
+    assert client.get("/.well-known/jwks.json").status_code == 200
+    assert client.get("/v1/model").status_code == 401
+    assert (
+        client.get("/v1/model", auth=("owner-user", "owner-secret")).status_code == 401
+    )
+
+    invalid = client.post(
+        "/v1/auth/login",
+        json={"username": "inference-user", "password": "wrong"},
+    )
+    assert invalid.status_code == 401
+    inference_login = client.post(
+        "/v1/auth/login",
+        json={"username": "inference-user", "password": "inference-secret"},
+    )
+    assert inference_login.status_code == 200
+    assert inference_login.json()["expires_in"] == 7200
+    assert inference_login.json()["role"] == "inference"
+    inference_token = inference_login.json()["access_token"]
+    inference_headers = {"Authorization": f"Bearer {inference_token}"}
+    assert client.get("/v1/model", headers=inference_headers).status_code == 503
+    assert client.post("/v1/outcomes", headers=inference_headers).status_code == 403
+    assert client.get("/monitor/", headers=inference_headers).status_code == 403
+    openapi = client.get("/openapi.json", headers=inference_headers).json()
+    assert openapi["components"]["securitySchemes"]["BearerAuth"] == {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+    }
+    assert openapi["paths"]["/v1/predictions"]["post"]["security"] == [
+        {"BearerAuth": []}
+    ]
+
+    owner_login = client.post(
+        "/v1/auth/login",
+        json={"username": "owner-user", "password": "owner-secret"},
+    )
+    assert owner_login.status_code == 200
+    assert owner_login.json()["role"] == "owner"
+    owner_token = owner_login.json()["access_token"]
+    assert client.get("/v1/model").status_code == 401
+    assert (
+        client.get(
+            "/v1/model", headers={"Authorization": f"Bearer {owner_token}"}
+        ).status_code
+        == 503
+    )
+    assert client.get("/monitor/").status_code == 200
+    assert (
+        client.post(
+            "/v1/auth/logout", headers={"Authorization": f"Bearer {owner_token}"}
+        ).status_code
+        == 204
+    )
+    redirect = client.get(
+        "/monitor/", headers={"Accept": "text/html"}, follow_redirects=False
+    )
+    assert redirect.status_code == 303
+    assert redirect.headers["location"] == "/inference/?next=/monitor/"
 
 
 def test_every_trainable_family_has_a_runtime_strategy():
     assert set(FAMILY_REQUIREMENTS) == {
-        "logistic_regression", "decision_tree", "gaussian_nb", "random_forest",
-        "extra_trees", "svm", "xgboost", "lightgbm", "pytorch_mlp",
+        "logistic_regression",
+        "decision_tree",
+        "gaussian_nb",
+        "random_forest",
+        "extra_trees",
+        "svm",
+        "xgboost",
+        "lightgbm",
+        "pytorch_mlp",
     }
 
 
@@ -159,7 +317,9 @@ def test_pytorch_runtime_uses_the_cpu_package_index(monkeypatch, tmp_path):
     config.write_text(json.dumps({"model_family": "pytorch_mlp"}))
     commands = []
     monkeypatch.setattr("sys.argv", ["install_model_runtime.py", str(config)])
-    monkeypatch.setattr("subprocess.run", lambda command, check: commands.append(command))
+    monkeypatch.setattr(
+        "subprocess.run", lambda command, check: commands.append(command)
+    )
     from scripts import install_model_runtime
 
     install_model_runtime.main()

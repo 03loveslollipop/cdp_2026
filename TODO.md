@@ -21,7 +21,8 @@ remain a later task.
   evaluation, model selection, and artifact export pipeline. The previously added
   `model_training.ipynb` is obsolete and is not part of this branch.
 - `etl_scripts/src/model_deploy/`: implemented modular FastAPI API, model training/loading
-  services, batch frontend, validation, idempotency, and transactional prediction logs.
+  services, dynamic visual and batch frontends, asymmetric JWT authentication, inference
+  and owner roles, validation, idempotency, and transactional prediction logs.
 - `etl_scripts/src/model_monitoring/`: implemented modular scheduled monitoring and Dash
   views for data drift, prediction drift, matured performance, calibration, data quality,
   and job health.

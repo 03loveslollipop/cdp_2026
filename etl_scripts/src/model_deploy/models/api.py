@@ -8,6 +8,20 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
+class LoginRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    username: str = Field(min_length=1, max_length=128)
+    password: str = Field(min_length=1, max_length=512)
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: Literal["bearer"] = "bearer"
+    expires_in: Literal[7200] = 7200
+    expires_at: datetime
+    role: Literal["inference", "owner"]
+
+
 class PredictionRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     records: list[dict[str, Any]] = Field(min_length=1)
@@ -31,6 +45,12 @@ class PredictionResponse(BaseModel):
     items: list[PredictionItem]
 
 
+class PredictorField(BaseModel):
+    name: str
+    data_type: Literal["numeric", "categorical"]
+    suggested_values: list[str] = Field(default_factory=list)
+
+
 class ModelResponse(BaseModel):
     model_version_id: str
     model_family: str
@@ -40,6 +60,7 @@ class ModelResponse(BaseModel):
     stage: str
     source_revision: str | None
     required_predictors: list[str]
+    predictor_fields: list[PredictorField]
 
 
 class OutcomeItem(BaseModel):

@@ -19,8 +19,14 @@ class Settings:
     max_upload_bytes: int = 5_000_000
     auth_username: str | None = None
     auth_password: str | None = None
+    inference_username: str | None = None
+    inference_password: str | None = None
+    jwt_private_key: str | None = None
+    jwt_public_key: str | None = None
+    jwt_issuer: str = "cdp-2026-credit-risk"
+    jwt_audience: str = "cdp-2026-api"
     auth_disabled: bool = False
-    environment: str = "development"
+    environment: str = "production"
     log_level: str = "info"
 
     @classmethod
@@ -31,15 +37,39 @@ class Settings:
             max_upload_bytes=int(os.getenv("CDP_MAX_UPLOAD_BYTES", "5000000")),
             auth_username=os.getenv("CDP_AUTH_USERNAME"),
             auth_password=os.getenv("CDP_AUTH_PASSWORD"),
+            inference_username=os.getenv("CDP_INFERENCE_USERNAME"),
+            inference_password=os.getenv("CDP_INFERENCE_PASSWORD"),
+            jwt_private_key=_pem_value(os.getenv("CDP_JWT_PRIVATE_KEY")),
+            jwt_public_key=_pem_value(os.getenv("CDP_JWT_PUBLIC_KEY")),
+            jwt_issuer=os.getenv("CDP_JWT_ISSUER", "cdp-2026-credit-risk"),
+            jwt_audience=os.getenv("CDP_JWT_AUDIENCE", "cdp-2026-api"),
             auth_disabled=_flag("CDP_AUTH_DISABLED"),
-            environment=os.getenv("CDP_ENVIRONMENT", "development"),
+            environment=os.getenv("CDP_ENVIRONMENT", "production"),
             log_level=os.getenv("CDP_LOG_LEVEL", "info"),
         )
 
     def validate(self) -> None:
         if self.max_batch_rows < 1 or self.max_upload_bytes < 1:
             raise ValueError("Batch and upload limits must be positive")
-        if not self.auth_disabled and not (self.auth_username and self.auth_password):
-            raise RuntimeError(
-                "CDP_AUTH_USERNAME and CDP_AUTH_PASSWORD are required"
-            )
+        if self.auth_disabled:
+            return
+        required = {
+            "CDP_AUTH_USERNAME": self.auth_username,
+            "CDP_AUTH_PASSWORD": self.auth_password,
+            "CDP_INFERENCE_USERNAME": self.inference_username,
+            "CDP_INFERENCE_PASSWORD": self.inference_password,
+            "CDP_JWT_PRIVATE_KEY": self.jwt_private_key,
+            "CDP_JWT_PUBLIC_KEY": self.jwt_public_key,
+        }
+        missing = [name for name, value in required.items() if not value]
+        if missing:
+            raise RuntimeError(f"Required authentication settings missing: {missing}")
+        if self.auth_username == self.inference_username:
+            raise RuntimeError("Owner and inference usernames must be different")
+        if not self.jwt_issuer or not self.jwt_audience:
+            raise RuntimeError("JWT issuer and audience must not be empty")
+
+
+def _pem_value(value: str | None) -> str | None:
+    """Accept real or escaped newlines without logging key material."""
+    return value.replace("\\n", "\n") if value else None

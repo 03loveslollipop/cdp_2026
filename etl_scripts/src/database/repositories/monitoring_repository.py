@@ -99,7 +99,9 @@ class MonitoringRepository:
         run.completed_at = datetime.now(UTC)
         self.session.flush()
 
-    def recent_metrics(self, limit: int = 500) -> list[dict]:
+    def recent_metrics(
+        self, model_version_id: str, limit: int = 500
+    ) -> list[dict]:
         rows = self.session.execute(select(
             MonitoringRun.window_start,
             MonitoringRun.window_end,
@@ -111,5 +113,7 @@ class MonitoringRepository:
             MonitoringMetric.details,
         ).join(
             MonitoringMetric, MonitoringMetric.run_id == MonitoringRun.id
+        ).where(
+            MonitoringRun.model_version_id == model_version_id
         ).order_by(MonitoringRun.window_end.desc()).limit(limit)).all()
         return [dict(row._mapping) for row in rows]

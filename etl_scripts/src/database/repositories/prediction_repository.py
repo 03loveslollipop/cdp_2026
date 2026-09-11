@@ -8,7 +8,7 @@ from uuid import uuid4
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..models import PredictionBatch, PredictionEvent
+from ..models import ModelVersion, PredictionBatch, PredictionEvent
 
 
 class PredictionRepository:
@@ -16,11 +16,15 @@ class PredictionRepository:
         self.session = session
 
     def by_idempotency_key(self, key: str) -> tuple[PredictionBatch, list[PredictionEvent]] | None:
-        batch = self.session.scalar(
-            select(PredictionBatch).where(PredictionBatch.idempotency_key == key)
-        )
-        if batch is None:
+        stored = self.session.execute(
+            select(PredictionBatch, ModelVersion.model_family)
+            .join(ModelVersion, ModelVersion.id == PredictionBatch.model_version_id)
+            .where(PredictionBatch.idempotency_key == key)
+        ).one_or_none()
+        if stored is None:
             return None
+        batch, model_family = stored
+        batch.model_family = model_family
         events = list(self.session.scalars(
             select(PredictionEvent)
             .where(PredictionEvent.batch_id == batch.id)

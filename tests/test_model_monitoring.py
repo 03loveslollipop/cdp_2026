@@ -1,3 +1,5 @@
+from contextlib import nullcontext
+
 import numpy as np
 import pytest
 
@@ -9,6 +11,7 @@ from etl_scripts.src.model_monitoring.services.performance_service import (
     calculate_performance,
     expected_calibration_error,
 )
+from etl_scripts.src.model_monitoring.services.dashboard_service import DashboardService
 from etl_scripts.src.model_monitoring.settings import MonitoringSettings
 
 
@@ -70,6 +73,28 @@ def test_all_missing_categorical_values_do_not_report_false_drift():
     psi = next(metric for metric in metrics if metric.metric_name == "population_psi")
     assert psi.metric_value is None
     assert psi.status == "insufficient_data"
+
+
+def test_dashboard_requests_aggregates_for_only_the_active_model(monkeypatch):
+    requested = {}
+
+    class Repository:
+        def __init__(self, _session):
+            pass
+
+        def recent_metrics(self, model_version_id, limit):
+            requested.update(model_version_id=model_version_id, limit=limit)
+            return [{"metric_name": "prediction_rows"}]
+
+    monkeypatch.setattr(
+        "etl_scripts.src.model_monitoring.services.dashboard_service.MonitoringRepository",
+        Repository,
+    )
+    service = DashboardService(lambda: nullcontext(object()))
+    assert service.snapshot("active-model", limit=25) == [
+        {"metric_name": "prediction_rows"}
+    ]
+    assert requested == {"model_version_id": "active-model", "limit": 25}
 
 
 def test_matured_performance_includes_discrimination_and_calibration():

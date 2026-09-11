@@ -34,8 +34,8 @@ remains `etl_scripts/src/model_training_evaluation.py`.
   Monitoring computes feature/score PSI, missingness, unknown categories,
   predicted-default rate, mature outcome performance, and calibration; low-volume or
   single-class windows are explicitly `insufficient_data`.
-- Added separate non-root web and release Docker images. Heroku release v5 ran the
-  migration/sample command successfully and scaled exactly one Eco web dyno. Docker
+- Added separate non-root web and release Docker images. The initial Heroku release ran
+  the migration/sample command successfully and scaled exactly one Eco web dyno. Docker
   Manifest V2 Schema 2 is forced for registry compatibility.
 - Added branch-push deployment and daily monitoring GitHub Actions. The deployment job
   retrains, pushes, releases, and checks readiness for every branch. Secrets are stored
@@ -45,7 +45,7 @@ Validation completed:
 
 ```text
 python -m pytest -q tests
-62 passed, 1 skipped in 29.97s (CUDA-only skip in the CPU environment)
+63 passed, 1 skipped in 41.59s (CUDA-only skip in the CPU environment)
 
 local artifact: 256 rows, finite [P(default), P(on-time)], max sum error 0
 fresh PostgreSQL 17: migration 0001 applied once, reran idempotently, unrelated table retained

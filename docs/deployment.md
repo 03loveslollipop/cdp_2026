@@ -97,9 +97,9 @@ ROC-AUC, accuracy, Brier score, log loss, and expected calibration error. Perfor
 only calculated after enough mature outcomes include both classes. Otherwise the stored
 status is `insufficient_data`.
 
-The Dash pages read only `monitoring_runs` and `monitoring_metrics`; they never return raw
-financial predictor records. Raw prediction batches default to 365-day retention, while
-aggregate monitoring rows remain.
+The Dash pages read only `monitoring_runs` and `monitoring_metrics` for the active model
+version; they never return raw financial predictor records or mix versions. Raw prediction
+batches default to 365-day retention, while aggregate monitoring rows remain.
 
 ## Docker and automation
 

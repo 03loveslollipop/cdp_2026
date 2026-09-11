@@ -97,8 +97,10 @@ class PredictionService:
         return {
             "batch_id": batch.id,
             "idempotent_replay": replay,
-            "model_version_id": self.model_version_id,
-            "model_family": self.artifact.model_family,
+            "model_version_id": batch.model_version_id,
+            "model_family": getattr(
+                batch, "model_family", self.artifact.model_family
+            ),
             "class_order": [0, 1],
             "items": [{
                 "event_id": event.id,

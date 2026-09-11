@@ -61,7 +61,9 @@ def create_dashboard(runtime_getter: Callable[[], object | None]) -> Dash:
         if runtime is None:
             return html.Div("Application is starting.")
         try:
-            rows = DashboardService(runtime.session_factory).snapshot()
+            rows = DashboardService(runtime.session_factory).snapshot(
+                runtime.model_version_id
+            )
             return PAGES.get(tab, overview_layout)(rows)
         except Exception:
             return html.Div("Monitoring aggregates are temporarily unavailable.")

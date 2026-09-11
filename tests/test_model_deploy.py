@@ -41,6 +41,8 @@ class FakePredictionRepository:
         batch = SimpleNamespace(
             id="batch-1",
             request_sha256=values["request_sha256"],
+            model_version_id=values["model_version_id"],
+            model_family="random_forest",
         )
         events = [SimpleNamespace(
             id=f"event-{index}",
@@ -75,11 +77,11 @@ class FakeSessionFactory:
         return FakeSessionContext()
 
 
-def artifact():
+def artifact(model_family="random_forest"):
     return LoadedArtifact(
         model=FakeModel(),
         manifest={
-            "model_family": "random_forest",
+            "model_family": model_family,
             "artifact_sha256": "a" * 64,
             "required_predictors": ["a", "b"],
         },
@@ -121,6 +123,12 @@ def test_prediction_service_is_atomic_and_idempotent(monkeypatch):
     assert second["idempotent_replay"]
     assert first["items"] == second["items"]
     assert first["items"][0]["default_probability"] == 0.4
+    new_service = PredictionService(
+        artifact("xgboost"), "model-2", FakeSessionFactory(), max_batch_rows=2
+    )
+    cross_deployment_replay = new_service.predict(records, "request-123")
+    assert cross_deployment_replay["model_version_id"] == "model-1"
+    assert cross_deployment_replay["model_family"] == "random_forest"
     with pytest.raises(IdempotencyConflictError):
         service.predict([{"a": 2, "b": None}], "request-123")
     with pytest.raises(PredictionValidationError, match="schema mismatch"):

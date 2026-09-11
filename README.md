@@ -1,8 +1,15 @@
 # Credit & Payment Behaviour — exploratory data analysis
 
-The predictive workflow now includes [model training and evaluation](
-docs/model_training.md): eleven model families and references, temporal validation,
+The predictive workflow now includes [model training and evaluation](docs/model_training.md):
+eleven model families and references, temporal validation,
 default-class F1 selection, comparative graphs, and a portable fitted model object.
+
+The [model-serving and monitoring system](docs/deployment.md) is deployed as one
+authenticated Heroku Eco container app. It provides generic batch inference through
+FastAPI, a CSV frontend, transactionally logged predictions in the isolated `cdp_2026`
+PostgreSQL schema, scheduled drift/performance calculations, and a Dash dashboard. The
+winning family and hyperparameters live in `deployment_model_config.json`; deployment
+retraining and serving do not require model-specific code changes.
 
 A portfolio of **10,763 Colombian consumer loans** disbursed between November 2024 and
 April 2026, with a binary outcome for whether each loan was repaid on time. The default

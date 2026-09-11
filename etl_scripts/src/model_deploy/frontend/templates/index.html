@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CDP 2026 credit predictions</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; }
+    body { margin: 0; background: #f5f7fb; color: #172033; }
+    main { max-width: 1000px; margin: 3rem auto; padding: 0 1.2rem; }
+    section { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 8px 30px #1d294012; }
+    nav { display: flex; justify-content: space-between; align-items: center; }
+    a { color: #3157c8; }
+    button { background: #3157c8; color: white; border: 0; border-radius: 6px; padding: .7rem 1rem; cursor: pointer; }
+    input { margin: 1rem 0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: .9rem; }
+    th, td { text-align: left; border-bottom: 1px solid #e4e8f0; padding: .55rem; }
+    #status { min-height: 1.5rem; }
+    #preview { max-height: 10rem; overflow: auto; background: #f5f7fb; padding: .8rem; }
+    .error { color: #a52121; }
+  </style>
+</head>
+<body>
+<main>
+  <nav><h1>Credit batch predictions</h1><a href="/monitor/">Monitoring dashboard</a></nav>
+  <section>
+    <p>Upload a CSV containing exactly the model predictor columns. Missing values are preserved for the fitted preparation pipeline.</p>
+    <form id="upload-form">
+      <input id="file" name="file" type="file" accept=".csv,text/csv" required>
+      <button id="submit" type="submit" disabled>Predict batch</button>
+    </form>
+    <p id="status" role="status"></p>
+    <pre id="preview" hidden></pre>
+    <a id="download" hidden download="predictions.csv">Download predictions</a>
+    <div style="overflow:auto"><table id="results" hidden><thead></thead><tbody></tbody></table></div>
+  </section>
+</main>
+<script>
+  const form = document.getElementById('upload-form');
+  const status = document.getElementById('status');
+  const table = document.getElementById('results');
+  const download = document.getElementById('download');
+  const fileInput = document.getElementById('file');
+  const submit = document.getElementById('submit');
+  const preview = document.getElementById('preview');
+  let expectedColumns = [];
+
+  const firstCsvRecord = text => {
+    let quoted = false;
+    for (let index = 0; index < text.length; index += 1) {
+      if (text[index] === '"') {
+        if (quoted && text[index + 1] === '"') index += 1;
+        else quoted = !quoted;
+      } else if (!quoted && (text[index] === '\n' || text[index] === '\r')) {
+        return text.slice(0, index);
+      }
+    }
+    return text;
+  };
+  const parseCsvRecord = record => {
+    const fields = []; let value = ''; let quoted = false;
+    for (let index = 0; index < record.length; index += 1) {
+      const character = record[index];
+      if (character === '"') {
+        if (quoted && record[index + 1] === '"') { value += '"'; index += 1; }
+        else quoted = !quoted;
+      } else if (character === ',' && !quoted) { fields.push(value); value = ''; }
+      else value += character;
+    }
+    fields.push(value);
+    return fields.map((field, index) => index === 0 ? field.replace(/^\uFEFF/, '') : field);
+  };
+  const loadContract = async () => {
+    const response = await fetch('/v1/model', {credentials: 'same-origin'});
+    if (!response.ok) throw new Error('Unable to load the active model contract');
+    expectedColumns = (await response.json()).required_predictors;
+  };
+  loadContract().catch(error => { status.textContent = error.message; status.className = 'error'; });
+
+  fileInput.addEventListener('change', async () => {
+    submit.disabled = true; preview.hidden = true; status.className = '';
+    const file = fileInput.files[0];
+    if (!file) { status.textContent = ''; return; }
+    try {
+      if (!expectedColumns.length) await loadContract();
+      const sample = await file.slice(0, 65536).text();
+      const headers = parseCsvRecord(firstCsvRecord(sample));
+      const duplicates = headers.filter((name, index) => headers.indexOf(name) !== index);
+      const allowed = new Set([...expectedColumns, '_external_reference']);
+      const missing = expectedColumns.filter(name => !headers.includes(name));
+      const extra = headers.filter(name => !allowed.has(name));
+      preview.textContent = sample.split(/\r?\n/).slice(0, 4).join('\n');
+      preview.hidden = false;
+      if (duplicates.length || missing.length || extra.length) {
+        throw new Error(`Header mismatch. Missing: ${missing.join(', ') || 'none'}; extra: ${extra.join(', ') || 'none'}; duplicates: ${duplicates.join(', ') || 'none'}.`);
+      }
+      submit.disabled = false;
+      status.textContent = `Schema preview valid: ${headers.length} columns; ${file.size.toLocaleString()} bytes.`;
+    } catch (error) { status.textContent = error.message; status.className = 'error'; }
+  });
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault(); status.textContent = 'Running predictions…'; status.className = '';
+    table.hidden = true; download.hidden = true;
+    const body = new FormData(); body.append('file', fileInput.files[0]);
+    try {
+      const response = await fetch('/v1/predictions/csv', {
+        method: 'POST', body,
+        headers: {'Idempotency-Key': crypto.randomUUID()}
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.detail || 'Prediction failed');
+      const columns = ['event_id', 'row_number', 'external_reference', 'predicted_label', 'default_probability', 'on_time_probability'];
+      table.querySelector('thead').replaceChildren(); table.querySelector('tbody').replaceChildren();
+      const heading = document.createElement('tr');
+      columns.forEach(name => { const th = document.createElement('th'); th.textContent = name; heading.appendChild(th); });
+      table.querySelector('thead').appendChild(heading);
+      payload.items.forEach(item => {
+        const row = document.createElement('tr');
+        columns.forEach(name => { const td = document.createElement('td'); td.textContent = item[name] ?? ''; row.appendChild(td); });
+        table.querySelector('tbody').appendChild(row);
+      });
+      const quote = value => `"${String(value ?? '').replaceAll('"', '""')}"`;
+      const csv = [columns.join(','), ...payload.items.map(item => columns.map(name => quote(item[name])).join(','))].join('\n');
+      download.href = URL.createObjectURL(new Blob([csv], {type: 'text/csv'}));
+      download.hidden = false; table.hidden = false;
+      status.textContent = `${payload.items.length} predictions completed with ${payload.model_family}.`;
+    } catch (error) { status.textContent = error.message; status.className = 'error'; }
+  });
+</script>
+</body>
+</html>

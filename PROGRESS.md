@@ -1,5 +1,69 @@
 # Model Training Progress and Handoff
 
+## Serving and monitoring deployment on 2026-09-10
+
+Branch: `feat/model-serving-monitoring`, based directly on
+`feat/model_training_evaluation` at `bc41ac1`. The obsolete
+`development/model_training.ipynb` is not included; the tracked training implementation
+remains `etl_scripts/src/model_training_evaluation.py`.
+
+- Deployed one authenticated Eco container app at
+  `https://cdp-2026-credit-risk-4b94df7c43fb.herokuapp.com/`. FastAPI serves JSON/CSV
+  batches and the simple upload frontend; Dash is mounted at `/monitor/`.
+- Attached existing add-on `postgresql-tapered-63136` under `CDP_DATABASE_URL` and
+  created only schema `cdp_2026`. Eight application tables plus the migration ledger exist.
+  The approved 10,763-row CSV sample was imported idempotently. Structural before/after
+  checks left unrelated schema table counts unchanged: `ch0wn3rs_pt_prod=5`,
+  `ctf_auth=1`, `ctf_ctf=8`, and `public=11`.
+- Added schema-fixed SQLAlchemy models, connectors, focused repositories, a PostgreSQL
+  advisory-lock/checksum migration runner with frozen SQL snapshots, model registry, transactional prediction
+  batches/events, observed outcomes, frozen reference profiles, monitoring aggregates,
+  and configurable raw-record retention.
+- Added `deployment_model_config.json`. It selects the local CUDA TPE winner, XGBoost,
+  and records its fixed hyperparameters. The deployment trainer reuses the tracked
+  chronological/temporal pipeline and uses all available local CPU threads. The ignored
+  CPU retrain artifact is deterministic with SHA-256
+  `e9619058075d2fb9bda293bbaa51018395053928a97013ae4c441b5f518e9a10`, threshold
+  `0.09492067992687225`, and temporal OOF default F1 `0.2154255319148936`.
+  This does not replace or reselect against the inspected holdout.
+- The artifact loader verifies its hash, `[0, 1]` class order, prediction interface, and
+  exact dependency versions. A config-driven build script supports every learned family
+  with a CPU runtime, so changing the winner or parameters does not change serving code.
+- Added strict atomic batch validation, idempotency-key conflict/replay semantics,
+  Basic authentication, outcome ingestion, and protected aggregate-only dashboards.
+  Monitoring computes feature/score PSI, missingness, unknown categories,
+  predicted-default rate, mature outcome performance, and calibration; low-volume or
+  single-class windows are explicitly `insufficient_data`.
+- Added separate non-root web and release Docker images. Heroku release v5 ran the
+  migration/sample command successfully and scaled exactly one Eco web dyno. Docker
+  Manifest V2 Schema 2 is forced for registry compatibility.
+- Added branch-push deployment and daily monitoring GitHub Actions. The deployment job
+  retrains, pushes, releases, and checks readiness for every branch. Secrets are stored
+  in GitHub; the dedicated Heroku authorization lasts one year from this date.
+
+Validation completed:
+
+```text
+python -m pytest -q tests
+62 passed, 1 skipped in 29.97s (CUDA-only skip in the CPU environment)
+
+local artifact: 256 rows, finite [P(default), P(on-time)], max sum error 0
+fresh PostgreSQL 17: migration 0001 applied once, reran idempotently, unrelated table retained
+local Docker: release seeded 10,763 rows; web and release run as uid/gid 999 (app)
+local container stack: health/auth/frontend/Dash/model/prediction/replay all passed
+live: liveness 200, readiness 200, unauthenticated frontend 401
+live authenticated: frontend 200, model 200, JSON prediction 200, Dash 200
+live Dash: layout 200, dependencies 200, aggregate callback 200
+live monitoring: seven catch-up windows complete; repeated window is replayed
+live restart: readiness returned to 200; prediction idempotency replay remained true
+release idempotency: no migrations or sample rows applied on the second run
+```
+
+The deployed model remains **staging/demo only**. Feature snapshot timing and outcome
+maturity are unresolved, the holdout has already been inspected, and sparse production
+outcomes mean performance pages will initially show insufficient data. Model binaries,
+record-level exports, local environments, and optimization databases remain ignored.
+
 ## Checkpoint and Latest Request
 
 Branch: `feat/model_training_evaluation`. Remote: `cdp_2026`

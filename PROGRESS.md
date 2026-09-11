@@ -33,6 +33,15 @@ Live before-snapshot: cdp_2026=9, ch0wn3rs_pt_prod=5, ctf_auth=1,
 ctf_ctf=8, public=13; only migration 0001 was present
 ```
 
+Manual Heroku release v13 applied `0002_auth_users`, bootstrapped two active users, and
+seeded zero duplicate sample rows. Live checks passed for both roles, exact JWT TTL,
+owner-only monitoring/outcomes, one user-attributed inference, both migration checksums,
+two Argon2id hashes, and zero plaintext-password matches. The after-snapshot is
+`cdp_2026=10`, `ch0wn3rs_pt_prod=5`, `ctf_auth=1`, `ctf_ctf=8`, and `public=13`; unrelated
+schemas did not change. Release v14 removed `CDP_AUTH_USERNAME`, `CDP_AUTH_PASSWORD`,
+`CDP_INFERENCE_USERNAME`, and `CDP_INFERENCE_PASSWORD`. Both PostgreSQL-backed logins and
+readiness passed again after that restart. The JWT private/public keys remain configured.
+
 ## JWT authentication and role isolation on 2026-09-11
 
 Branch: `feat/model-serving-monitoring`.

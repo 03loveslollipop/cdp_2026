@@ -11,14 +11,18 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from fastapi.testclient import TestClient
 
+from etl_scripts.src.database.passwords import hash_password
+from etl_scripts.src.model_auth.app import create_app as create_auth_app
+from etl_scripts.src.model_auth.services.auth_service import AuthService
+from etl_scripts.src.model_auth.settings import AuthSettings
 from etl_scripts.src.model_deploy.api.model import model_metadata
 from etl_scripts.src.model_deploy.app import create_app
 from etl_scripts.src.model_deploy.models import LoadedArtifact
 from etl_scripts.src.model_deploy.services import artifact_loader
-from etl_scripts.src.model_deploy.services.auth_service import (
+from etl_scripts.src.service_clients.contracts import (
     AuthRole,
     AuthenticationError,
-    AuthService,
+    SERVICE_TOKEN_HEADER,
     TOKEN_TTL_SECONDS,
 )
 from etl_scripts.src.model_deploy.services.prediction_service import (
@@ -27,7 +31,12 @@ from etl_scripts.src.model_deploy.services.prediction_service import (
     PredictionValidationError,
 )
 from etl_scripts.src.model_deploy.settings import Settings
-from etl_scripts.src.database.passwords import hash_password
+from etl_scripts.src.model_monitoring.visualization.app import (
+    create_app as create_monitoring_app,
+)
+from etl_scripts.src.model_monitoring.visualization.settings import (
+    VisualizationSettings,
+)
 from scripts.install_model_runtime import FAMILY_REQUIREMENTS
 
 
@@ -162,6 +171,30 @@ class FakeAuthUserRepository:
             user.password_hash = password_hash
 
 
+class FakeRemoteAuthClient:
+    def __init__(self, service):
+        self.service = service
+
+    async def login(self, username, password):
+        grant = self.service.login(username, password)
+        return {
+            "access_token": grant.token,
+            "token_type": "bearer",
+            "expires_in": 7200,
+            "expires_at": grant.principal.expires_at.isoformat(),
+            "role": grant.principal.role.value,
+        }
+
+    async def authenticate(self, token):
+        return self.service.authenticate_token(token)
+
+    async def jwks(self):
+        return self.service.jwks()
+
+    async def ready(self):
+        return True
+
+
 def artifact(model_family="random_forest"):
     return LoadedArtifact(
         model=FakeModel(),
@@ -200,9 +233,20 @@ def auth_settings():
         )
         .decode("utf-8")
     )
-    return Settings(
+    return AuthSettings(
         jwt_private_key=private_pem,
         jwt_public_key=public_pem,
+        internal_service_token="service-token-which-is-long-enough-123",
+        environment="development",
+    )
+
+
+@pytest.fixture
+def inference_settings():
+    return Settings(
+        auth_service_url="https://auth.example.test",
+        internal_service_token="service-token-which-is-long-enough-123",
+        monitor_ui_url="https://monitor.example.test/",
         environment="development",
     )
 
@@ -215,7 +259,7 @@ def auth_factory():
 @pytest.fixture
 def auth_service(monkeypatch, auth_settings, auth_factory):
     monkeypatch.setattr(
-        "etl_scripts.src.model_deploy.services.auth_service.AuthUserRepository",
+        "etl_scripts.src.model_auth.services.auth_service.AuthUserRepository",
         FakeAuthUserRepository,
     )
     return AuthService(auth_settings, auth_factory)
@@ -335,20 +379,12 @@ def test_asymmetric_tokens_have_fixed_ttl_role_and_public_verification(
         auth_service.authenticate_token(grant.token)
 
 
-def test_app_jwt_roles_frontend_and_dash_routes_smoke(auth_settings, auth_service):
-    app = create_app(auth_settings)
+def test_auth_service_login_introspection_and_discovery(auth_settings, auth_service):
+    app = create_auth_app(auth_settings)
     app.state.auth_service = auth_service
     client = TestClient(app)
     assert client.get("/health/live").status_code == 200
-    assert client.get("/").status_code == 200
-    assert client.get("/inference/").status_code == 200
-    assert client.get("/static/auth.js").status_code == 200
     assert client.get("/.well-known/jwks.json").status_code == 200
-    assert client.get("/v1/model").status_code == 401
-    assert (
-        client.get("/v1/model", auth=("owner-user", "owner-secret")).status_code == 401
-    )
-
     invalid = client.post(
         "/v1/auth/login",
         json={"username": "inference-user", "password": "wrong"},
@@ -362,10 +398,52 @@ def test_app_jwt_roles_frontend_and_dash_routes_smoke(auth_settings, auth_servic
     assert inference_login.json()["expires_in"] == 7200
     assert inference_login.json()["role"] == "inference"
     inference_token = inference_login.json()["access_token"]
+    introspection_headers = {
+        "Authorization": f"Bearer {inference_token}",
+        SERVICE_TOKEN_HEADER: auth_settings.internal_service_token,
+    }
+    introspection = client.post(
+        "/v1/auth/introspect", headers=introspection_headers
+    )
+    assert introspection.status_code == 200
+    assert introspection.json()["user_id"] == "inference-id"
+    assert introspection.json()["role"] == "inference"
+    denied = dict(introspection_headers)
+    denied[SERVICE_TOKEN_HEADER] = "incorrect-service-credential-123456"
+    assert client.post("/v1/auth/introspect", headers=denied).status_code == 403
+
+
+def test_inference_service_uses_remote_auth_and_has_no_monitoring_routes(
+    inference_settings, auth_service
+):
+    app = create_app(inference_settings)
+    app.state.runtime = SimpleNamespace(
+        settings=inference_settings,
+        artifact=artifact(),
+        model_version_id="model-1",
+        auth_client=FakeRemoteAuthClient(auth_service),
+    )
+    client = TestClient(app)
+    assert client.get("/health/live").status_code == 200
+    assert client.get("/").status_code == 200
+    assert client.get("/inference/").status_code == 200
+    assert client.get("/static/auth.js").status_code == 200
+    assert client.get("/.well-known/jwks.json").status_code == 200
+    assert client.get("/v1/model").status_code == 401
+    assert (
+        client.get("/v1/model", auth=("owner-user", "owner-secret")).status_code == 401
+    )
+
+    inference_login = client.post(
+        "/v1/auth/login",
+        json={"username": "inference-user", "password": "inference-secret"},
+    )
+    assert inference_login.status_code == 200
+    inference_token = inference_login.json()["access_token"]
     inference_headers = {"Authorization": f"Bearer {inference_token}"}
-    assert client.get("/v1/model", headers=inference_headers).status_code == 503
-    assert client.post("/v1/outcomes", headers=inference_headers).status_code == 403
-    assert client.get("/monitor/", headers=inference_headers).status_code == 403
+    assert client.get("/v1/model", headers=inference_headers).status_code == 200
+    assert client.post("/v1/outcomes", headers=inference_headers).status_code == 404
+    assert client.get("/monitor/", headers=inference_headers).status_code == 404
     openapi = client.get("/openapi.json", headers=inference_headers).json()
     assert openapi["components"]["securitySchemes"]["BearerAuth"] == {
         "type": "http",
@@ -388,20 +466,74 @@ def test_app_jwt_roles_frontend_and_dash_routes_smoke(auth_settings, auth_servic
         client.get(
             "/v1/model", headers={"Authorization": f"Bearer {owner_token}"}
         ).status_code
-        == 503
+        == 200
     )
-    assert client.get("/monitor/").status_code == 200
     assert (
         client.post(
             "/v1/auth/logout", headers={"Authorization": f"Bearer {owner_token}"}
         ).status_code
         == 204
     )
-    redirect = client.get(
-        "/monitor/", headers={"Accept": "text/html"}, follow_redirects=False
+    assert "https://monitor.example.test/" in client.get("/").text
+
+
+def test_monitoring_visualization_is_independent_and_owner_only(auth_service):
+    settings = VisualizationSettings(
+        auth_service_url="https://auth.example.test",
+        internal_service_token="service-token-which-is-long-enough-123",
+        inference_service_url="https://inference.example.test/",
+        environment="development",
     )
-    assert redirect.status_code == 303
-    assert redirect.headers["location"] == "/inference/?next=/monitor/"
+    app = create_monitoring_app(settings)
+    app.state.runtime = SimpleNamespace(
+        settings=settings,
+        auth_client=FakeRemoteAuthClient(auth_service),
+        session_factory=FakeSessionFactory(),
+    )
+    client = TestClient(app)
+    assert client.get("/health/live").status_code == 200
+    assert client.get("/").status_code == 200
+
+    inference_login = client.post(
+        "/v1/auth/login",
+        json={"username": "inference-user", "password": "inference-secret"},
+    )
+    inference_token = inference_login.json()["access_token"]
+    assert (
+        client.get(
+            "/monitor/",
+            headers={"Authorization": f"Bearer {inference_token}"},
+        ).status_code
+        == 403
+    )
+    assert (
+        client.post(
+            "/v1/outcomes",
+            headers={"Authorization": f"Bearer {inference_token}"},
+            json={"outcomes": []},
+        ).status_code
+        == 403
+    )
+
+    owner_login = client.post(
+        "/v1/auth/login",
+        json={"username": "owner-user", "password": "owner-secret"},
+    )
+    owner_token = owner_login.json()["access_token"]
+    assert (
+        client.get(
+            "/monitor/", headers={"Authorization": f"Bearer {owner_token}"}
+        ).status_code
+        == 200
+    )
+    assert (
+        client.post(
+            "/v1/outcomes",
+            headers={"Authorization": f"Bearer {owner_token}"},
+            json={"outcomes": []},
+        ).status_code
+        == 422
+    )
 
 
 def test_every_trainable_family_has_a_runtime_strategy():

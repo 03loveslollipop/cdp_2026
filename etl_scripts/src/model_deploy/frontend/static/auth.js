@@ -21,7 +21,7 @@
         clear();
         return null;
       }
-      return {token, username: claims.sub, role: claims.role, expiresAt: claims.exp};
+      return {token, username: claims.username, role: claims.role, expiresAt: claims.exp};
     } catch (_error) {
       clear();
       return null;

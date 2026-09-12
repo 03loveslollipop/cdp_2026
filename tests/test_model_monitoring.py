@@ -86,15 +86,30 @@ def test_dashboard_requests_aggregates_for_only_the_active_model(monkeypatch):
             requested.update(model_version_id=model_version_id, limit=limit)
             return [{"metric_name": "prediction_rows"}]
 
+    class ActiveModelRepository:
+        def __init__(self, _session):
+            pass
+
+        def active(self):
+            return type("ActiveModel", (), {"id": "active-model"})()
+
     monkeypatch.setattr(
         "etl_scripts.src.model_monitoring.services.dashboard_service.MonitoringRepository",
         Repository,
+    )
+    monkeypatch.setattr(
+        "etl_scripts.src.model_monitoring.services.dashboard_service.ModelRepository",
+        ActiveModelRepository,
     )
     service = DashboardService(lambda: nullcontext(object()))
     assert service.snapshot("active-model", limit=25) == [
         {"metric_name": "prediction_rows"}
     ]
     assert requested == {"model_version_id": "active-model", "limit": 25}
+    assert service.snapshot_active(limit=10) == [
+        {"metric_name": "prediction_rows"}
+    ]
+    assert requested == {"model_version_id": "active-model", "limit": 10}
 
 
 def test_matured_performance_includes_discrimination_and_calibration():

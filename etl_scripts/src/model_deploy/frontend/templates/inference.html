@@ -10,7 +10,7 @@
 <main>
   <nav>
     <h1>Visual model inference</h1>
-    <div><a href="/">Batch upload</a><a id="monitor-link" href="/monitor/" hidden>Monitoring</a></div>
+    <div><a href="/">Batch upload</a><a id="monitor-link" href="{{ monitor_ui_url }}" hidden>Monitoring</a></div>
   </nav>
   <section id="login-section">
     <h2>Sign in</h2>
@@ -44,6 +44,7 @@
   const loginStatus = document.getElementById('login-status');
   const sessionStatus = document.getElementById('session-status');
   const monitorLink = document.getElementById('monitor-link');
+  const monitorUrl = {{ monitor_ui_url | tojson }};
   const fields = document.getElementById('fields');
   const status = document.getElementById('status');
   const result = document.getElementById('result');
@@ -70,13 +71,11 @@
   };
   const activate = async session => {
     loginSection.hidden = true; appSection.hidden = false;
-    monitorLink.hidden = session.role !== 'owner';
+    monitorLink.hidden = session.role !== 'owner' || !monitorUrl;
     sessionStatus.textContent = `Signed in as ${session.username} (${session.role}); token expires at ${new Date(session.expiresAt * 1000).toLocaleTimeString()}.`;
     const response = await CDPAuth.request('/v1/model');
     if (!response.ok) throw new Error('Unable to load the active model contract');
     renderFields(await response.json());
-    const next = new URLSearchParams(location.search).get('next');
-    if (next && next.startsWith('/monitor') && session.role === 'owner') location.assign(next);
   };
 
   loginForm.addEventListener('submit', async event => {

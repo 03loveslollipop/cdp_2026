@@ -1,4 +1,4 @@
-"""PostgreSQL-backed authentication and asymmetric JWT issuance."""
+"""PostgreSQL credentials, asymmetric JWT issuance, and token validation."""
 
 from __future__ import annotations
 
@@ -7,7 +7,6 @@ import hashlib
 import secrets
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from enum import StrEnum
 from uuid import uuid4
 
 import jwt
@@ -20,26 +19,16 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from ...database.passwords import hash_password, normalize_username, verify_password
 from ...database.repositories import AuthUserRepository
-from ..settings import Settings
+from ...service_clients.contracts import (
+    AuthRole,
+    AuthenticationError,
+    Principal,
+    TOKEN_TTL_SECONDS,
+)
+from ..settings import AuthSettings
 
 
 ALGORITHM = "EdDSA"
-TOKEN_TTL_SECONDS = 2 * 60 * 60
-TOKEN_COOKIE_NAME = "cdp_access_token"
-
-
-class AuthRole(StrEnum):
-    INFERENCE = "inference"
-    OWNER = "owner"
-
-
-@dataclass(frozen=True)
-class Principal:
-    user_id: str
-    username: str
-    role: AuthRole
-    token_version: int
-    expires_at: datetime
 
 
 @dataclass(frozen=True)
@@ -48,14 +37,10 @@ class TokenGrant:
     principal: Principal
 
 
-class AuthenticationError(ValueError):
-    """Raised for invalid credentials or tokens without leaking which check failed."""
-
-
 class AuthService:
     def __init__(
         self,
-        settings: Settings,
+        settings: AuthSettings,
         session_factory: sessionmaker[Session],
     ):
         settings.validate()
@@ -222,10 +207,3 @@ class AuthService:
                 }
             ]
         }
-
-
-def get_auth_service(application) -> AuthService:
-    service = getattr(application.state, "auth_service", None)
-    if service is None:
-        raise RuntimeError("Authentication service is not ready")
-    return service

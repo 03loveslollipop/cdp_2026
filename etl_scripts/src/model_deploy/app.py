@@ -1,10 +1,9 @@
-"""FastAPI application factory with the Dash monitor mounted at ``/monitor/``."""
+"""Independent FastAPI inference API and visual frontend."""
 
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
-from a2wsgi import WSGIMiddleware
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.openapi.utils import get_openapi
@@ -16,12 +15,11 @@ from ..database.connectors.postgres import (
     create_session_factory,
 )
 from ..database.repositories import ModelRepository
-from ..model_monitoring.dashboard import create_dashboard
-from .api import auth, health, model, outcomes, predictions
+from ..service_clients.authentication import AuthClient
+from .api import auth, health, model, predictions
 from .dependencies import Runtime
 from .frontend.routes import FRONTEND_DIRECTORY, router as frontend_router
 from .security import TokenAuthMiddleware
-from .services.auth_service import AuthService
 from .services.artifact_loader import load_artifact
 from .settings import Settings
 
@@ -72,29 +70,34 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             model_version = ModelRepository(session).register(
                 artifact.manifest, artifact.reference_profiles
             )
+        auth_client = None
         if not configured.auth_disabled:
-            application.state.auth_service = AuthService(configured, factory)
+            auth_client = AuthClient(
+                configured.auth_service_url or "",
+                configured.internal_service_token or "",
+            )
         application.state.runtime = Runtime(
             settings=configured,
             artifact=artifact,
             engine=engine,
             session_factory=factory,
             model_version_id=model_version.id,
+            auth_client=auth_client,
         )
         try:
             yield
         finally:
             application.state.runtime = None
-            application.state.auth_service = None
+            if auth_client is not None:
+                await auth_client.close()
             engine.dispose()
 
     application = FastAPI(
-        title="CDP 2026 credit prediction API",
-        version="1.1.0",
+        title="CDP 2026 inference service",
+        version="2.0.0",
         lifespan=lifespan,
     )
     application.state.settings = configured
-    application.state.auth_service = None
     application.state.runtime = None
     application.add_middleware(GZipMiddleware, minimum_size=1000)
     application.add_middleware(TokenAuthMiddleware, settings=configured)
@@ -103,7 +106,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     application.include_router(health.router)
     application.include_router(model.router)
     application.include_router(predictions.router)
-    application.include_router(outcomes.router)
     application.include_router(frontend_router)
     _add_bearer_security_schema(application)
     application.mount(
@@ -111,8 +113,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         StaticFiles(directory=str(FRONTEND_DIRECTORY / "static")),
         name="static",
     )
-    dashboard = create_dashboard(lambda: getattr(application.state, "runtime", None))
-    application.mount("/monitor", WSGIMiddleware(dashboard.server))
     return application
 
 

@@ -14,7 +14,7 @@ def live() -> dict:
 
 
 @router.get("/ready")
-def ready(request: Request):
+async def ready(request: Request):
     runtime = getattr(request.app.state, "runtime", None)
     if runtime is None:
         return JSONResponse({"status": "not_ready"}, status_code=503)
@@ -26,9 +26,29 @@ def ready(request: Request):
             {"status": "not_ready", "dependencies": {"database": "unavailable"}},
             status_code=503,
         )
+    if not runtime.settings.auth_disabled:
+        if runtime.auth_client is None or not await runtime.auth_client.ready():
+            return JSONResponse(
+                {
+                    "status": "not_ready",
+                    "dependencies": {
+                        "database": "ready",
+                        "model": "ready",
+                        "authentication": "unavailable",
+                    },
+                },
+                status_code=503,
+            )
     return {
         "status": "ready",
-        "dependencies": {"database": "ready", "model": "ready"},
+        "service": "inference",
+        "dependencies": {
+            "database": "ready",
+            "model": "ready",
+            "authentication": "disabled"
+            if runtime.settings.auth_disabled
+            else "ready",
+        },
         "model_family": runtime.artifact.model_family,
         "artifact_sha256": runtime.artifact.artifact_sha256,
     }

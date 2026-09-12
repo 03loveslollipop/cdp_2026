@@ -1,5 +1,51 @@
 # Model Training Progress and Handoff
 
+## Independent serving microservices on 2026-09-11
+
+Branch: `feat/model-serving-monitoring`. Datastore: existing add-on
+`postgresql-tapered-63136`, attached to all services as `CDP_DATABASE_URL`.
+
+- Split the combined application into four independently deployable services:
+  `cdp-2026-auth-service`, inference-only `cdp-2026-credit-risk`,
+  `cdp-2026-monitor-batch`, and `cdp-2026-monitor-ui`.
+- Added a dedicated `model_auth` package. It is the only runtime holding the Ed25519
+  private key and the only service that reads credentials during login or token
+  introspection. Inference and monitoring visualization use a protected HTTP contract and
+  shared internal credential instead of importing authentication business logic.
+- Kept prediction storage with inference, moved observed-outcome ingestion into the
+  monitoring visualization boundary, and kept drift/performance/retention calculations in
+  the non-web batch process. Dash reads the active model at refresh time, independently of
+  an inference-process rollout.
+- Added four non-root Docker images with purpose-specific requirements. Auth has no HTTP
+  client or ML stack, inference has no Dash or signing stack, batch has no web framework,
+  and visualization has no sklearn or JWT signing package. A no-op inference release image
+  prevents the pre-split app from retaining migration ownership.
+- Updated branch-push CI/CD to train once, publish each image to its own Heroku registry,
+  and release in dependency order with readiness gates. Migrations are released only with
+  auth. Service app names are separate GitHub secrets.
+- Moved the daily 06:30 UTC Eco Scheduler job to `cdp-2026-monitor-batch` under add-on
+  `scheduler-dimensional-86985`. The former inference-app scheduler was destroyed after
+  the new schedule was confirmed. The batch web formation stays at zero.
+- Removed signing keys and batch-monitoring settings from inference after live cutover.
+  All services use explicit `cdp_2026` queries. Configured connection pools total at most
+  15 concurrent connections against the datastore's limit of 20.
+
+Validation completed:
+
+```text
+CPU suite: 71 passed, 1 CUDA-only skipped
+Ruff and compileall: passed for all service packages
+Images: four service images built; all run as non-root with dependency isolation checks
+Live auth: database login, 7,200-second JWT, JWKS, and protected introspection passed
+Live inference: readiness, remote auth, model metadata, prediction, attribution passed
+Live authorization: inference denied monitoring; owner Dash and outcomes passed
+Live monitoring batch: seven idempotent catch-up windows replayed; retention deleted 0
+Cleanup: temporary users, prediction, and outcome removed
+```
+
+The deployed model remains staging/demo only. The same unresolved feature-timing,
+outcome-maturity, and inspected-holdout limitations continue to apply.
+
 ## PostgreSQL authentication persistence on 2026-09-11
 
 Branch: `feat/model-serving-monitoring`. Datastore: existing Heroku add-on

@@ -8,6 +8,7 @@ from fastapi import HTTPException, Request, status
 from sqlalchemy import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
+from ..service_clients.authentication import AuthClient
 from .models import LoadedArtifact
 from .settings import Settings
 
@@ -19,6 +20,7 @@ class Runtime:
     engine: Engine
     session_factory: sessionmaker[Session]
     model_version_id: str
+    auth_client: AuthClient | None
 
 
 def get_runtime(request: Request) -> Runtime:

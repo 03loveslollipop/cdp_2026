@@ -25,7 +25,10 @@ PAGES = {
 }
 
 
-def create_dashboard(runtime_getter: Callable[[], object | None]) -> Dash:
+def create_dashboard(
+    runtime_getter: Callable[[], object | None],
+    inference_service_url: str = "/",
+) -> Dash:
     dashboard = Dash(
         __name__,
         requests_pathname_prefix="/monitor/",
@@ -35,7 +38,7 @@ def create_dashboard(runtime_getter: Callable[[], object | None]) -> Dash:
     dashboard.layout = html.Div([
         html.Div([
             html.Div([html.H1("Model monitoring"), html.P("Aggregate-only operational view")]),
-            html.A("Batch predictions", href="/"),
+            html.A("Batch predictions", href=inference_service_url),
         ], style={"display": "flex", "justifyContent": "space-between", "alignItems": "center"}),
         dcc.Tabs(id="monitor-tab", value="overview", children=[
             dcc.Tab(label="Overview", value="overview"),
@@ -61,9 +64,7 @@ def create_dashboard(runtime_getter: Callable[[], object | None]) -> Dash:
         if runtime is None:
             return html.Div("Application is starting.")
         try:
-            rows = DashboardService(runtime.session_factory).snapshot(
-                runtime.model_version_id
-            )
+            rows = DashboardService(runtime.session_factory).snapshot_active()
             return PAGES.get(tab, overview_layout)(rows)
         except Exception:
             return html.Div("Monitoring aggregates are temporarily unavailable.")

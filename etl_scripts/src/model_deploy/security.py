@@ -2,17 +2,13 @@
 
 from __future__ import annotations
 
-from urllib.parse import quote
-
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import JSONResponse, RedirectResponse, Response
+from starlette.responses import JSONResponse, Response
 
-from .services.auth_service import (
-    AuthRole,
-    AuthenticationError,
+from ..service_clients import AuthenticationError, AuthServiceUnavailable
+from ..service_clients.contracts import (
     TOKEN_COOKIE_NAME,
-    get_auth_service,
 )
 from .settings import Settings
 
@@ -42,25 +38,23 @@ class TokenAuthMiddleware(BaseHTTPMiddleware):
             token = request.cookies.get(TOKEN_COOKIE_NAME)
         if token is None:
             return self._authentication_required(request)
+        runtime = getattr(request.app.state, "runtime", None)
+        if runtime is None or runtime.auth_client is None:
+            return self._service_unavailable(request)
         try:
-            principal = get_auth_service(request.app).authenticate_token(token)
+            principal = await runtime.auth_client.authenticate(token)
         except AuthenticationError:
             return self._authentication_required(request)
-        if required_role is AuthRole.OWNER and principal.role is not AuthRole.OWNER:
-            return self._secure(
-                JSONResponse({"detail": "Owner role required"}, status_code=403),
-                request,
-            )
+        except AuthServiceUnavailable:
+            return self._service_unavailable(request)
         request.state.principal = principal
         return self._secure(await call_next(request), request)
 
-    def _required_role(self, request: Request) -> AuthRole | None:
+    def _required_role(self, request: Request) -> bool | None:
         path = request.url.path
         if path in self.PUBLIC_PATHS or path.startswith("/static/"):
             return None
-        if path.startswith("/monitor") or path.startswith("/v1/outcomes"):
-            return AuthRole.OWNER
-        return AuthRole.INFERENCE
+        return True
 
     @staticmethod
     def _bearer_token(request: Request) -> str | None:
@@ -70,19 +64,19 @@ class TokenAuthMiddleware(BaseHTTPMiddleware):
         return credentials.strip()
 
     def _authentication_required(self, request: Request) -> Response:
-        if request.url.path.startswith(
-            "/monitor"
-        ) and "text/html" in request.headers.get("accept", ""):
-            destination = quote(request.url.path, safe="/")
-            return self._secure(
-                RedirectResponse(f"/inference/?next={destination}", status_code=303),
-                request,
-            )
         return self._secure(
             JSONResponse(
                 {"detail": "Bearer token required"},
                 status_code=401,
                 headers={"WWW-Authenticate": "Bearer"},
+            ),
+            request,
+        )
+
+    def _service_unavailable(self, request: Request) -> Response:
+        return self._secure(
+            JSONResponse(
+                {"detail": "Authentication service unavailable"}, status_code=503
             ),
             request,
         )

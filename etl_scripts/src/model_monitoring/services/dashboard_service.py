@@ -2,7 +2,7 @@
 
 from sqlalchemy.orm import Session, sessionmaker
 
-from ...database.repositories import MonitoringRepository
+from ...database.repositories import ModelRepository, MonitoringRepository
 
 
 class DashboardService:
@@ -14,3 +14,10 @@ class DashboardService:
             return MonitoringRepository(session).recent_metrics(
                 model_version_id, limit
             )
+
+    def snapshot_active(self, limit: int = 1000) -> list[dict]:
+        with self.factory() as session:
+            active_model = ModelRepository(session).active()
+            if active_model is None:
+                return []
+            return MonitoringRepository(session).recent_metrics(active_model.id, limit)

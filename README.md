@@ -4,15 +4,15 @@ The predictive workflow now includes [model training and evaluation](docs/model_
 eleven model families and references, temporal validation,
 default-class F1 selection, comparative graphs, and a portable fitted model object.
 
-The [model-serving and monitoring system](docs/deployment.md) is deployed as one
-authenticated Heroku Eco container app. It provides generic JSON/CSV inference through
-FastAPI, dynamic single-record and batch frontends, transactionally logged predictions
-in the isolated `cdp_2026` PostgreSQL schema, scheduled drift/performance calculations,
-and an owner-only Dash dashboard. PostgreSQL stores Argon2id-hashed users, roles,
-prediction ownership, predictors, probabilities, and outcomes. Two-hour asymmetric JWTs
-enforce inference and owner roles. The winning family and hyperparameters live in
-`deployment_model_config.json`;
-deployment retraining and serving do not require model-specific code changes.
+The [model-serving and monitoring system](docs/deployment.md) is deployed as four
+independent Heroku container services: authentication, generic inference and its visual
+form, scheduled monitoring calculations, and an owner-only Dash visualization. They share
+the isolated `cdp_2026` schema in `postgresql-tapered-63136` through explicit service
+contracts. PostgreSQL stores Argon2id-hashed users, roles, prediction ownership,
+predictors, probabilities, and outcomes. Two-hour asymmetric JWTs enforce inference and
+owner roles, while only the authentication service holds the private signing key. The
+winning family and hyperparameters live in `deployment_model_config.json`; deployment
+retraining and serving do not require model-specific code changes.
 
 A portfolio of **10,763 Colombian consumer loans** disbursed between November 2024 and
 April 2026, with a binary outcome for whether each loan was repaid on time. The default

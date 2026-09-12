@@ -1,11 +1,9 @@
 """Atomic observed-outcome ingestion."""
 
-from __future__ import annotations
-
 from sqlalchemy.orm import Session, sessionmaker
 
 from ...database.repositories import OutcomeRepository
-from ..models import OutcomeItem
+from ..models.outcomes import OutcomeItem
 
 
 class OutcomeService:
@@ -16,9 +14,5 @@ class OutcomeService:
         with self.session_factory.begin() as session:
             repository = OutcomeRepository(session)
             for item in outcomes:
-                repository.save(
-                    item.event_id,
-                    item.actual_label,
-                    item.matured_at,
-                )
+                repository.save(item.event_id, item.actual_label, item.matured_at)
         return len(outcomes)

@@ -1,49 +1,53 @@
-"""Login, logout, and public verification-key endpoints."""
+"""Same-origin proxy for the independent authentication service."""
 
 from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, Request, Response
 
-from ..models import LoginRequest, TokenResponse
-from ..services.auth_service import (
+from ...service_clients.contracts import (
     AuthenticationError,
+    AuthServiceUnavailable,
     TOKEN_COOKIE_NAME,
     TOKEN_TTL_SECONDS,
-    get_auth_service,
 )
+from ..models import LoginRequest, TokenResponse
 
 
-router = APIRouter(prefix="/v1/auth", tags=["authentication"])
-discovery_router = APIRouter(tags=["authentication"])
+router = APIRouter(prefix="/v1/auth", tags=["authentication proxy"])
+discovery_router = APIRouter(tags=["authentication proxy"])
+
+
+def _client(request: Request):
+    runtime = getattr(request.app.state, "runtime", None)
+    if runtime is None or runtime.auth_client is None:
+        raise HTTPException(status_code=503, detail="Authentication service unavailable")
+    return runtime.auth_client
 
 
 @router.post("/login", response_model=TokenResponse)
-def login(payload: LoginRequest, request: Request, response: Response) -> dict:
-    settings = request.app.state.settings
+async def login(payload: LoginRequest, request: Request, response: Response) -> dict:
     try:
-        grant = get_auth_service(request.app).login(
-            payload.username, payload.password
-        )
+        grant = await _client(request).login(payload.username, payload.password)
     except AuthenticationError as error:
         raise HTTPException(
             status_code=401,
             detail="Invalid username or password",
             headers={"WWW-Authenticate": "Bearer"},
         ) from error
+    except AuthServiceUnavailable as error:
+        raise HTTPException(
+            status_code=503, detail="Authentication service unavailable"
+        ) from error
     response.set_cookie(
         TOKEN_COOKIE_NAME,
-        grant.token,
+        grant["access_token"],
         max_age=TOKEN_TTL_SECONDS,
         httponly=True,
-        secure=settings.environment != "development",
+        secure=request.app.state.settings.environment != "development",
         samesite="strict",
         path="/",
     )
-    return {
-        "access_token": grant.token,
-        "expires_at": grant.principal.expires_at,
-        "role": grant.principal.role.value,
-    }
+    return grant
 
 
 @router.post("/logout", status_code=204)
@@ -60,5 +64,10 @@ def logout(request: Request) -> Response:
 
 
 @discovery_router.get("/.well-known/jwks.json")
-def jwks(request: Request) -> dict:
-    return get_auth_service(request.app).jwks()
+async def jwks(request: Request) -> dict:
+    try:
+        return await _client(request).jwks()
+    except AuthServiceUnavailable as error:
+        raise HTTPException(
+            status_code=503, detail="Authentication service unavailable"
+        ) from error

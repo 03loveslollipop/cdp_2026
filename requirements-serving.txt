@@ -16,3 +16,4 @@ a2wsgi==1.10.10
 PyJWT==2.13.0
 cryptography==50.0.1
 argon2-cffi==25.1.0
+httpx==0.28.1

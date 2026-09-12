@@ -13,9 +13,17 @@ router = APIRouter(include_in_schema=False)
 
 @router.get("/")
 def index(request: Request):
-    return templates.TemplateResponse(request, "index.html", {})
+    return templates.TemplateResponse(
+        request,
+        "index.html",
+        {"monitor_ui_url": request.app.state.settings.monitor_ui_url or ""},
+    )
 
 
 @router.get("/inference/")
 def inference(request: Request):
-    return templates.TemplateResponse(request, "inference.html", {})
+    return templates.TemplateResponse(
+        request,
+        "inference.html",
+        {"monitor_ui_url": request.app.state.settings.monitor_ui_url or ""},
+    )

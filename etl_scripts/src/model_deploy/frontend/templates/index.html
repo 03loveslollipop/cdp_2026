@@ -28,13 +28,14 @@
     </div>
     <p>Upload a CSV containing exactly the active model predictor columns. Missing values are preserved for the fitted preparation pipeline.</p>
     <form id="upload-form">
+      <label for="file">CSV file</label>
       <input id="file" name="file" type="file" accept=".csv,text/csv" required>
       <button id="submit" type="submit" disabled>Predict batch</button>
     </form>
     <p id="status" role="status"></p>
     <pre id="preview" hidden></pre>
     <a id="download" hidden download="predictions.csv">Download predictions</a>
-    <div style="overflow:auto"><table id="results" hidden><thead></thead><tbody></tbody></table></div>
+    <div style="overflow:auto"><table id="results" hidden><thead><tr><th scope="col">Result</th></tr></thead><tbody></tbody></table></div>
   </section>
 </main>
 <script src="/static/auth.js"></script>

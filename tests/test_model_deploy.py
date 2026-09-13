@@ -425,7 +425,10 @@ def test_inference_service_uses_remote_auth_and_has_no_monitoring_routes(
     )
     client = TestClient(app)
     assert client.get("/health/live").status_code == 200
-    assert client.get("/").status_code == 200
+    home = client.get("/")
+    assert home.status_code == 200
+    assert '<label for="file">CSV file</label>' in home.text
+    assert '<th scope="col">Result</th>' in home.text
     assert client.get("/inference/").status_code == 200
     assert client.get("/static/auth.js").status_code == 200
     assert client.get("/.well-known/jwks.json").status_code == 200

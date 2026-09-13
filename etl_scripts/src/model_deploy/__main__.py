@@ -19,7 +19,7 @@ def main(argv: list[str] | None = None) -> None:
     train.add_argument("--input", type=Path)
     train.add_argument("--device", choices=["cpu", "cuda"])
     serve = subparsers.add_parser("serve")
-    serve.add_argument("--host", default="0.0.0.0")
+    serve.add_argument("--host", default=os.getenv("CDP_BIND_HOST", "127.0.0.1"))
     serve.add_argument("--port", type=int, default=int(os.getenv("PORT", "8000")))
     args = parser.parse_args(argv)
     if args.command == "train":

@@ -38,10 +38,28 @@ from .artifact_loader import MANIFEST_FILE, MODEL_FILE, PROFILES_FILE
 
 
 DEPLOYMENT_CONFIG_PATH = Path(__file__).parents[2] / "deployment_model_config.json"
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
+ARTIFACT_ROOT = PROJECT_ROOT / "deployment_artifacts"
+
+
+def _project_file(path: str | Path) -> Path:
+    """Read build-time configuration only from this checkout, not arbitrary files."""
+    resolved = Path(path).resolve()
+    if not resolved.is_relative_to(PROJECT_ROOT.resolve()) or not resolved.is_file():
+        raise ValueError("Deployment configuration must be a file in this checkout")
+    return resolved
+
+
+def _artifact_path(path: str | Path) -> Path:
+    """Keep generated artifacts inside their dedicated, ignored build directory."""
+    resolved = Path(path).resolve()
+    if not resolved.is_relative_to(ARTIFACT_ROOT.resolve()):
+        raise ValueError("Deployment artifacts must stay inside deployment_artifacts")
+    return resolved
 
 
 def load_deployment_config(path: str | Path = DEPLOYMENT_CONFIG_PATH) -> dict[str, Any]:
-    config = json.loads(Path(path).read_text(encoding="utf-8"))
+    config = json.loads(_project_file(path).read_text(encoding="utf-8"))
     required = {"model_family", "hyperparameters", "training", "runtime", "stage"}
     if required - set(config):
         raise ValueError(f"Deployment config is missing: {sorted(required - set(config))}")
@@ -53,7 +71,7 @@ def load_deployment_config(path: str | Path = DEPLOYMENT_CONFIG_PATH) -> dict[st
 
 
 def _json(path: Path, value: object) -> None:
-    path.write_text(
+    _artifact_path(path).write_text(
         json.dumps(value, indent=2, allow_nan=False, sort_keys=True) + "\n",
         encoding="utf-8",
     )
@@ -135,7 +153,7 @@ def train_deployment_artifact(
     input_path: str | Path | None = None,
     device: str | None = None,
 ) -> dict:
-    output = Path(output_dir)
+    output = _artifact_path(output_dir)
     if output.exists() and any(output.iterdir()):
         raise FileExistsError("Deployment artifact directory must be empty")
     output.mkdir(parents=True, exist_ok=True)
@@ -189,7 +207,7 @@ def train_deployment_artifact(
     joblib.dump(model, output / MODEL_FILE)
     artifact_hash = hashlib.sha256((output / MODEL_FILE).read_bytes()).hexdigest()
     dataset_hash = hashlib.sha256(raw.to_csv(index=False).encode("utf-8")).hexdigest()
-    deployment_bytes = Path(deployment_config_path).read_bytes()
+    deployment_bytes = _project_file(deployment_config_path).read_bytes()
     effective_training_bytes = json.dumps(
         training,
         default=str,

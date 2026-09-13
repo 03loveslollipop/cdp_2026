@@ -4,13 +4,15 @@
 
 Use feature branches and bring completed work back to the repository default branch
 through review. The feature-engineering pipeline is merged; the heuristic and model
-training work retain their existing branch/PR history.
+training work are merged. The four serving services in this branch still need review
+and merge into `master`.
 
 ## Stage 2: test automation
 
-Do not configure SonarCloud yet. Wait until the requested repository work is available
-from the default branch. Code quality, security, coverage, integrity, and style checks
-remain a later task.
+SonarCloud analysis is configured on `master` through PR #6. PR #7 proposes CPU-only
+tests, XML coverage, syntax, and Ruff checks; it must be reviewed and merged separately.
+SonarCloud provides static code-quality and security analysis. The exploratory notebook
+has pre-existing Ruff findings and is excluded from that style check.
 
 ## Stage 3: repository contents
 
@@ -41,3 +43,11 @@ remain a later task.
 The deployed model is exposed for batch prediction. Predictor records, returned
 probabilities, decisions, and later outcomes are stored for periodic population-drift and
 performance monitoring. Model binaries and record-level exports must remain outside Git.
+
+## Remaining work after serving integration
+
+- Add budget-controlled adaptive hyperparameter search to the tracked training pipeline,
+  preserving chronological validation and CPU-only artifact portability. The CUDA TPE
+  experiment remains local and is not a substitute for a reviewed implementation.
+- Establish feature snapshot timing and outcome maturity, then validate on genuinely new
+  temporal data before considering promotion beyond the staging/demo deployment.

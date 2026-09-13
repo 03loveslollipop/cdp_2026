@@ -1,5 +1,32 @@
 # Model Training Progress and Handoff
 
+## Serving integration and quality gates on 2026-09-13
+
+- SonarCloud setup merged to `master` through PR #6. PR #7 adds CPU-only tests,
+  coverage upload, syntax, and Ruff checks; all of its PR checks passed. Its workflow
+  is also merged into the serving feature branch so PR #8 can be measured before #7
+  reaches `master`.
+- PR #8 targets `master` with the four previously deployed services. The first
+  SonarCloud scan found two accessibility bugs, public bind defaults, build-time path
+  warnings, and 0% coverage because the test workflow had not been included. The
+  accessibility and bind defaults were fixed; build artifacts and configuration reads
+  are now confined to explicit checkout directories. The remaining JSON write was
+  separated from its validated path to make the trust boundary clear.
+- Added isolated tests for remote authentication errors, database administration and
+  repositories, sample imports, migrations, artifact packaging, monitoring catch-up and
+  Dash aggregate pages, readiness, and prediction/outcome API errors. No live database
+  or raw record export is needed for the CPU suite.
+- Local validation on Linux x86_64, Python 3.13.9: `ruff check etl_scripts/src tests
+  scripts --exclude '*.ipynb'` and `python -m compileall -q etl_scripts/src tests
+  scripts` passed; isolated serving-dependency environment ran `pytest -q tests
+  --cov=etl_scripts.src --cov-report=xml:coverage.xml` with **141 passed, 5 skipped**
+  and **89% Python line coverage**. The CI Python 3.12 result and SonarCloud new-code
+  gate for this test batch are pending; do not equate local total coverage with the
+  SonarCloud new-code metric.
+- The prior branch-push deployment after merging PR #7's workflow succeeded through
+  all four Heroku release/readiness stages. The next push will redeploy the hardened
+  trainer and expanded tests. The staging/demo limitations below remain unchanged.
+
 ## Independent serving microservices on 2026-09-11
 
 Branch: `feat/model-serving-monitoring`. Datastore: existing add-on

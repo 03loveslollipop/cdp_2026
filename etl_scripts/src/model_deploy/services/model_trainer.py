@@ -71,10 +71,9 @@ def load_deployment_config(path: str | Path = DEPLOYMENT_CONFIG_PATH) -> dict[st
 
 
 def _json(path: Path, value: object) -> None:
-    _artifact_path(path).write_text(
-        json.dumps(value, indent=2, allow_nan=False, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    with _artifact_path(path).open("w", encoding="utf-8") as stream:
+        json.dump(value, stream, indent=2, allow_nan=False, sort_keys=True)
+        stream.write("\n")
 
 
 def _source_revision() -> str | None:

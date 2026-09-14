@@ -80,6 +80,8 @@ class DefaultEventBooster(ClassifierMixin, BaseEstimator):
         self.threads = threads
 
     def fit(self, X, y):
+        if self.device != "cpu":
+            raise ValueError("Tracked model training supports CPU only")
         y = np.asarray(y)
         require_both_classes(y, "boosting training")
         parameters = dict(self.parameters or {})
@@ -91,26 +93,19 @@ class DefaultEventBooster(ClassifierMixin, BaseEstimator):
             from xgboost import XGBClassifier
 
             self.estimator_ = XGBClassifier(
-                tree_method="hist", device=self.device,
+                tree_method="hist", device="cpu",
                 eval_metric="logloss", **parameters,
             )
         elif self.family == "lightgbm":
             from lightgbm import LGBMClassifier
 
             self.estimator_ = LGBMClassifier(
-                device_type=self.device, verbosity=-1, **parameters,
+                device_type="cpu", verbosity=-1, **parameters,
             )
         else:
             raise ValueError(f"Unknown booster: {self.family}")
         self.estimator_.fit(X, 1 - y)
-        if self.family == "xgboost" and self.device == "cuda":
-            settings = json.loads(self.estimator_.get_booster().save_config())
-            actual = settings["learner"]["generic_param"]["device"]
-            if not actual.startswith("cuda"):
-                raise RuntimeError("XGBoost silently fell back from requested CUDA")
-            # Exported predictors and cross-model benchmarks run on CPU.
-            self.estimator_.set_params(device="cpu")
-        self.training_device_ = self.device
+        self.training_device_ = "cpu"
         self.classes_ = np.array([0, 1])
         self.n_features_in_ = X.shape[1]
         return self
@@ -126,6 +121,8 @@ class DefaultEventBooster(ClassifierMixin, BaseEstimator):
 def build_model(model_name, config=None, random_state=42, device="cpu", *,
                 parameters=None, training_config=None):
     """Return an unfitted raw-record sklearn Pipeline for a model family."""
+    if device != "cpu":
+        raise ValueError("Tracked model training supports CPU only")
     cfg = config or load_config()
     settings = training_config or load_training_config()
     params = dict(parameters or {})
@@ -152,8 +149,7 @@ def build_model(model_name, config=None, random_state=42, device="cpu", *,
         model = DefaultEventBooster(
             family=model_name, balanced=balanced, parameters=params,
             random_state=random_state, threads=threads,
-            device=(device if model_name == "xgboost"
-                    else settings["lightgbm_device"]),
+            device="cpu",
         )
     elif model_name in constructors:
         model = constructors[model_name]()
@@ -411,12 +407,13 @@ def publish_comparison(run_dir, destination):
         f"Selected by temporal validation: **{manifest['selection']}**. "
         "Default is `Pago_atiempo=0`. The newest 30% is evaluated after selection.\n\n"
         f"Training device: `{manifest['requested_device']}`; Python "
-        f"`{manifest['python']}`. GPU validation on `192.168.1.137` is separate.\n\n"
+        f"`{manifest['python']}`. Tracked training and inference are CPU-only.\n\n"
         "## Temporal validation\n\n"
         + _markdown(summary[[
             "model", "mean_f1", "temporal_f1_std", "seed_f1_std",
             "cpu_batch_ms", "artifact_bytes",
-        ]])
+        ] + (["search_seconds", "finalization_seconds"]
+             if "search_seconds" in summary else [])])
         + "\n\nWithin 0.01 F1 of the leader, prefer lower temporal variation, "
         "then seed variation, CPU latency, and artifact size. Heuristic/dummy "
         "are references and retain their original prediction rules.\n\n"
@@ -510,6 +507,16 @@ def write_comparison_graphs(output, folds, summary, predictions, holdout):
     fig.savefig(path, dpi=150)
     plt.close(fig)
     paths.append(str(path))
+    if "search_seconds" in summary:
+        fig, ax = plt.subplots(figsize=(9, 6))
+        ordered = summary.sort_values("search_seconds")
+        ax.barh(ordered.model, ordered.search_seconds)
+        ax.set(xlabel="Search elapsed seconds", title="Per-family search cost")
+        fig.tight_layout()
+        path = output / "search_cost.png"
+        fig.savefig(path, dpi=150)
+        plt.close(fig)
+        paths.append(str(path))
     columns = 3
     rows = int(np.ceil(len(holdout) / columns))
     fig, axes = plt.subplots(rows, columns, figsize=(12, rows * 3.5), squeeze=False)
@@ -578,23 +585,67 @@ def _train_and_evaluate(raw_data, config=None, output_dir="runs/model_comparison
     training = extract_dataset(split.train, cfg, require_target=True)
     require_both_classes(training.target, "training partition")
     all_folds, search_rows, summaries, models, params_by_model = [], [], [], {}, {}
+    search_summaries = []
+    use_tpe = settings.get("search", {}).get("method", "grid") == "tpe"
+    if use_tpe:
+        from .adaptive_search import protocol_fingerprint, search_family
+
+        fingerprint = protocol_fingerprint(split.train, cfg, settings)
+    else:
+        fingerprint = None
     base_seed = settings["seeds"][0]
     # No test labels or predictions are inspected until selection.json is written.
     with threadpool_limits(limits=settings["threads"]):
         for name, space in settings["models"].items():
             print(f"Searching {name}", flush=True)
-            winner = None
-            for index, params in enumerate(ParameterGrid(space)):
+            started_search = time.perf_counter()
+            if use_tpe and name not in REFERENCE_MODELS:
+                def objective(parameters):
+                    fold_rows, _ = evaluate_candidate(
+                        split.train, cfg, settings, name, parameters,
+                        base_seed, device,
+                    )
+                    return fold_rows
+
+                smoke_parameters = None
+                if settings.get("smoke_run"):
+                    smoke_parameters = dict(next(iter(ParameterGrid(space))))
+                params, trial_rows, search_summary = search_family(
+                    name, settings["search_spaces"][name], objective,
+                    storage_path=Path(settings["search"]["study_storage"]),
+                    fingerprint=fingerprint,
+                    optimizer=settings["search"],
+                    smoke_parameters=smoke_parameters,
+                )
+                search_rows.extend(trial_rows)
+                search_summaries.append(search_summary)
+                started_finalization = time.perf_counter()
                 rows, oof = evaluate_candidate(
                     split.train, cfg, settings, name, params, base_seed, device
                 )
-                mean = float(np.mean([row["default_f1"] for row in rows]))
-                search_rows.append(dict(model=name, candidate=index, mean_f1=mean,
-                                        parameters=json.dumps(params, sort_keys=True)))
-                if winner is None or mean > winner[0]:
-                    winner = (mean, params, rows, oof)
-                print(f"  candidate {index + 1}: temporal F1={mean:.4f}", flush=True)
-            _, params, rows, oof = winner
+                print(
+                    f"  best trial {search_summary['best_trial']}: "
+                    f"temporal F1={search_summary['best_mean_f1']:.4f}", flush=True,
+                )
+            else:
+                winner = None
+                for index, params in enumerate(ParameterGrid(space)):
+                    rows, oof = evaluate_candidate(
+                        split.train, cfg, settings, name, params, base_seed, device
+                    )
+                    mean = float(np.mean([row["default_f1"] for row in rows]))
+                    search_rows.append(dict(model=name, candidate=index, mean_f1=mean,
+                                            parameters=json.dumps(params, sort_keys=True)))
+                    if winner is None or mean > winner[0]:
+                        winner = (mean, params, rows, oof)
+                    print(f"  candidate {index + 1}: temporal F1={mean:.4f}", flush=True)
+                _, params, rows, oof = winner
+                search_summaries.append({
+                    "model": name, "method": "grid", "attempted": index + 1,
+                    "completed": index + 1, "failed": 0, "pruned": 0,
+                    "search_elapsed_seconds": time.perf_counter() - started_search,
+                })
+                started_finalization = time.perf_counter()
             params_by_model[name] = params
             for seed in settings["seeds"][1:]:
                 extra_rows, _ = evaluate_candidate(
@@ -626,7 +677,10 @@ def _train_and_evaluate(raw_data, config=None, output_dir="runs/model_comparison
                 mean_average_precision=float(frame.average_precision.mean()),
                 mean_roc_auc=float(frame.roc_auc.mean()),
                 threshold=threshold if name not in REFERENCE_MODELS else None,
-                fit_seconds=fit_seconds, cpu_batch_ms=latency, artifact_bytes=size,
+                fit_seconds=fit_seconds,
+                finalization_seconds=time.perf_counter() - started_finalization,
+                search_seconds=search_summaries[-1]["search_elapsed_seconds"],
+                cpu_batch_ms=latency, artifact_bytes=size,
                 training_device=(device if name in {"pytorch_mlp", "xgboost"}
                                  else settings["lightgbm_device"]
                                  if name == "lightgbm" else "cpu"),
@@ -641,6 +695,7 @@ def _train_and_evaluate(raw_data, config=None, output_dir="runs/model_comparison
             "rule": "within tolerance of best mean F1; temporal std, seed std, "
                     "CPU batch ms, bytes, name ascending",
             "f1_tolerance": settings["f1_tolerance"],
+            "protocol_fingerprint": fingerprint,
         })
         joblib.dump(models[best_name], output / "best_model.joblib")
         print(f"Selected {best_name}; evaluating frozen holdout", flush=True)
@@ -677,6 +732,8 @@ def _train_and_evaluate(raw_data, config=None, output_dir="runs/model_comparison
         "Default is Pago_atiempo=0. References retain their original operating points "
         "and are not selection candidates.\n\n## Training-period validation\n\n"
         + _markdown(summary.fillna("reference policy"))
+        + "\n\n## Search accounting\n\n"
+        + _markdown(pd.DataFrame(search_summaries))
         + "\n\n## Frozen chronological holdout\n\n"
         + _markdown(holdout.drop(columns="confusion_matrix"))
         + "\n\nThresholds and sigmoid calibration were learned on training data. "
@@ -689,7 +746,7 @@ def _train_and_evaluate(raw_data, config=None, output_dir="runs/model_comparison
     (output / "report.md").write_text(report, encoding="utf-8")
     packages = {}
     for package in ("numpy", "pandas", "scikit-learn", "torch", "xgboost",
-                    "lightgbm", "joblib", "matplotlib"):
+                    "lightgbm", "optuna", "joblib", "matplotlib"):
         try:
             packages[package] = importlib.metadata.version(package)
         except importlib.metadata.PackageNotFoundError:
@@ -702,15 +759,15 @@ def _train_and_evaluate(raw_data, config=None, output_dir="runs/model_comparison
         ).hexdigest(),
         "platform": platform.platform(), "processor": platform.processor(),
         "python": platform.python_version(), "packages": packages,
-        "selection": best_name, "benchmark_batch_rows": min(
+        "selection": best_name, "search": search_summaries,
+        "protocol_fingerprint": fingerprint,
+        "actual_devices": {
+            row["model"]: row["training_device"] for row in summaries
+        },
+        "benchmark_batch_rows": min(
             len(training.predictors), settings["benchmark_batch_size"]),
         "folds": _fold_manifest(split.train, cfg, settings),
     }
-    if device == "cuda":
-        import torch
-
-        manifest["gpu"] = torch.cuda.get_device_name(0)
-        manifest["cuda_runtime"] = torch.version.cuda
     _json(output / "manifest.json", manifest)
     _json(output / "status.json", {"state": "complete", "selected_model": best_name})
     return TrainingResult(models[best_name], summary, holdout, {
@@ -738,8 +795,8 @@ def _fold_manifest(raw, config, settings):
 
 
 def _validate_settings(settings, device):
-    if device not in ("cpu", "cuda"):
-        raise ValueError("device must be cpu or cuda")
+    if device != "cpu" or settings["lightgbm_device"] != "cpu":
+        raise ValueError("Tracked model training supports CPU only")
     if (not settings["seeds"] or len(set(settings["seeds"])) != len(settings["seeds"])
             or not 0 < settings["inner_train_fraction"] < 1
             or not 0 <= settings["f1_tolerance"] <= 1
@@ -764,25 +821,55 @@ def _validate_settings(settings, device):
                 raise ImportError(
                     f"{name} requires {dependency}; install requirements-training.txt"
                 )
-    if device == "cuda":
-        import torch
+    search = settings.get("search", {"method": "grid"})
+    if search.get("method") not in {"grid", "tpe"}:
+        raise ValueError("search method must be grid or tpe")
+    if search["method"] == "tpe":
+        from .adaptive_search import validate_space
 
-        if not torch.cuda.is_available():
-            raise RuntimeError("CUDA requested but PyTorch cannot access a GPU")
-
-
+        if (not isinstance(search.get("seed"), int)
+                or not isinstance(search.get("n_trials"), int)
+                or search["n_trials"] < 1
+                or search.get("timeout_seconds", 0) <= 0
+                or not isinstance(search.get("startup_trials"), int)
+                or search["startup_trials"] < 1
+                or not search.get("study_storage")):
+            raise ValueError("Invalid TPE search configuration")
+        if importlib.util.find_spec("optuna") is None:
+            raise ImportError("TPE search requires optuna; install requirements-training.txt")
+        for name in settings["models"]:
+            if name not in REFERENCE_MODELS:
+                if name not in settings.get("search_spaces", {}):
+                    raise ValueError(f"{name}: missing adaptive search space")
+                validate_space(settings["search_spaces"][name], name)
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path)
     parser.add_argument("--config", type=Path)
     parser.add_argument("--training-config", type=Path, default=TRAINING_CONFIG_PATH)
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--device", choices=["cpu", "cuda"])
+    parser.add_argument("--device", choices=["cpu"])
+    parser.add_argument("--search-method", choices=["grid", "tpe"])
+    parser.add_argument("--n-trials", type=int,
+                        help="Total TPE trial cap per learned family, including resumed trials")
+    parser.add_argument("--timeout-seconds", type=float,
+                        help="Total TPE search seconds per family; in-flight trials may finish")
+    parser.add_argument("--study-storage", type=Path,
+                        help="Ignored SQLite study path for resumable TPE search")
     parser.add_argument("--smoke", action="store_true",
                         help="One small candidate/seed per family; not a benchmark")
     args = parser.parse_args(argv)
     config = load_config(args.config) if args.config else load_config()
     settings = load_training_config(args.training_config)
+    settings.setdefault("search", {"method": "grid"})
+    if args.search_method:
+        settings["search"]["method"] = args.search_method
+    if args.n_trials is not None:
+        settings["search"]["n_trials"] = args.n_trials
+    if args.timeout_seconds is not None:
+        settings["search"]["timeout_seconds"] = args.timeout_seconds
+    if args.study_storage is not None:
+        settings["search"]["study_storage"] = str(args.study_storage)
     if args.smoke:
         settings["seeds"] = [settings["seeds"][0]]
         settings["models"] = {
@@ -795,6 +882,11 @@ def main(argv=None):
             if "epochs" in space:
                 space["epochs"] = [2]
         settings["smoke_run"] = True
+        if settings["search"]["method"] == "tpe":
+            settings["search"]["n_trials"] = 1
+            settings["search"]["timeout_seconds"] = min(
+                float(settings["search"]["timeout_seconds"]), 300.0
+            )
     read_options = {"config_dir": args.config.parent} if args.config else {}
     raw = read_raw_data(config, args.input, **read_options)
     result = train_and_evaluate(raw, config, args.output_dir,

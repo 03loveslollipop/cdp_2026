@@ -99,8 +99,6 @@ def test_torch_direction_serialization_and_reproducibility(tmp_path):
     assert model.predict([[-2], [2]]).tolist() == [1, 0]
     another = clone(estimator).fit(X, y)
     np.testing.assert_allclose(another.predict_proba(X), model.predict_proba(X))
-    # Simulate an artifact trained on CUDA: no tensors or GPU context are persisted.
-    model.device = "cuda"
     artifact = tmp_path / "nn.joblib"
     joblib.dump(model, artifact)
     np.testing.assert_allclose(joblib.load(artifact).predict_proba(X),
@@ -252,14 +250,18 @@ def test_failed_run_records_status(raw, settings, tmp_path):
     assert not (tmp_path / "best_model.joblib").exists()
 
 
-def test_cuda_training_portability():
-    torch = pytest.importorskip("torch")
-
-    if not torch.cuda.is_available():
-        pytest.skip("CUDA GPU unavailable")
+def test_tracked_training_rejects_non_cpu_devices(raw, settings, tmp_path):
+    pytest.importorskip("torch")
     X = np.tile([[-1.0], [1.0]], (20, 1))
     y = np.tile([0, 1], 20)
-    model = TorchCreditClassifier(epochs=2, device="cuda").fit(X, y)
-    assert model.training_device_ == "cuda"
-    assert all(isinstance(value, np.ndarray) for value in model.weights_.values())
-    assert model.predict_proba(X).shape == (len(X), 2)
+    with pytest.raises(ValueError, match="Invalid neural-network parameters"):
+        TorchCreditClassifier(epochs=2, device="unsupported").fit(X, y)
+    with pytest.raises(ValueError, match="CPU only"):
+        build_model("xgboost", device="unsupported")
+    with pytest.raises(ValueError, match="CPU only"):
+        DefaultEventBooster(device="unsupported").fit(X, y)
+    with pytest.raises(ValueError, match="CPU only"):
+        train_and_evaluate(
+            raw, output_dir=tmp_path / "bad_device",
+            training_config=settings, device="unsupported",
+        )

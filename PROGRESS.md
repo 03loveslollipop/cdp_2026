@@ -1,5 +1,53 @@
 # Model Training Progress and Handoff
 
+## 2026-09-13 Adaptive Search Update
+
+Branch: `feat/adaptive-training-search` (to be proposed against `master`).
+The historical checkpoint below describes the state before this branch; its statement
+that adaptive optimization is missing is superseded by this section.
+
+Optuna TPE is implemented as an opt-in alternative to the unchanged grid baseline.
+`--search-method tpe`, `--n-trials`, `--timeout-seconds`, and `--study-storage` expose
+per-learned-family limits and resumable SQLite studies. The default config retains
+`grid` for checkpoint reproducibility and defines nine family-specific TPE spaces.
+The objective remains mean default-class F1 on training-period temporal folds. Seed
+checks, final refit, CPU inference benchmarks, and reporting are timed separately.
+Search reports record trial states, fold scores, fit durations, resolved parameters,
+optimizer seed, actual devices, and elapsed search time. A training-only protocol
+fingerprint prevents incompatible study reuse; an exclusive local lock prevents two
+processes using the same SQLite study storage concurrently. Trial and time caps are
+totals across resumes; an in-flight trial can exceed the time cap. Fresh seeded studies
+are reproducible, but resumed TPE sampler sequences need not match an uninterrupted run.
+
+Validation of the tracked branch uses only CPU tests and dependencies:
+
+```bash
+python -m pytest -q tests
+python -m compileall -q etl_scripts/src tests
+ruff check etl_scripts/src tests --exclude '*.ipynb'
+python -m etl_scripts.src.model_training_evaluation --search-method tpe --device cpu --smoke --output-dir runs/adaptive_cpu_only_smoke
+```
+
+The CPU suite passed 57 tests with no skips. Syntax, Ruff, and the all-family CPU
+TPE CLI smoke run passed. The tracked trainer rejects non-CPU devices. The CPU
+environment used Python 3.13.9, PyTorch 2.11.0+cpu,
+`xgboost-cpu` 3.4.1, sklearn 1.9.0, pandas 3.0.5, NumPy 2.5.3, and Optuna 4.9.0.
+Optuna emits experimental heartbeat warnings; its version is pinned for training.
+
+CUDA experimentation remains **local and untracked** in `.local_cuda_training/`; its
+test code, model binaries, studies, and record-level output are not pushed. On an
+NVIDIA RTX 3050 Laptop GPU (4 GiB, driver 595.84), local tests fitted MLP and
+XGBoost on CUDA and loaded their pipelines in a separate CPU-only interpreter.
+Probabilities and the locally selected artifact's labels matched at `atol=1e-6,
+rtol=1e-5`. The local CUDA-trained winner also loads and predicts with the tracked
+CPU-only code. A local non-smoke integration run sampled real hyperparameters for all
+nine learned families, with one successful trial each and no failures. It selected
+random forest on temporal validation (mean default F1 0.1948); its diagnostic
+holdout F1 was 0.1114, below the prior grid checkpoint's 0.1394. This one-trial
+local run is **not** a final adaptive benchmark, evidence for changing the deployed
+model, or fresh external validation. Feature snapshot timing, outcome maturity,
+and genuinely new temporal data remain necessary before promotion.
+
 ## Serving integration and quality gates on 2026-09-13
 
 - SonarCloud setup merged to `master` through PR #6. PR #7 adds CPU-only tests,

@@ -15,6 +15,10 @@ python -m etl_scripts.src.model_training_evaluation \
   --smoke --output-dir runs/comparison_smoke
 python -m etl_scripts.src.model_training_evaluation \
   --device cpu --output-dir runs/comparison_cpu
+python -m etl_scripts.src.model_training_evaluation \
+  --search-method tpe --device cpu --n-trials 30 --timeout-seconds 1800 \
+  --study-storage runs/training_studies.sqlite3 \
+  --output-dir runs/comparison_tpe_cpu
 python -m pytest -q tests
 ```
 
@@ -22,6 +26,18 @@ The smoke profile uses one small candidate and one seed per family; it checks th
 workflow but is not a performance benchmark. Use a new output directory for each run.
 `--input`, `--config`, and `--training-config` accept alternative dataset/config paths.
 The default dataset remains the repository's `dataset.csv`.
+
+The default search method remains `grid` so the published checkpoint is reproducible.
+Use `--search-method tpe` for seeded Bayesian optimization. The example's 30-trial
+and 1,800-second limits apply **per learned family**, not to the whole run; the first
+limit reached stops new trials. An in-flight trial may run past the time limit.
+Finalist seed checks, refits, CPU benchmarks, and reporting are outside these search
+budgets and are timed separately. Optuna studies and their lock file stay in ignored
+`runs/`. Use a fresh `--output-dir` on every invocation; reuse the same
+`--study-storage` to resume studies with matching training data and protocol. Resumed
+caps are total study caps, not additional allocations. Fresh seeded studies are
+reproducible; a resumed TPE study preserves its trials and budgets but may not generate
+the exact later sequence of an uninterrupted run because sampler RNG state is not saved.
 
 ## Models and shared functions
 
@@ -61,8 +77,12 @@ The later outer validation window evaluates these frozen predictions. SVM uses i
 decision score and this explicit temporal calibration, without shuffled internal CV.
 Neither validation nor holdout records can fit preprocessing or class weights.
 
-The bounded search considers up to eight configurations per learned family. Each
-family's best configuration is checked with seeds 42, 43, and 44. Models within 0.01
+The grid baseline considers up to eight configurations per learned family. TPE uses
+model-specific numeric and categorical spaces in `model_training_config.json`, with
+configurable trial/time budgets and a serial study per learned family. Heuristic and
+dummy references are never optimized. Both methods score only the outer training-period
+temporal folds. Each family's best configuration is checked with seeds 42, 43, and 44.
+Models within 0.01
 absolute mean F1 of the leader are ranked by temporal F1 standard deviation, seed F1
 standard deviation, CPU batch latency, artifact bytes, and finally model name. Temporal
 variation is measured across fold means; seed variation is measured across seed means.
@@ -76,8 +96,11 @@ holdout scores. The heuristic keeps its original 20% training-quantile review po
 
 Search spaces, seeds, thresholds, model devices, thread counts, and benchmarking budgets
 live in `etl_scripts/src/model_training_config.json`. No SMOTE, row deletion, or additional
-outlier repair is introduced. Candidate failures abort the run instead of quietly
-excluding a requested model.
+outlier repair is introduced. Grid candidate failures abort the run. TPE records failed
+trials and may continue, but a family with no completed trial fails the entire run.
+Each TPE study is fingerprinted against the training partition, preprocessing and
+objective code, fold protocol, label convention, and search spaces; the holdout is not
+part of study identity.
 
 ## Consume the selected object
 
@@ -97,16 +120,18 @@ restored = joblib.load(result.artifact_paths["model"])
 
 The artifact includes fitted preparation, encoding/scaling, model, calibration, threshold,
 and class order. Keep the project importable and use the dependency versions recorded
-in its manifest. Only load artifacts from trusted sources. Inference runs on CPU,
-including artifacts trained by PyTorch or XGBoost on CUDA.
+in its manifest. Only load artifacts from trusted sources. Tracked training and
+inference run on CPU; experimental artifacts require a separate CPU-only portability
+check before use.
 
 ## Reports and reproducibility
 
 Each run writes `best_model.joblib`, `selection.json`, a Markdown report, validation and
 holdout CSV tables, per-fold/search results, out-of-fold and holdout predictions, and
 JSON metrics. Figures compare holdout PR/ROC curves, temporal F1, F1 versus CPU latency,
-and holdout confusion matrices. The manifest records data/configuration fingerprints,
-split boundaries, package versions, seeds, platform, and requested/actual training devices.
+search cost, and holdout confusion matrices. The manifest records data/configuration
+fingerprints, attempted/completed/pruned/failed trials, search and finalization times,
+split boundaries, package versions, seeds, platform, and requested/actual devices.
 
 CPU latency includes preparation, calibration, and prediction on the same first 256
 training records, after warmup, using the median of five repeats. Two threads are the
@@ -127,27 +152,14 @@ The publisher reads saved predictions to draw the graphs but exports only aggreg
 tables, figures, and reproducibility metadata. A failed run has `status.json` marked
 `failed` and cannot be published as complete.
 
-## GPU validation
+## Local-only CUDA experimentation
 
-The requested host is `zerotwo@192.168.1.137:22`; it is currently unreachable from this
-workspace (`No route to host`). GPU validation remains pending. Once reachable, use an
-isolated checkout/environment on that host, inspect `nvidia-smi`, and install a PyTorch
-CUDA wheel compatible with its driver using the
-[official installer](https://pytorch.org/get-started/locally/). Run:
-
-```bash
-python -m pytest -q tests/test_model_training_evaluation.py
-python -m etl_scripts.src.model_training_evaluation \
-  --device cuda --smoke --output-dir runs/comparison_cuda_smoke
-python -m etl_scripts.src.model_training_evaluation \
-  --device cuda --output-dir runs/comparison_cuda
-```
-
-CUDA is used for PyTorch and XGBoost; LightGBM stays on CPU unless its separate
-`lightgbm_device` configuration is changed for a supported build. Explicit CUDA requests
-must not silently fall back to CPU. Record GPU/driver details with the PR validation.
-Seeded runs are reproducible within a supported runtime, but bitwise CPU/GPU agreement
-is not promised.
+CUDA experiments and portability checks are kept in an ignored local folder; their
+test code and artifacts are not part of this branch. Repository tests, CI, and the
+serving image use CPU-only dependencies. The tracked training implementation accepts
+only CPU; the ignored experiment copy owns any GPU-specific paths.
+Local GPU results do not replace the required CPU-only acceptance checks or constitute
+a new generalization result.
 
 ## Interpretation limits
 

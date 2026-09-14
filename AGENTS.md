@@ -36,13 +36,14 @@ Keep changes scoped and follow `CONTRIBUTING.md`. Preserve existing user edits.
 
 ## Development and Deployment
 
-Assume the next development environment has CUDA. Deployment has no GPU: exported
-models must load and predict on CPU without initializing CUDA. Test that boundary in
-a separate CPU-only environment and record dependency/hardware versions.
+Tracked training, tests, CI, and deployment are CPU-only. CUDA experimentation belongs
+exclusively in the ignored `.local_cuda_training/` copy; do not push CUDA-specific code
+or tests. Experimental artifacts must load and predict in a separate CPU-only
+environment before they are considered for deployment.
 
-The next feature is budget-controlled hyperparameter optimization. Bayesian TPE is
-the recommended starting method; genetic optimization is an alternative. Trial counts
-and time budgets must be configurable, reproducible, and reported; see `PROGRESS.md`.
+Budget-controlled TPE search is available as an opt-in alternative to the grid
+baseline. Keep trial counts and time budgets configurable and reported; see
+`PROGRESS.md`.
 
 ## Artifacts and Handoff
 

@@ -120,8 +120,9 @@ restored = joblib.load(result.artifact_paths["model"])
 
 The artifact includes fitted preparation, encoding/scaling, model, calibration, threshold,
 and class order. Keep the project importable and use the dependency versions recorded
-in its manifest. Only load artifacts from trusted sources. Inference runs on CPU,
-including artifacts trained by PyTorch or XGBoost on CUDA.
+in its manifest. Only load artifacts from trusted sources. Tracked training and
+inference run on CPU; experimental artifacts require a separate CPU-only portability
+check before use.
 
 ## Reports and reproducibility
 
@@ -155,8 +156,8 @@ tables, figures, and reproducibility metadata. A failed run has `status.json` ma
 
 CUDA experiments and portability checks are kept in an ignored local folder; their
 test code and artifacts are not part of this branch. Repository tests, CI, and the
-serving image use CPU-only dependencies. The existing training implementation retains
-its device option, but this adaptive-search change adds no CUDA-specific runtime path.
+serving image use CPU-only dependencies. The tracked training implementation accepts
+only CPU; the ignored experiment copy owns any GPU-specific paths.
 Local GPU results do not replace the required CPU-only acceptance checks or constitute
 a new generalization result.
 

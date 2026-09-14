@@ -10,8 +10,8 @@ from sklearn.utils.validation import check_is_fitted, validate_data
 class TorchCreditClassifier(ClassifierMixin, BaseEstimator):
     """Predict Pago_atiempo; the network logit represents default (label zero).
 
-    Learned weights are kept as CPU arrays, so joblib artifacts do not require
-    CUDA to load or predict. PyTorch is imported only when this model is used.
+    Learned weights are kept as CPU arrays for portable joblib artifacts.
+    PyTorch is imported only when this model is used.
     """
 
     def __init__(
@@ -62,21 +62,18 @@ class TorchCreditClassifier(ClassifierMixin, BaseEstimator):
             or self.learning_rate <= 0
             or self.weight_decay < 0
             or self.class_weight not in (None, "balanced")
-            or self.device not in ("cpu", "cuda")
+            or self.device != "cpu"
         ):
             raise ValueError("Invalid neural-network parameters")
         X, y = validate_data(self, X, y, dtype=np.float32)
         self.classes_ = np.unique(y)
         if not np.array_equal(self.classes_, [0, 1]):
             raise ValueError("Training requires both Pago_atiempo classes [0, 1]")
-        if self.device == "cuda" and not torch.cuda.is_available():
-            raise RuntimeError("CUDA requested but PyTorch cannot access a GPU")
         # Preserve the caller's RNG and thread settings, including on failure.
         thread_count = torch.get_num_threads()
         try:
             torch.set_num_threads(1)
-            devices = [torch.cuda.current_device()] if self.device == "cuda" else []
-            with torch.random.fork_rng(devices=devices):
+            with torch.random.fork_rng(devices=[]):
                 torch.manual_seed(self.random_state)
                 network = self._network().to(self.device)
                 optimizer = torch.optim.AdamW(

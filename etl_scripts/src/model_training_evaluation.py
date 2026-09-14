@@ -80,6 +80,8 @@ class DefaultEventBooster(ClassifierMixin, BaseEstimator):
         self.threads = threads
 
     def fit(self, X, y):
+        if self.device != "cpu":
+            raise ValueError("Tracked model training supports CPU only")
         y = np.asarray(y)
         require_both_classes(y, "boosting training")
         parameters = dict(self.parameters or {})
@@ -91,26 +93,19 @@ class DefaultEventBooster(ClassifierMixin, BaseEstimator):
             from xgboost import XGBClassifier
 
             self.estimator_ = XGBClassifier(
-                tree_method="hist", device=self.device,
+                tree_method="hist", device="cpu",
                 eval_metric="logloss", **parameters,
             )
         elif self.family == "lightgbm":
             from lightgbm import LGBMClassifier
 
             self.estimator_ = LGBMClassifier(
-                device_type=self.device, verbosity=-1, **parameters,
+                device_type="cpu", verbosity=-1, **parameters,
             )
         else:
             raise ValueError(f"Unknown booster: {self.family}")
         self.estimator_.fit(X, 1 - y)
-        if self.family == "xgboost" and self.device == "cuda":
-            settings = json.loads(self.estimator_.get_booster().save_config())
-            actual = settings["learner"]["generic_param"]["device"]
-            if not actual.startswith("cuda"):
-                raise RuntimeError("XGBoost silently fell back from requested CUDA")
-            # Exported predictors and cross-model benchmarks run on CPU.
-            self.estimator_.set_params(device="cpu")
-        self.training_device_ = self.device
+        self.training_device_ = "cpu"
         self.classes_ = np.array([0, 1])
         self.n_features_in_ = X.shape[1]
         return self
@@ -126,6 +121,8 @@ class DefaultEventBooster(ClassifierMixin, BaseEstimator):
 def build_model(model_name, config=None, random_state=42, device="cpu", *,
                 parameters=None, training_config=None):
     """Return an unfitted raw-record sklearn Pipeline for a model family."""
+    if device != "cpu":
+        raise ValueError("Tracked model training supports CPU only")
     cfg = config or load_config()
     settings = training_config or load_training_config()
     params = dict(parameters or {})
@@ -152,8 +149,7 @@ def build_model(model_name, config=None, random_state=42, device="cpu", *,
         model = DefaultEventBooster(
             family=model_name, balanced=balanced, parameters=params,
             random_state=random_state, threads=threads,
-            device=(device if model_name == "xgboost"
-                    else settings["lightgbm_device"]),
+            device="cpu",
         )
     elif model_name in constructors:
         model = constructors[model_name]()
@@ -411,7 +407,7 @@ def publish_comparison(run_dir, destination):
         f"Selected by temporal validation: **{manifest['selection']}**. "
         "Default is `Pago_atiempo=0`. The newest 30% is evaluated after selection.\n\n"
         f"Training device: `{manifest['requested_device']}`; Python "
-        f"`{manifest['python']}`. GPU validation on `192.168.1.137` is separate.\n\n"
+        f"`{manifest['python']}`. Tracked training and inference are CPU-only.\n\n"
         "## Temporal validation\n\n"
         + _markdown(summary[[
             "model", "mean_f1", "temporal_f1_std", "seed_f1_std",
@@ -772,11 +768,6 @@ def _train_and_evaluate(raw_data, config=None, output_dir="runs/model_comparison
             len(training.predictors), settings["benchmark_batch_size"]),
         "folds": _fold_manifest(split.train, cfg, settings),
     }
-    if device == "cuda":
-        import torch
-
-        manifest["gpu"] = torch.cuda.get_device_name(0)
-        manifest["cuda_runtime"] = torch.version.cuda
     _json(output / "manifest.json", manifest)
     _json(output / "status.json", {"state": "complete", "selected_model": best_name})
     return TrainingResult(models[best_name], summary, holdout, {
@@ -804,8 +795,8 @@ def _fold_manifest(raw, config, settings):
 
 
 def _validate_settings(settings, device):
-    if device not in ("cpu", "cuda"):
-        raise ValueError("device must be cpu or cuda")
+    if device != "cpu" or settings["lightgbm_device"] != "cpu":
+        raise ValueError("Tracked model training supports CPU only")
     if (not settings["seeds"] or len(set(settings["seeds"])) != len(settings["seeds"])
             or not 0 < settings["inner_train_fraction"] < 1
             or not 0 <= settings["f1_tolerance"] <= 1
@@ -851,20 +842,13 @@ def _validate_settings(settings, device):
                 if name not in settings.get("search_spaces", {}):
                     raise ValueError(f"{name}: missing adaptive search space")
                 validate_space(settings["search_spaces"][name], name)
-    if device == "cuda":
-        import torch
-
-        if not torch.cuda.is_available():
-            raise RuntimeError("CUDA requested but PyTorch cannot access a GPU")
-
-
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path)
     parser.add_argument("--config", type=Path)
     parser.add_argument("--training-config", type=Path, default=TRAINING_CONFIG_PATH)
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--device", choices=["cpu", "cuda"])
+    parser.add_argument("--device", choices=["cpu"])
     parser.add_argument("--search-method", choices=["grid", "tpe"])
     parser.add_argument("--n-trials", type=int,
                         help="Total TPE trial cap per learned family, including resumed trials")

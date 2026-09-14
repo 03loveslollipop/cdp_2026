@@ -9,6 +9,80 @@
   "benchmark_repeats": 5,
   "device": "cpu",
   "lightgbm_device": "cpu",
+  "search": {
+    "method": "grid",
+    "seed": 20260910,
+    "n_trials": 30,
+    "timeout_seconds": 1800,
+    "startup_trials": 8,
+    "study_storage": "runs/training_studies.sqlite3"
+  },
+  "search_spaces": {
+    "logistic_regression": {
+      "C": {"type": "float", "low": 0.0001, "high": 100.0, "log": true},
+      "class_weight": {"type": "categorical", "choices": [null, "balanced"]}
+    },
+    "decision_tree": {
+      "max_depth": {"type": "int", "low": 2, "high": 16},
+      "min_samples_leaf": {"type": "int", "low": 5, "high": 100, "log": true},
+      "class_weight": {"type": "categorical", "choices": [null, "balanced"]},
+      "criterion": {"type": "categorical", "choices": ["gini", "entropy", "log_loss"]}
+    },
+    "gaussian_nb": {
+      "var_smoothing": {"type": "float", "low": 1e-12, "high": 0.01, "log": true}
+    },
+    "random_forest": {
+      "n_estimators": {"type": "int", "low": 150, "high": 900, "step": 50},
+      "max_depth": {"type": "int", "low": 3, "high": 18},
+      "min_samples_leaf": {"type": "int", "low": 3, "high": 80, "log": true},
+      "max_features": {"type": "categorical", "choices": ["sqrt", "log2", 0.5, 0.8]},
+      "class_weight": {"type": "categorical", "choices": [null, "balanced", "balanced_subsample"]}
+    },
+    "extra_trees": {
+      "n_estimators": {"type": "int", "low": 150, "high": 900, "step": 50},
+      "max_depth": {"type": "int", "low": 3, "high": 18},
+      "min_samples_leaf": {"type": "int", "low": 3, "high": 80, "log": true},
+      "max_features": {"type": "categorical", "choices": ["sqrt", "log2", 0.5, 0.8]},
+      "class_weight": {"type": "categorical", "choices": [null, "balanced", "balanced_subsample"]}
+    },
+    "svm": {
+      "C": {"type": "float", "low": 0.001, "high": 100.0, "log": true},
+      "gamma": {"type": "float", "low": 1e-5, "high": 1.0, "log": true},
+      "class_weight": {"type": "categorical", "choices": [null, "balanced"]}
+    },
+    "xgboost": {
+      "n_estimators": {"type": "int", "low": 150, "high": 1200, "step": 50},
+      "max_depth": {"type": "int", "low": 2, "high": 10},
+      "learning_rate": {"type": "float", "low": 0.005, "high": 0.3, "log": true},
+      "min_child_weight": {"type": "float", "low": 0.5, "high": 30.0, "log": true},
+      "subsample": {"type": "float", "low": 0.5, "high": 1.0},
+      "colsample_bytree": {"type": "float", "low": 0.5, "high": 1.0},
+      "reg_alpha": {"type": "float", "low": 1e-8, "high": 10.0, "log": true},
+      "reg_lambda": {"type": "float", "low": 1e-4, "high": 100.0, "log": true},
+      "balanced": {"type": "categorical", "choices": [false, true]}
+    },
+    "lightgbm": {
+      "n_estimators": {"type": "int", "low": 150, "high": 1200, "step": 50},
+      "num_leaves": {"type": "int", "low": 5, "high": 63},
+      "learning_rate": {"type": "float", "low": 0.005, "high": 0.3, "log": true},
+      "min_child_samples": {"type": "int", "low": 5, "high": 100, "log": true},
+      "subsample": {"type": "float", "low": 0.5, "high": 1.0},
+      "subsample_freq": {"type": "categorical", "choices": [1]},
+      "colsample_bytree": {"type": "float", "low": 0.5, "high": 1.0},
+      "reg_alpha": {"type": "float", "low": 1e-8, "high": 10.0, "log": true},
+      "reg_lambda": {"type": "float", "low": 1e-4, "high": 100.0, "log": true},
+      "balanced": {"type": "categorical", "choices": [false, true]}
+    },
+    "pytorch_mlp": {
+      "hidden_sizes": {"type": "categorical", "choices": ["32,16", "64,32", "128,64", "128,64,32", "256,128,64"]},
+      "learning_rate": {"type": "float", "low": 0.0001, "high": 0.03, "log": true},
+      "dropout": {"type": "float", "low": 0.0, "high": 0.5},
+      "batch_size": {"type": "categorical", "choices": [128, 256, 512, 1024]},
+      "epochs": {"type": "int", "low": 50, "high": 300, "step": 25},
+      "weight_decay": {"type": "float", "low": 1e-7, "high": 0.1, "log": true},
+      "class_weight": {"type": "categorical", "choices": [null, "balanced"]}
+    }
+  },
   "models": {
     "logistic_regression": {"C": [0.1, 1.0], "class_weight": [null, "balanced"]},
     "decision_tree": {"max_depth": [3, 6], "min_samples_leaf": [30], "class_weight": [null, "balanced"]},

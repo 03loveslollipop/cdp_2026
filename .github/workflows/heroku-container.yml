@@ -1,0 +1,104 @@
+name: Build and deploy Heroku microservices
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cdp-2026-heroku-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    env:
+      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      HEROKU_AUTH_APP_NAME: ${{ secrets.HEROKU_AUTH_APP_NAME }}
+      HEROKU_INFERENCE_APP_NAME: ${{ secrets.HEROKU_INFERENCE_APP_NAME }}
+      HEROKU_MONITORING_BATCH_APP_NAME: ${{ secrets.HEROKU_MONITORING_BATCH_APP_NAME }}
+      HEROKU_MONITORING_UI_APP_NAME: ${{ secrets.HEROKU_MONITORING_UI_APP_NAME }}
+      BUILDX_NO_DEFAULT_ATTESTATIONS: "1"
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Validate deployment secrets
+        shell: bash
+        run: |
+          for variable in \
+            HEROKU_API_KEY \
+            HEROKU_AUTH_APP_NAME \
+            HEROKU_INFERENCE_APP_NAME \
+            HEROKU_MONITORING_BATCH_APP_NAME \
+            HEROKU_MONITORING_UI_APP_NAME
+          do
+            test -n "${!variable}" || { echo "Missing ${variable}" >&2; exit 1; }
+          done
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements-serving.txt
+            requirements-release.txt
+            etl_scripts/src/deployment_model_config.json
+
+      - name: Install deployment-training dependencies
+        run: |
+          python -m pip install -r requirements-serving.txt
+          python scripts/install_model_runtime.py etl_scripts/src/deployment_model_config.json
+
+      - name: Train configured winning model
+        run: python -m etl_scripts.src.model_deploy train --output-dir deployment_artifacts
+
+      - name: Install Heroku CLI
+        run: curl https://cli-assets.heroku.com/install.sh | sh
+
+      - name: Build and push service images
+        run: |
+          heroku container:login
+          docker buildx build --platform linux/amd64 --provenance=false \
+            --output "type=registry,name=registry.heroku.com/${HEROKU_AUTH_APP_NAME}/web,oci-mediatypes=false" \
+            --file Dockerfile.auth .
+          docker buildx build --platform linux/amd64 --provenance=false \
+            --output "type=registry,name=registry.heroku.com/${HEROKU_AUTH_APP_NAME}/release,oci-mediatypes=false" \
+            --file Dockerfile.release .
+          docker buildx build --platform linux/amd64 --provenance=false \
+            --output "type=registry,name=registry.heroku.com/${HEROKU_INFERENCE_APP_NAME}/web,oci-mediatypes=false" \
+            --file Dockerfile.inference .
+          docker buildx build --platform linux/amd64 --provenance=false \
+            --output "type=registry,name=registry.heroku.com/${HEROKU_INFERENCE_APP_NAME}/release,oci-mediatypes=false" \
+            --file Dockerfile.inference-release .
+          docker buildx build --platform linux/amd64 --provenance=false \
+            --output "type=registry,name=registry.heroku.com/${HEROKU_MONITORING_BATCH_APP_NAME}/web,oci-mediatypes=false" \
+            --file Dockerfile.monitoring-batch .
+          docker buildx build --platform linux/amd64 --provenance=false \
+            --output "type=registry,name=registry.heroku.com/${HEROKU_MONITORING_UI_APP_NAME}/web,oci-mediatypes=false" \
+            --file Dockerfile.monitoring-ui .
+
+      - name: Release authentication and migrations
+        run: |
+          heroku container:release release web --app "$HEROKU_AUTH_APP_NAME"
+          APP_URL="$(heroku apps:info --app "$HEROKU_AUTH_APP_NAME" --json | python -c 'import json,sys; print(json.load(sys.stdin)["app"]["web_url"])')"
+          curl --fail --retry 12 --retry-delay 10 "${APP_URL}health/ready"
+
+      - name: Release inference
+        run: |
+          heroku container:release release web --app "$HEROKU_INFERENCE_APP_NAME"
+          APP_URL="$(heroku apps:info --app "$HEROKU_INFERENCE_APP_NAME" --json | python -c 'import json,sys; print(json.load(sys.stdin)["app"]["web_url"])')"
+          curl --fail --retry 12 --retry-delay 10 "${APP_URL}health/ready"
+
+      - name: Release monitoring batch
+        run: |
+          heroku container:release web --app "$HEROKU_MONITORING_BATCH_APP_NAME"
+          heroku ps:scale web=0 --app "$HEROKU_MONITORING_BATCH_APP_NAME"
+
+      - name: Release monitoring visualization
+        run: |
+          heroku container:release web --app "$HEROKU_MONITORING_UI_APP_NAME"
+          APP_URL="$(heroku apps:info --app "$HEROKU_MONITORING_UI_APP_NAME" --json | python -c 'import json,sys; print(json.load(sys.stdin)["app"]["web_url"])')"
+          curl --fail --retry 12 --retry-delay 10 "${APP_URL}health/ready"

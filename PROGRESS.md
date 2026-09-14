@@ -48,6 +48,223 @@ local run is **not** a final adaptive benchmark, evidence for changing the deplo
 model, or fresh external validation. Feature snapshot timing, outcome maturity,
 and genuinely new temporal data remain necessary before promotion.
 
+## Serving integration and quality gates on 2026-09-13
+
+- SonarCloud setup merged to `master` through PR #6. PR #7 adds CPU-only tests,
+  coverage upload, syntax, and Ruff checks; all of its PR checks passed. Its workflow
+  is also merged into the serving feature branch so PR #8 can be measured before #7
+  reaches `master`.
+- PR #8 targets `master` with the four previously deployed services. The first
+  SonarCloud scan found two accessibility bugs, public bind defaults, build-time path
+  warnings, and 0% coverage because the test workflow had not been included. The
+  accessibility and bind defaults were fixed; build artifacts and configuration reads
+  are now confined to explicit checkout directories. The remaining JSON write was
+  separated from its validated path to make the trust boundary clear.
+- Added isolated tests for remote authentication errors, database administration and
+  repositories, sample imports, migrations, artifact packaging, monitoring catch-up and
+  Dash aggregate pages, readiness, and prediction/outcome API errors. No live database
+  or raw record export is needed for the CPU suite.
+- Local validation on Linux x86_64, Python 3.13.9: `ruff check etl_scripts/src tests
+  scripts --exclude '*.ipynb'` and `python -m compileall -q etl_scripts/src tests
+  scripts` passed; isolated serving-dependency environment ran `pytest -q tests
+  --cov=etl_scripts.src --cov-report=xml:coverage.xml` with **141 passed, 5 skipped**
+  and **89% Python line coverage**. The CI Python 3.12 result and SonarCloud new-code
+  gate for this test batch are pending; do not equate local total coverage with the
+  SonarCloud new-code metric.
+- The prior branch-push deployment after merging PR #7's workflow succeeded through
+  all four Heroku release/readiness stages. The next push will redeploy the hardened
+  trainer and expanded tests. The staging/demo limitations below remain unchanged.
+
+## Independent serving microservices on 2026-09-11
+
+Branch: `feat/model-serving-monitoring`. Datastore: existing add-on
+`postgresql-tapered-63136`, attached to all services as `CDP_DATABASE_URL`.
+
+- Split the combined application into four independently deployable services:
+  `cdp-2026-auth-service`, inference-only `cdp-2026-credit-risk`,
+  `cdp-2026-monitor-batch`, and `cdp-2026-monitor-ui`.
+- Added a dedicated `model_auth` package. It is the only runtime holding the Ed25519
+  private key and the only service that reads credentials during login or token
+  introspection. Inference and monitoring visualization use a protected HTTP contract and
+  shared internal credential instead of importing authentication business logic.
+- Kept prediction storage with inference, moved observed-outcome ingestion into the
+  monitoring visualization boundary, and kept drift/performance/retention calculations in
+  the non-web batch process. Dash reads the active model at refresh time, independently of
+  an inference-process rollout.
+- Added four non-root Docker images with purpose-specific requirements. Auth has no HTTP
+  client or ML stack, inference has no Dash or signing stack, batch has no web framework,
+  and visualization has no sklearn or JWT signing package. A no-op inference release image
+  prevents the pre-split app from retaining migration ownership.
+- Updated branch-push CI/CD to train once, publish each image to its own Heroku registry,
+  and release in dependency order with readiness gates. Migrations are released only with
+  auth. Service app names are separate GitHub secrets.
+- Moved the daily 06:30 UTC Eco Scheduler job to `cdp-2026-monitor-batch` under add-on
+  `scheduler-dimensional-86985`. The former inference-app scheduler was destroyed after
+  the new schedule was confirmed. The batch web formation stays at zero.
+- Removed signing keys and batch-monitoring settings from inference after live cutover.
+  All services use explicit `cdp_2026` queries. Configured connection pools total at most
+  15 concurrent connections against the datastore's limit of 20.
+
+Validation completed:
+
+```text
+CPU suite: 71 passed, 1 CUDA-only skipped
+Ruff and compileall: passed for all service packages
+Images: four service images built; all run as non-root with dependency isolation checks
+Live auth: database login, 7,200-second JWT, JWKS, and protected introspection passed
+Live inference: readiness, remote auth, model metadata, prediction, attribution passed
+Live authorization: inference denied monitoring; owner Dash and outcomes passed
+Live monitoring batch: seven idempotent catch-up windows replayed; retention deleted 0
+Cleanup: temporary users, prediction, and outcome removed
+```
+
+The deployed model remains staging/demo only. The same unresolved feature-timing,
+outcome-maturity, and inspected-holdout limitations continue to apply.
+
+## PostgreSQL authentication persistence on 2026-09-11
+
+Branch: `feat/model-serving-monitoring`. Datastore: existing Heroku add-on
+`postgresql-tapered-63136`, attached as `CDP_DATABASE_URL`.
+
+- Added frozen migration `0002_auth_users`. It creates `cdp_2026.auth_users` with
+  canonical unique usernames, Argon2id password hashes, `inference`/`owner` roles,
+  active state, token-version invalidation, and audit timestamps. It does not use or
+  modify another schema.
+- Login now reads password hashes and roles from PostgreSQL. Every authenticated request
+  rechecks active state, role, and token version, so password resets, role changes, and
+  disabling an account revoke existing tokens immediately. JWT signing keys remain in
+  Heroku config; plaintext passwords are not persisted.
+- Prediction batches now reference the requesting database user. Idempotency keys are
+  scoped per user with PostgreSQL 17 `UNIQUE NULLS NOT DISTINCT`, preventing one account
+  from replaying another account's stored response. Prediction events, predictor payloads,
+  probabilities, decisions, and observed outcomes remain in the monitoring datastore.
+- The release command idempotently bootstraps existing config credentials only when the
+  users do not exist. Interactive commands list/create/reset/enable/disable users and set
+  roles without placing passwords in command arguments; the last active owner is protected.
+
+Validation completed before the shared-database migration:
+
+```text
+Python 3.12 isolated CPU environment: 69 passed, 1 CUDA-only skipped
+Ruff: database, deployment, and changed tests passed
+PostgreSQL 17 clean release: 0001 + 0002 applied once; second run applied/seeded 0
+PostgreSQL 17 hashes: 2/2 Argon2id, 0 plaintext matches
+PostgreSQL 17 isolation: unrelated schema/table and row retained
+Live before-snapshot: cdp_2026=9, ch0wn3rs_pt_prod=5, ctf_auth=1,
+ctf_ctf=8, public=13; only migration 0001 was present
+```
+
+Manual Heroku release v13 applied `0002_auth_users`, bootstrapped two active users, and
+seeded zero duplicate sample rows. Live checks passed for both roles, exact JWT TTL,
+owner-only monitoring/outcomes, one user-attributed inference, both migration checksums,
+two Argon2id hashes, and zero plaintext-password matches. The after-snapshot is
+`cdp_2026=10`, `ch0wn3rs_pt_prod=5`, `ctf_auth=1`, `ctf_ctf=8`, and `public=13`; unrelated
+schemas did not change. Release v14 removed `CDP_AUTH_USERNAME`, `CDP_AUTH_PASSWORD`,
+`CDP_INFERENCE_USERNAME`, and `CDP_INFERENCE_PASSWORD`. Both PostgreSQL-backed logins and
+readiness passed again after that restart. The JWT private/public keys remain configured.
+
+## JWT authentication and role isolation on 2026-09-11
+
+Branch: `feat/model-serving-monitoring`.
+
+- Replaced HTTP Basic authentication with Ed25519-signed JWT access tokens. Login tokens
+  have a fixed two-hour lifetime and validated issuer, audience, key ID, role, timestamps,
+  subject, and unique token ID. The public verification key is available as JWKS; private
+  signing material remains only in Heroku config.
+- Added `inference` as the default role and `owner` as its privileged superset. Both roles
+  can inspect the live model contract and run JSON/CSV predictions. Only `owner` can ingest
+  observed outcomes or load the Dash monitoring routes. API routes accept bearer tokens,
+  not cookies; a secure HTTP-only same-site token cookie is limited to Dash browser traffic.
+- Added public login shells for the batch page and `/inference/`. The new single-record
+  visual form generates numeric/categorical inputs from the active artifact's reference
+  profiles and calls the same transactionally logged prediction API. It therefore requires
+  no code change when the deployment config selects another supported model or parameters.
+- Provisioned a separate inference account and matching Ed25519 pair without printing or
+  committing secrets. The existing staging credential is now the owner account.
+- Manually released CPU image v11 before the branch push. Live checks passed for login,
+  external signature verification, exact 7,200-second TTL, bearer-only API enforcement,
+  inference-role denial on outcomes/monitoring, owner inference, Dash layout/dependencies,
+  one real prediction, logout, public pages, readiness, and absence of web errors.
+
+Validation completed:
+
+```text
+Python 3.12 isolated environment: 65 passed, 1 CUDA-only skipped
+Ruff: changed deployment/authentication files passed
+JavaScript: shared authentication and both page scripts passed syntax checks
+CPU web image: built successfully and ran as non-root user app
+local container: JWT/JWKS, roles, API prediction, and Dash access passed
+live Heroku v11: readiness and full JWT/role matrix passed; no web errors
+```
+
+## Serving and monitoring deployment on 2026-09-10
+
+Branch: `feat/model-serving-monitoring`, based directly on
+`feat/model_training_evaluation` at `bc41ac1`. The obsolete
+`development/model_training.ipynb` is not included; the tracked training implementation
+remains `etl_scripts/src/model_training_evaluation.py`.
+
+- Deployed one authenticated Eco container app at
+  `https://cdp-2026-credit-risk-4b94df7c43fb.herokuapp.com/`. FastAPI serves JSON/CSV
+  batches and the simple upload frontend; Dash is mounted at `/monitor/`.
+- Attached existing add-on `postgresql-tapered-63136` under `CDP_DATABASE_URL` and
+  created only schema `cdp_2026`. Eight application tables plus the migration ledger exist.
+  The approved 10,763-row CSV sample was imported idempotently. Structural before/after
+  checks left unrelated schema table counts unchanged: `ch0wn3rs_pt_prod=5`,
+  `ctf_auth=1`, `ctf_ctf=8`, and `public=11`.
+- Added schema-fixed SQLAlchemy models, connectors, focused repositories, a PostgreSQL
+  advisory-lock/checksum migration runner with frozen SQL snapshots, model registry, transactional prediction
+  batches/events, observed outcomes, frozen reference profiles, monitoring aggregates,
+  and configurable raw-record retention.
+- Added `deployment_model_config.json`. It selects the local CUDA TPE winner, XGBoost,
+  and records its fixed hyperparameters. The deployment trainer reuses the tracked
+  chronological/temporal pipeline and uses all available local CPU threads. The ignored
+  CPU retrain artifact is deterministic with SHA-256
+  `e9619058075d2fb9bda293bbaa51018395053928a97013ae4c441b5f518e9a10`, threshold
+  `0.09492067992687225`, and temporal OOF default F1 `0.2154255319148936`.
+  This does not replace or reselect against the inspected holdout.
+- The artifact loader verifies its hash, `[0, 1]` class order, prediction interface, and
+  exact dependency versions. A config-driven build script supports every learned family
+  with a CPU runtime, so changing the winner or parameters does not change serving code.
+- Added strict atomic batch validation, idempotency-key conflict/replay semantics,
+  initial Basic authentication (superseded by the JWT role boundary above), outcome
+  ingestion, and protected aggregate-only dashboards.
+  Monitoring computes feature/score PSI, missingness, unknown categories,
+  predicted-default rate, mature outcome performance, and calibration; low-volume or
+  single-class windows are explicitly `insufficient_data`.
+- Added separate non-root web and release Docker images. The initial Heroku release ran
+  the migration/sample command successfully and scaled exactly one Eco web dyno. Docker
+  Manifest V2 Schema 2 is forced for registry compatibility.
+- Added a branch-push deployment GitHub Action. It retrains, pushes, releases, and checks
+  readiness for every branch. Secrets are stored in GitHub; the dedicated Heroku
+  authorization lasts one year from this date. A free Heroku Scheduler job (`1341184`)
+  runs the idempotent monitoring catch-up and retention command daily at 06:30 UTC; the
+  monitoring Action remains available as a manual recovery path without a duplicate cron.
+
+Validation completed:
+
+```text
+python -m pytest -q tests
+63 passed, 1 skipped in 41.59s (CUDA-only skip in the CPU environment)
+
+local artifact: 256 rows, finite [P(default), P(on-time)], max sum error 0
+fresh PostgreSQL 17: migration 0001 applied once, reran idempotently, unrelated table retained
+local Docker: release seeded 10,763 rows; web and release run as uid/gid 999 (app)
+local container stack: health/auth/frontend/Dash/model/prediction/replay all passed
+live: liveness 200, readiness 200, unauthenticated frontend 401
+live authenticated: frontend 200, model 200, JSON prediction 200, Dash 200
+live Dash: layout 200, dependencies 200, aggregate callback 200
+live monitoring: seven catch-up windows complete; repeated window is replayed
+Heroku Scheduler: daily Eco job 1341184 saved at 06:30 UTC, not paused
+live restart: readiness returned to 200; prediction idempotency replay remained true
+release idempotency: no migrations or sample rows applied on the second run
+```
+
+The deployed model remains **staging/demo only**. Feature snapshot timing and outcome
+maturity are unresolved, the holdout has already been inspected, and sparse production
+outcomes mean performance pages will initially show insufficient data. Model binaries,
+record-level exports, local environments, and optimization databases remain ignored.
+
 ## Checkpoint and Latest Request
 
 Branch: `feat/model_training_evaluation`. Remote: `cdp_2026`

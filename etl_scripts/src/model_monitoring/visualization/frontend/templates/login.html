@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CDP 2026 monitoring</title>
+  <style>
+    :root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #172033; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f5f7fb; }
+    main { max-width: 680px; margin: 4rem auto; padding: 0 1.2rem; }
+    section { background: white; padding: 1.7rem; border-radius: 12px; box-shadow: 0 8px 30px #1d294012; }
+    form { display: grid; gap: 1rem; }
+    label { font-weight: 600; }
+    input { width: 100%; margin-top: .35rem; border: 1px solid #cbd3e1; border-radius: 6px; padding: .7rem; }
+    button { background: #3157c8; color: white; border: 0; border-radius: 6px; padding: .75rem 1rem; cursor: pointer; }
+    a { color: #3157c8; }
+    .muted { color: #5f6878; }
+    .error { color: #a52121; }
+  </style>
+</head>
+<body>
+<main>
+  <section>
+    <h1>Model monitoring</h1>
+    <p class="muted">The monitoring visualization is an independent owner-only service.</p>
+    <form id="login-form">
+      <label>Username<input id="username" autocomplete="username" required></label>
+      <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
+      <button type="submit">Open monitoring</button>
+    </form>
+    <p id="status" role="status" class="muted">Only owner accounts can access aggregate monitoring.</p>
+    <p><a href="{{ inference_service_url }}">Return to inference</a></p>
+  </section>
+</main>
+<script>
+  'use strict';
+  const form = document.getElementById('login-form');
+  const status = document.getElementById('status');
+  form.addEventListener('submit', async event => {
+    event.preventDefault(); status.textContent = 'Signing in…'; status.className = 'muted';
+    const response = await fetch('/v1/auth/login', {
+      method: 'POST', credentials: 'same-origin',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        username: document.getElementById('username').value,
+        password: document.getElementById('password').value
+      })
+    });
+    const payload = await response.json();
+    if (!response.ok) {
+      status.textContent = payload.detail || 'Login failed'; status.className = 'error'; return;
+    }
+    if (payload.role !== 'owner') {
+      await fetch('/v1/auth/logout', {method: 'POST', credentials: 'same-origin'});
+      status.textContent = 'Owner role required'; status.className = 'error'; return;
+    }
+    const next = new URLSearchParams(location.search).get('next');
+    location.assign(next && next.startsWith('/monitor') ? next : '/monitor/');
+  });
+</script>
+</body>
+</html>

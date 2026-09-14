@@ -1,0 +1,28 @@
+name: Run model monitoring
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cdp-2026-monitoring
+  cancel-in-progress: false
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+      HEROKU_MONITORING_BATCH_APP_NAME: ${{ secrets.HEROKU_MONITORING_BATCH_APP_NAME }}
+    steps:
+      - name: Install Heroku CLI
+        run: curl https://cli-assets.heroku.com/install.sh | sh
+
+      - name: Compute missed windows and enforce retention
+        run: >-
+          heroku run --no-tty --app "$HEROKU_MONITORING_BATCH_APP_NAME" --
+          python -m etl_scripts.src.model_monitoring compute
+          --catch-up --include-retention

@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "stage": "staging",
+  "model_family": "xgboost",
+  "hyperparameters": {
+    "n_estimators": 1100,
+    "max_depth": 5,
+    "learning_rate": 0.008176981404183077,
+    "min_child_weight": 1.645162373974084,
+    "subsample": 0.6716638394064026,
+    "colsample_bytree": 0.5455755868227329,
+    "reg_alpha": 0.3625775420605851,
+    "reg_lambda": 0.049399493340115154,
+    "balanced": false
+  },
+  "training": {
+    "random_state": 42,
+    "device": "cpu",
+    "threads": 0,
+    "training_scope": "chronological_training_partition"
+  },
+  "selection": {
+    "source": "local_cuda_tpe_270_trials",
+    "protocol_fingerprint": "5c9ad52cfc3d6f4986f27d99cca7daf4d91f5a4f5599834687910ce505f6a9af",
+    "rule": "within tolerance of best mean F1; temporal std, seed std, CPU batch ms, bytes, name ascending"
+  },
+  "runtime": {
+    "class_order": [0, 1],
+    "default_class": 0,
+    "max_batch_rows": 1000
+  }
+}

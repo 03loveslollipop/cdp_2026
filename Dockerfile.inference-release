@@ -1,0 +1,4 @@
+FROM busybox:1.37
+
+USER 65534:65534
+CMD ["true"]

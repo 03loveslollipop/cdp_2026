@@ -1,0 +1,6 @@
+pandas==3.0.5
+numpy==2.5.3
+scipy==1.18.1
+scikit-learn==1.9.0
+sqlalchemy==2.0.52
+psycopg[binary]==3.3.5

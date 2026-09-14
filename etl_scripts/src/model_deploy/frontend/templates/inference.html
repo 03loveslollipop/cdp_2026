@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CDP 2026 single inference</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<main>
+  <nav>
+    <h1>Visual model inference</h1>
+    <div><a href="/">Batch upload</a><a id="monitor-link" href="{{ monitor_ui_url }}" hidden>Monitoring</a></div>
+  </nav>
+  <section id="login-section">
+    <h2>Sign in</h2>
+    <form id="login-form" class="login-grid">
+      <label>Username<input id="username" autocomplete="username" required></label>
+      <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
+      <button type="submit">Get 2-hour token</button>
+    </form>
+    <p id="login-status" role="status" class="muted">Inference and owner accounts can run predictions. Monitoring requires owner.</p>
+  </section>
+  <section id="app-section" hidden>
+    <div class="toolbar">
+      <p id="session-status" class="muted"></p>
+      <button id="logout" type="button" class="secondary">Sign out</button>
+    </div>
+    <p>Fields are generated from the active model artifact, so another configured winner can be deployed without changing this page. Blank inputs are submitted as missing values.</p>
+    <form id="prediction-form">
+      <div id="fields" class="field-grid"></div>
+      <label style="margin-top:1rem">External reference (optional)<input id="external-reference" maxlength="255"></label>
+      <button style="margin-top:1rem" type="submit">Run inference</button>
+    </form>
+    <p id="status" role="status"></p>
+    <pre id="result" hidden></pre>
+  </section>
+</main>
+<script src="/static/auth.js"></script>
+<script>
+  const loginSection = document.getElementById('login-section');
+  const appSection = document.getElementById('app-section');
+  const loginForm = document.getElementById('login-form');
+  const loginStatus = document.getElementById('login-status');
+  const sessionStatus = document.getElementById('session-status');
+  const monitorLink = document.getElementById('monitor-link');
+  const monitorUrl = {{ monitor_ui_url | tojson }};
+  const fields = document.getElementById('fields');
+  const status = document.getElementById('status');
+  const result = document.getElementById('result');
+  let predictorFields = [];
+
+  const showLogin = message => {
+    CDPAuth.clear(); loginSection.hidden = false; appSection.hidden = true; monitorLink.hidden = true;
+    if (message) { loginStatus.textContent = message; loginStatus.className = 'error'; }
+  };
+  const renderFields = contract => {
+    predictorFields = contract.predictor_fields;
+    fields.replaceChildren();
+    predictorFields.forEach((field, index) => {
+      const label = document.createElement('label'); label.textContent = field.name;
+      const input = document.createElement('input'); input.name = field.name;
+      if (field.data_type === 'numeric') { input.type = 'number'; input.step = 'any'; }
+      else if (field.suggested_values.length) {
+        const list = document.createElement('datalist'); list.id = `values-${index}`;
+        field.suggested_values.forEach(value => { const option = document.createElement('option'); option.value = value; list.appendChild(option); });
+        input.setAttribute('list', list.id); label.appendChild(list);
+      }
+      label.appendChild(input); fields.appendChild(label);
+    });
+  };
+  const activate = async session => {
+    loginSection.hidden = true; appSection.hidden = false;
+    monitorLink.hidden = session.role !== 'owner' || !monitorUrl;
+    sessionStatus.textContent = `Signed in as ${session.username} (${session.role}); token expires at ${new Date(session.expiresAt * 1000).toLocaleTimeString()}.`;
+    const response = await CDPAuth.request('/v1/model');
+    if (!response.ok) throw new Error('Unable to load the active model contract');
+    renderFields(await response.json());
+  };
+
+  loginForm.addEventListener('submit', async event => {
+    event.preventDefault(); loginStatus.textContent = 'Signing in…'; loginStatus.className = 'muted';
+    try {
+      await activate(await CDPAuth.login(
+        document.getElementById('username').value,
+        document.getElementById('password').value
+      ));
+      loginForm.reset();
+    } catch (error) { loginStatus.textContent = error.message; loginStatus.className = 'error'; }
+  });
+  document.getElementById('logout').addEventListener('click', async () => {
+    await CDPAuth.logout(); showLogin('Signed out.');
+  });
+
+  document.getElementById('prediction-form').addEventListener('submit', async event => {
+    event.preventDefault(); status.textContent = 'Running inference…'; status.className = ''; result.hidden = true;
+    const record = {};
+    predictorFields.forEach(field => {
+      const raw = event.target.elements[field.name].value.trim();
+      record[field.name] = raw === '' ? null : (field.data_type === 'numeric' ? Number(raw) : raw);
+    });
+    const reference = document.getElementById('external-reference').value.trim();
+    if (reference) record._external_reference = reference;
+    try {
+      const response = await CDPAuth.request('/v1/predictions', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'Idempotency-Key': crypto.randomUUID()},
+        body: JSON.stringify({records: [record]})
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.detail || 'Inference failed');
+      const prediction = payload.items[0];
+      result.textContent = JSON.stringify({
+        prediction: prediction.predicted_label === 0 ? 'default' : 'on-time',
+        default_probability: prediction.default_probability,
+        on_time_probability: prediction.on_time_probability,
+        event_id: prediction.event_id,
+        model_family: payload.model_family
+      }, null, 2);
+      result.hidden = false; status.textContent = 'Inference completed.'; status.className = 'success';
+    } catch (error) {
+      status.textContent = error.message; status.className = 'error';
+      if (!CDPAuth.current()) showLogin('Your session expired. Sign in again.');
+    }
+  });
+
+  const existingSession = CDPAuth.current();
+  if (existingSession) activate(existingSession).catch(error => showLogin(error.message));
+</script>
+</body>
+</html>

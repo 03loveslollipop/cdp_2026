@@ -1,0 +1,11 @@
+numpy==2.5.3
+pandas==3.0.5
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+jinja2==3.1.6
+sqlalchemy==2.0.52
+psycopg[binary]==3.3.5
+httpx==0.28.1
+dash==4.4.1
+plotly==6.9.0
+a2wsgi==1.10.10

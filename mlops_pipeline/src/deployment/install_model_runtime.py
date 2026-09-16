@@ -19,12 +19,13 @@ FAMILY_REQUIREMENTS = {
     "lightgbm": ["lightgbm==4.7.0"],
     "pytorch_mlp": ["torch==2.11.0"],
 }
+DEPLOYMENT_CONFIG_PATH = Path(__file__).with_name("deployment_model_config.json")
 
 
 def main() -> None:
-    path = Path(sys.argv[1] if len(sys.argv) > 1 else
-                "mlops_pipeline/src/deployment/deployment_model_config.json")
-    family = json.loads(path.read_text(encoding="utf-8"))["model_family"]
+    family = json.loads(
+        DEPLOYMENT_CONFIG_PATH.read_text(encoding="utf-8")
+    )["model_family"]
     if family not in FAMILY_REQUIREMENTS:
         raise SystemExit(f"Unsupported deployment model family: {family}")
     requirements = FAMILY_REQUIREMENTS[family]

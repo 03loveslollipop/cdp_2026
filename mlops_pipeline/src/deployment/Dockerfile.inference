@@ -14,10 +14,10 @@ RUN apt-get update \
 
 WORKDIR /app
 COPY mlops_pipeline/src/deployment/requirements-inference.txt ./requirements-inference.txt
-COPY mlops_pipeline/src/deployment/install_model_runtime.py ./install_model_runtime.py
+COPY mlops_pipeline/src/deployment/install_model_runtime.py ./mlops_pipeline/src/deployment/install_model_runtime.py
 COPY mlops_pipeline/src/deployment/deployment_model_config.json ./mlops_pipeline/src/deployment/deployment_model_config.json
 RUN python -m pip install --no-cache-dir -r requirements-inference.txt \
-    && python install_model_runtime.py mlops_pipeline/src/deployment/deployment_model_config.json
+    && python mlops_pipeline/src/deployment/install_model_runtime.py
 
 COPY --chown=app:app mlops_pipeline ./mlops_pipeline
 COPY --chown=app:app deployment_artifacts ./deployment_artifacts

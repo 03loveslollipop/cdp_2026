@@ -52,7 +52,7 @@ jobs:
       - name: Install deployment-training dependencies
         run: |
           python -m pip install -r mlops_pipeline/src/deployment/requirements-serving.txt
-          python mlops_pipeline/src/deployment/install_model_runtime.py mlops_pipeline/src/deployment/deployment_model_config.json
+          python mlops_pipeline/src/deployment/install_model_runtime.py
 
       - name: Train configured winning model
         run: python -m mlops_pipeline.src.deployment.model_deploy train --output-dir deployment_artifacts

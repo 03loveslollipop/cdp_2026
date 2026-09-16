@@ -8,9 +8,8 @@ production services. CUDA is intentionally not part of tracked code or deploymen
 ```text
 .
 ├── mlops_pipeline/
-│   ├── requirements-training.txt       training and search dependencies
 │   └── src/
-│       ├── Cargar_datos.py             raw-data inspection entry point
+│       ├── load_data.py                raw-data inspection entry point
 │       ├── eda.ipynb                   exploratory analysis
 │       ├── ft_engineering.py            leakage-safe preparation
 │       ├── heuristic_model.py           interpretable baseline
@@ -40,9 +39,9 @@ credentials, record-level predictions, and CUDA experiments are also ignored.
 ## Local development
 
 ```bash
-python -m pip install -r requirements.txt -r mlops_pipeline/requirements-training.txt
+python -m pip install -r requirements.txt
 python -m pytest -q tests
-python -m mlops_pipeline.src.Cargar_datos
+python -m mlops_pipeline.src.load_data
 python -m mlops_pipeline.src.model_training_evaluation --smoke --output-dir runs/smoke
 ```
 

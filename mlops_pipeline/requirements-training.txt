@@ -1,6 +1,0 @@
-# Install after requirements.txt. For CUDA, install the matching PyTorch wheel
-# for the host driver using https://pytorch.org/get-started/locally/ first.
-torch>=2.2,<3
-xgboost>=2,<4
-lightgbm>=4,<5
-optuna==4.9.0

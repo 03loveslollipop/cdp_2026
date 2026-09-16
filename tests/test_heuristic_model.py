@@ -6,8 +6,8 @@ import pandas as pd
 import pytest
 from sklearn.base import clone
 
-from etl_scripts.src.ft_engineering import load_config, read_raw_data, split_and_prepare
-from etl_scripts.src.heuristic_model import COMPONENTS, CreditRiskHeuristicClassifier
+from mlops_pipeline.src.ft_engineering import load_config, read_raw_data, split_and_prepare
+from mlops_pipeline.src.heuristic_model import COMPONENTS, CreditRiskHeuristicClassifier
 
 
 @pytest.fixture

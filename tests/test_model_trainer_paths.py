@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from etl_scripts.src.model_deploy.services import model_trainer
+from mlops_pipeline.src.deployment.model_deploy.services import model_trainer
 
 
 def test_deployment_artifacts_cannot_escape_ignored_directory(monkeypatch, tmp_path):

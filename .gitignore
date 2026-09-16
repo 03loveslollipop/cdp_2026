@@ -37,7 +37,7 @@ data/
 *.csv
 # ...except the source extract this project is built on, which is small and is
 # needed to reproduce the notebook.
-!dataset.csv
+!database.csv
 *.tsv
 *.xlsx
 *.xls
@@ -136,3 +136,5 @@ Thumbs.db
 *.ntvs*
 *.njsproj
 *.sln
+*.md
+!README.md

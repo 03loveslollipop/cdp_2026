@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from etl_scripts.src.database import __main__ as commands
+from mlops_pipeline.src.deployment.database import __main__ as commands
 
 
 @pytest.fixture

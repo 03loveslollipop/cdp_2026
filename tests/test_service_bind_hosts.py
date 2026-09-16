@@ -11,9 +11,9 @@ import uvicorn
 @pytest.mark.parametrize(
     "module_name,arguments",
     [
-        ("etl_scripts.src.model_auth.__main__", None),
-        ("etl_scripts.src.model_deploy.__main__", ["serve"]),
-        ("etl_scripts.src.model_monitoring.visualization.__main__", None),
+        ("mlops_pipeline.src.deployment.model_auth.__main__", None),
+        ("mlops_pipeline.src.deployment.model_deploy.__main__", ["serve"]),
+        ("mlops_pipeline.src.deployment.model_monitoring.visualization.__main__", None),
     ],
 )
 @pytest.mark.parametrize("configured_host", [None, "0.0.0.0"])

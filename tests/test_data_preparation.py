@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from etl_scripts.src.ft_engineering import (
+from mlops_pipeline.src.ft_engineering import (
     build_data_preparation_pipeline,
     chronological_train_test_split,
     extract_dataset,
@@ -23,7 +23,7 @@ from etl_scripts.src.ft_engineering import (
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-CONFIG_PATH = PROJECT_ROOT / "etl_scripts" / "src" / "config.json"
+CONFIG_PATH = PROJECT_ROOT / "config.json"
 
 
 @pytest.fixture
@@ -270,7 +270,7 @@ def test_cli_artifact_loads_from_imported_module(raw_sample, tmp_path):
     subprocess.run(
         [
             sys.executable,
-            str(PROJECT_ROOT / "etl_scripts" / "src" / "ft_engineering.py"),
+            str(PROJECT_ROOT / "mlops_pipeline" / "src" / "ft_engineering.py"),
             "fit",
             "--input",
             str(source),
@@ -303,7 +303,7 @@ def test_split_fit_cli_writes_both_partitions(raw_sample, tmp_path):
     subprocess.run(
         [
             sys.executable,
-            str(PROJECT_ROOT / "etl_scripts" / "src" / "ft_engineering.py"),
+            str(PROJECT_ROOT / "mlops_pipeline" / "src" / "ft_engineering.py"),
             "split-fit",
             "--input",
             str(source),

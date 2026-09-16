@@ -1,11 +1,11 @@
 import pytest
 
-from etl_scripts.src.database.connectors.postgres import (
+from mlops_pipeline.src.deployment.database.connectors.postgres import (
     SCHEMA_NAME,
     database_url,
 )
-from etl_scripts.src.database.migrations.versions import v0001_initial, v0002_auth_users
-from etl_scripts.src.database.models import Base
+from mlops_pipeline.src.deployment.database.migrations.versions import v0001_initial, v0002_auth_users
+from mlops_pipeline.src.deployment.database.models import Base
 
 
 def test_all_application_tables_and_foreign_keys_are_schema_qualified():

@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 
 import pytest
 
-from etl_scripts.src.database import seed
+from mlops_pipeline.src.deployment.database import seed
 
 
 def write_source(tmp_path, csv_text):

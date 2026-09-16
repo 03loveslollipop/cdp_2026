@@ -12,15 +12,15 @@ import pandas as pd
 import pytest
 from sklearn.base import clone
 
-from etl_scripts.src.ft_engineering import (
+from mlops_pipeline.src.ft_engineering import (
     chronological_train_test_split, extract_dataset, load_config, read_raw_data,
 )
-from etl_scripts.src.model_training_evaluation import (
+from mlops_pipeline.src.model_training_evaluation import (
     DefaultEventBooster, build_model, choose_threshold, load_training_config,
     publish_comparison, select_best_model,
     summarize_classification, temporal_folds, train_and_evaluate,
 )
-from etl_scripts.src.torch_classifier import TorchCreditClassifier
+from mlops_pipeline.src.torch_classifier import TorchCreditClassifier
 
 
 @pytest.fixture
@@ -191,7 +191,7 @@ def test_holdout_cannot_change_training_selection_or_artifact(raw, settings, tmp
 def test_inner_preparation_is_fitted_before_calibration_and_validation(
     raw, settings, monkeypatch,
 ):
-    import etl_scripts.src.model_training_evaluation as training
+    import mlops_pipeline.src.model_training_evaluation as training
 
     original = training.build_model
     observed = []
@@ -222,7 +222,7 @@ def test_cli_artifact_loads_in_separate_process(raw, settings, tmp_path):
     (tmp_path / "config.json").write_text(json.dumps(settings))
     output = tmp_path / "cli"
     subprocess.run([
-        sys.executable, "-m", "etl_scripts.src.model_training_evaluation",
+        sys.executable, "-m", "mlops_pipeline.src.model_training_evaluation",
         "--input", str(tmp_path / "input.csv"),
         "--training-config", str(tmp_path / "config.json"),
         "--output-dir", str(output),

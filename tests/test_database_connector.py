@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from etl_scripts.src.database.connectors import postgres
+from mlops_pipeline.src.deployment.database.connectors import postgres
 
 
 def test_engine_configuration_uses_only_explicit_project_connection(monkeypatch):

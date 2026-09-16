@@ -8,8 +8,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from etl_scripts.src.model_monitoring.services import monitoring_runner
-from etl_scripts.src.model_monitoring.settings import MonitoringSettings
+from mlops_pipeline.src.deployment.model_monitoring.services import monitoring_runner
+from mlops_pipeline.src.deployment.model_monitoring.settings import MonitoringSettings
 
 
 START = datetime(2026, 9, 10, tzinfo=UTC)

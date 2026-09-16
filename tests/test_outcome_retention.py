@@ -6,8 +6,8 @@ from contextlib import nullcontext
 from datetime import UTC, datetime
 from types import SimpleNamespace
 
-from etl_scripts.src.model_monitoring.models.outcomes import OutcomeItem
-from etl_scripts.src.model_monitoring.services import outcome_service, retention_service
+from mlops_pipeline.src.deployment.model_monitoring.models.outcomes import OutcomeItem
+from mlops_pipeline.src.deployment.model_monitoring.services import outcome_service, retention_service
 
 
 def test_outcome_service_uses_single_transaction(monkeypatch):

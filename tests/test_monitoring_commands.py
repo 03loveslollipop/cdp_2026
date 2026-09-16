@@ -6,8 +6,8 @@ import json
 
 import pytest
 
-from etl_scripts.src.model_monitoring import __main__ as commands
-from etl_scripts.src.model_monitoring.settings import MonitoringSettings
+from mlops_pipeline.src.deployment.model_monitoring import __main__ as commands
+from mlops_pipeline.src.deployment.model_monitoring.settings import MonitoringSettings
 
 
 @pytest.mark.parametrize(

@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from etl_scripts.src.model_deploy.__main__ import main as deployment_main
 from etl_scripts.src.model_deploy.services import model_trainer
 
 
@@ -23,6 +24,14 @@ def deployment_config():
         },
         "runtime": {"class_order": [0, 1]},
     }
+
+
+def test_deployment_cli_rejects_cuda(tmp_path):
+    with pytest.raises(SystemExit) as error:
+        deployment_main([
+            "train", "--output-dir", str(tmp_path), "--device", "cuda"
+        ])
+    assert error.value.code == 2
 
 
 def test_deployment_config_rejects_invalid_contract(monkeypatch, tmp_path):

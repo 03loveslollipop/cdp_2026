@@ -5,10 +5,10 @@ applications:
 
 | Responsibility | Heroku app | Public entry point |
 | --- | --- | --- |
-| Authentication and JWT issuance | `cdp-2026-auth-service` | [Authentication health](https://cdp-2026-auth-service-8fea9d62d1e3.herokuapp.com/health/ready) |
-| Model inference and visual inference | `cdp-2026-credit-risk` | [Inference application](https://cdp-2026-credit-risk-4b94df7c43fb.herokuapp.com/) |
+| Authentication and JWT issuance | `cdp-2026-auth-service` | [Authentication health](https://auth.cdp2026.02labs.me/health/ready) |
+| Model inference and visual inference | `cdp-2026-credit-risk` | [Inference application](https://api.cdp2026.02labs.me/) |
 | Scheduled monitoring calculations | `cdp-2026-monitor-batch` | No continuously running dyno |
-| Monitoring visualization and outcomes | `cdp-2026-monitor-ui` | [Owner monitoring login](https://cdp-2026-monitor-ui-9b0ac10ff725.herokuapp.com/) |
+| Monitoring visualization and outcomes | `cdp-2026-monitor-ui` | [Owner monitoring login](https://monitor.cdp2026.02labs.me/) |
 
 ```text
 Browser or API client
@@ -196,11 +196,13 @@ Each service has a separate non-root image and pinned dependency set:
 - `Dockerfile.release` owns migrations on the auth app
 - `Dockerfile.inference-release` prevents inference from inheriting migration work
 
-`.github/workflows/heroku-container.yml` runs on every branch push. It retrains the
-configured winner, pushes service-specific images to each app's Heroku Container Registry,
-then releases in dependency order: auth/migrations, inference, monitoring batch, and
-monitoring visualization. Readiness gates stop the sequence if a dependency fails. The
-batch web formation remains scaled to zero because Scheduler starts one-off dynos.
+`.github/workflows/heroku-container.yml` runs on pushes to `master` and by manual
+dispatch. It retrains the configured winner, pushes service-specific images to each app's
+Heroku Container Registry, then releases in dependency order: auth/migrations, inference,
+monitoring batch, and monitoring visualization. Readiness gates stop the sequence if a
+dependency fails. Pull requests and other branch pushes run tests and SonarCloud without
+changing the shared staging apps. The batch web formation remains scaled to zero because
+Scheduler starts one-off dynos.
 
 Required GitHub secrets are:
 
@@ -210,6 +212,7 @@ Required GitHub secrets are:
 - `HEROKU_MONITORING_BATCH_APP_NAME`
 - `HEROKU_MONITORING_UI_APP_NAME`
 
-The most recent completed branch deployment wins the shared staging environment.
+The most recent completed `master` or manually dispatched deployment wins the shared
+staging environment.
 `.github/workflows/model-monitoring.yml` is a manual recovery path and deliberately has
 no second cron schedule.

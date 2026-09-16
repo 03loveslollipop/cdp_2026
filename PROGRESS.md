@@ -1,5 +1,27 @@
 # Model Training Progress and Handoff
 
+## 2026-09-15 Custom domains and monitoring showcase
+
+- Restricted automatic Heroku deployment to pushes on `master`; pull requests and other
+  branch pushes run CPU tests and SonarCloud only. Manual workflow dispatch remains
+  available for deliberate recovery deployments.
+- Registered `auth.cdp2026.02labs.me`, `api.cdp2026.02labs.me`, and
+  `monitor.cdp2026.02labs.me` on their respective Heroku apps. DNS-only Cloudflare
+  CNAMEs resolve to the assigned Heroku targets, ACM certificates are issued, and
+  HTTPS readiness passes for all three services.
+- Logged one 120-row synthetic showcase batch through the deployed inference runtime's
+  normal validation, prediction, idempotency, and transactional persistence service.
+  The deliberately shifted predictors are demonstration data, not model-validation
+  evidence. The batch completed once and produced 120 on-time decisions with mean
+  default probability 0.075477.
+- Forced a new rolling seven-day monitoring window ending after the showcase batch.
+  Run `c61a8302-2d01-4067-b2fd-3d8444637ad6` completed over 121 prediction rows and
+  wrote 46 aggregate metrics: 22 `ok`, 19 `alert`, 4 `warning`, and one
+  `insufficient_data`. Mature-outcome performance remains unavailable because the
+  window contains no mature outcomes.
+- Removed the stale CUDA choice from the deployment-training CLI. Tracked training and
+  deployment now expose CPU only; CUDA remains confined to the ignored local copy.
+
 ## 2026-09-13 Adaptive Search Update
 
 Branch: `feat/adaptive-training-search` (to be proposed against `master`).

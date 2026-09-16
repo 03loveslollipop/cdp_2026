@@ -25,7 +25,7 @@ production services. CUDA is intentionally not part of tracked code or deploymen
 │           ├── Dockerfile.*             non-root service images
 │           ├── requirements-*.txt       service-specific dependencies
 │           └── deployment_model_config.json deployment model contract
-├── 02_EDA_REPORT/                       EDA report PDF and published analysis figures
+├── 02_eda_report/                       EDA report PDF and published analysis figures
 ├── 03_slides/                           presentation sources and rendered deck assets
 ├── database.csv                         approved non-production source extract
 ├── config.json                          shared data semantics and preparation rules

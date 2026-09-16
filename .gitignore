@@ -138,3 +138,5 @@ Thumbs.db
 *.sln
 *.md
 !README.md
+03_slides/output/pdf/*
+!03_slides/output/pdf/*.pdf

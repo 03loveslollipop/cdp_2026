@@ -554,15 +554,15 @@ def test_every_trainable_family_has_a_runtime_strategy():
 
 
 def test_pytorch_runtime_uses_the_cpu_package_index(monkeypatch, tmp_path):
+    from mlops_pipeline.src.deployment import install_model_runtime
+
     config = tmp_path / "deployment.json"
     config.write_text(json.dumps({"model_family": "pytorch_mlp"}))
     commands = []
-    monkeypatch.setattr("sys.argv", ["install_model_runtime.py", str(config)])
+    monkeypatch.setattr(install_model_runtime, "DEPLOYMENT_CONFIG_PATH", config)
     monkeypatch.setattr(
         "subprocess.run", lambda command, check: commands.append(command)
     )
-    from mlops_pipeline.src.deployment import install_model_runtime
-
     install_model_runtime.main()
     assert "--index-url" in commands[0]
     assert "--extra-index-url" not in commands[0]

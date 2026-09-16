@@ -819,7 +819,7 @@ def _validate_settings(settings, device):
         if dependency in {"torch", "lightgbm", "xgboost"}:
             if importlib.util.find_spec(dependency) is None:
                 raise ImportError(
-                    f"{name} requires {dependency}; install mlops_pipeline/requirements-training.txt"
+                    f"{name} requires {dependency}; install requirements.txt"
                 )
     search = settings.get("search", {"method": "grid"})
     if search.get("method") not in {"grid", "tpe"}:
@@ -836,7 +836,7 @@ def _validate_settings(settings, device):
                 or not search.get("study_storage")):
             raise ValueError("Invalid TPE search configuration")
         if importlib.util.find_spec("optuna") is None:
-            raise ImportError("TPE search requires optuna; install mlops_pipeline/requirements-training.txt")
+            raise ImportError("TPE search requires optuna; install requirements.txt")
         for name in settings["models"]:
             if name not in REFERENCE_MODELS:
                 if name not in settings.get("search_spaces", {}):

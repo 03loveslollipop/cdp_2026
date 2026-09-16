@@ -3,14 +3,13 @@
 ## Stage 1: collaboration
 
 Use feature branches and bring completed work back to the repository default branch
-through review. The feature-engineering pipeline is merged; the heuristic and model
-training work are merged. The four serving services in this branch still need review
-and merge into `master`.
+through review. Feature engineering, the heuristic and model-training pipelines,
+quality gates, four serving services, and adaptive search are merged into `master`.
 
 ## Stage 2: test automation
 
-SonarCloud analysis is configured on `master` through PR #6. PR #7 proposes CPU-only
-tests, XML coverage, syntax, and Ruff checks; it must be reviewed and merged separately.
+SonarCloud analysis is configured on `master` through PR #6. PR #7 merged CPU-only
+tests, XML coverage, syntax, and Ruff checks.
 SonarCloud provides static code-quality and security analysis. The exploratory notebook
 has pre-existing Ruff findings and is excluded from that style check.
 
@@ -22,6 +21,8 @@ has pre-existing Ruff findings and is excluded from that style check.
 - `etl_scripts/src/model_training_evaluation.py`: implemented tracked training,
   evaluation, model selection, and artifact export pipeline. The previously added
   `model_training.ipynb` is obsolete and is not part of this branch.
+- `etl_scripts/src/adaptive_search.py`: implemented budget-controlled CPU-only TPE
+  search for the tracked training pipeline.
 - `etl_scripts/src/model_auth/`: implemented independent PostgreSQL-backed login, Ed25519
   JWT issuance, protected introspection, and public JWKS service.
 - `etl_scripts/src/model_deploy/`: implemented independent generic FastAPI inference API,
@@ -46,8 +47,10 @@ performance monitoring. Model binaries and record-level exports must remain outs
 
 ## Remaining work after serving integration
 
-- Add budget-controlled adaptive hyperparameter search to the tracked training pipeline,
-  preserving chronological validation and CPU-only artifact portability. The CUDA TPE
-  experiment remains local and is not a substitute for a reviewed implementation.
-- Establish feature snapshot timing and outcome maturity, then validate on genuinely new
-  temporal data before considering promotion beyond the staging/demo deployment.
+- [x] Configure custom-domain DNS and TLS for `auth.cdp2026.02labs.me`,
+  `api.cdp2026.02labs.me`, and `monitor.cdp2026.02labs.me`. Their DNS-only Cloudflare
+  CNAME records point to the assigned Heroku DNS targets, Heroku ACM certificates are
+  issued, and HTTPS health, public-page, and protected-route checks pass. The scheduled
+  monitoring-batch app does not need a public DNS record.
+- [ ] Establish feature snapshot timing and outcome maturity, then validate on genuinely
+  new temporal data before considering promotion beyond the staging/demo deployment.

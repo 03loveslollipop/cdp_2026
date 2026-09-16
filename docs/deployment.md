@@ -5,10 +5,10 @@ applications:
 
 | Responsibility | Heroku app | Public entry point |
 | --- | --- | --- |
-| Authentication and JWT issuance | `cdp-2026-auth-service` | [Authentication health](https://cdp-2026-auth-service-8fea9d62d1e3.herokuapp.com/health/ready) |
-| Model inference and visual inference | `cdp-2026-credit-risk` | [Inference application](https://cdp-2026-credit-risk-4b94df7c43fb.herokuapp.com/) |
+| Authentication and JWT issuance | `cdp-2026-auth-service` | [Authentication health](https://auth.cdp2026.02labs.me/health/ready) |
+| Model inference and visual inference | `cdp-2026-credit-risk` | [Inference application](https://api.cdp2026.02labs.me/) |
 | Scheduled monitoring calculations | `cdp-2026-monitor-batch` | No continuously running dyno |
-| Monitoring visualization and outcomes | `cdp-2026-monitor-ui` | [Owner monitoring login](https://cdp-2026-monitor-ui-9b0ac10ff725.herokuapp.com/) |
+| Monitoring visualization and outcomes | `cdp-2026-monitor-ui` | [Owner monitoring login](https://monitor.cdp2026.02labs.me/) |
 
 ```text
 Browser or API client

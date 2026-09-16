@@ -2,6 +2,9 @@
 
 ## 2026-09-15 Custom domains and monitoring showcase
 
+- Restricted automatic Heroku deployment to pushes on `master`; pull requests and other
+  branch pushes run CPU tests and SonarCloud only. Manual workflow dispatch remains
+  available for deliberate recovery deployments.
 - Registered `auth.cdp2026.02labs.me`, `api.cdp2026.02labs.me`, and
   `monitor.cdp2026.02labs.me` on their respective Heroku apps. DNS-only Cloudflare
   CNAMEs resolve to the assigned Heroku targets, ACM certificates are issued, and

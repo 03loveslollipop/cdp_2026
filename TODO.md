@@ -38,8 +38,9 @@ has pre-existing Ruff findings and is excluded from that style check.
   runtime class order, and deployment settings.
 - `dataset.csv`: approved non-production sample, loaded idempotently into Heroku Postgres.
 - Service-specific Dockerfiles and requirements, GitHub Actions, and Heroku Scheduler:
-  implemented CPU-only non-root images, ordered branch-push CI/CD, an independent daily
-  monitoring app, and a manual monitoring recovery workflow.
+  implemented CPU-only non-root images, ordered `master` deployment CI/CD, an independent
+  daily monitoring app, and a manual monitoring recovery workflow. Pull requests run
+  tests and SonarCloud without deploying to Heroku.
 
 The deployed model is exposed for batch prediction. Predictor records, returned
 probabilities, decisions, and later outcomes are stored for periodic population-drift and

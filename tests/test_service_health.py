@@ -9,9 +9,9 @@ from types import SimpleNamespace
 
 from fastapi.responses import JSONResponse
 
-from etl_scripts.src.model_auth.api import health as auth_health
-from etl_scripts.src.model_deploy.api import health as inference_health
-from etl_scripts.src.model_monitoring.visualization.api import health as monitor_health
+from mlops_pipeline.src.deployment.model_auth.api import health as auth_health
+from mlops_pipeline.src.deployment.model_deploy.api import health as inference_health
+from mlops_pipeline.src.deployment.model_monitoring.visualization.api import health as monitor_health
 
 
 def request(**state):

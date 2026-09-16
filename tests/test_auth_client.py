@@ -7,8 +7,8 @@ import asyncio
 import httpx
 import pytest
 
-from etl_scripts.src.service_clients.authentication import AuthClient
-from etl_scripts.src.service_clients.contracts import (
+from mlops_pipeline.src.deployment.service_clients.authentication import AuthClient
+from mlops_pipeline.src.deployment.service_clients.contracts import (
     AuthRole,
     AuthenticationError,
     AuthServiceUnavailable,

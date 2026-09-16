@@ -9,14 +9,14 @@ import pandas as pd
 import pytest
 from fastapi import HTTPException, UploadFile
 
-from etl_scripts.src.model_deploy.api import predictions
-from etl_scripts.src.model_deploy.models.api import PredictionRequest
-from etl_scripts.src.model_deploy.services.prediction_service import (
+from mlops_pipeline.src.deployment.model_deploy.api import predictions
+from mlops_pipeline.src.deployment.model_deploy.models.api import PredictionRequest
+from mlops_pipeline.src.deployment.model_deploy.services.prediction_service import (
     IdempotencyConflictError,
     PredictionValidationError,
 )
-from etl_scripts.src.model_monitoring.visualization.api import outcomes
-from etl_scripts.src.database.repositories.outcome_repository import OutcomeConflictError
+from mlops_pipeline.src.deployment.model_monitoring.visualization.api import outcomes
+from mlops_pipeline.src.deployment.database.repositories.outcome_repository import OutcomeConflictError
 
 
 def inference_runtime(max_upload_bytes=100):

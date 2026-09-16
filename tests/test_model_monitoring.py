@@ -3,16 +3,16 @@ from contextlib import nullcontext
 import numpy as np
 import pytest
 
-from etl_scripts.src.model_monitoring.services.drift_service import (
+from mlops_pipeline.src.deployment.model_monitoring.services.drift_service import (
     calculate_drift,
     population_stability_index,
 )
-from etl_scripts.src.model_monitoring.services.performance_service import (
+from mlops_pipeline.src.deployment.model_monitoring.services.performance_service import (
     calculate_performance,
     expected_calibration_error,
 )
-from etl_scripts.src.model_monitoring.services.dashboard_service import DashboardService
-from etl_scripts.src.model_monitoring.settings import MonitoringSettings
+from mlops_pipeline.src.deployment.model_monitoring.services.dashboard_service import DashboardService
+from mlops_pipeline.src.deployment.model_monitoring.settings import MonitoringSettings
 
 
 SETTINGS = MonitoringSettings(minimum_rows=4)
@@ -94,11 +94,11 @@ def test_dashboard_requests_aggregates_for_only_the_active_model(monkeypatch):
             return type("ActiveModel", (), {"id": "active-model"})()
 
     monkeypatch.setattr(
-        "etl_scripts.src.model_monitoring.services.dashboard_service.MonitoringRepository",
+        "mlops_pipeline.src.deployment.model_monitoring.services.dashboard_service.MonitoringRepository",
         Repository,
     )
     monkeypatch.setattr(
-        "etl_scripts.src.model_monitoring.services.dashboard_service.ModelRepository",
+        "mlops_pipeline.src.deployment.model_monitoring.services.dashboard_service.ModelRepository",
         ActiveModelRepository,
     )
     service = DashboardService(lambda: nullcontext(object()))

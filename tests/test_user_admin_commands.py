@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from etl_scripts.src.database import user_admin
+from mlops_pipeline.src.deployment.database import user_admin
 
 
 def user(username="owner", role="owner", active=True):

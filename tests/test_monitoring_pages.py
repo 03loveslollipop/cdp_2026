@@ -4,14 +4,14 @@ from __future__ import annotations
 
 from dash import dash_table, html
 
-from etl_scripts.src.model_monitoring.pages import (
+from mlops_pipeline.src.deployment.model_monitoring.pages import (
     feature_drift_layout,
     operations_layout,
     overview_layout,
     performance_layout,
     predictions_layout,
 )
-from etl_scripts.src.model_monitoring.pages.common import card, latest_rows, metric
+from mlops_pipeline.src.deployment.model_monitoring.pages.common import card, latest_rows, metric
 
 
 ROWS = [

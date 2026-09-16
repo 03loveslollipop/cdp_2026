@@ -4,13 +4,13 @@ from uuid import uuid4
 
 import pytest
 
-from etl_scripts.src.database.auth_bootstrap import bootstrap_auth_users
-from etl_scripts.src.database.passwords import (
+from mlops_pipeline.src.deployment.database.auth_bootstrap import bootstrap_auth_users
+from mlops_pipeline.src.deployment.database.passwords import (
     hash_password,
     normalize_username,
     verify_password,
 )
-from etl_scripts.src.database.user_admin import reset_password, set_active
+from mlops_pipeline.src.deployment.database.user_admin import reset_password, set_active
 
 
 class FakeSessionContext:
@@ -85,11 +85,11 @@ class FakeAuthUserRepository:
 @pytest.fixture
 def fake_database(monkeypatch):
     monkeypatch.setattr(
-        "etl_scripts.src.database.auth_bootstrap.AuthUserRepository",
+        "mlops_pipeline.src.deployment.database.auth_bootstrap.AuthUserRepository",
         FakeAuthUserRepository,
     )
     monkeypatch.setattr(
-        "etl_scripts.src.database.user_admin.AuthUserRepository",
+        "mlops_pipeline.src.deployment.database.user_admin.AuthUserRepository",
         FakeAuthUserRepository,
     )
     return FakeSessionFactory()

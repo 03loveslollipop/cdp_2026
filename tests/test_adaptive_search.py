@@ -8,11 +8,11 @@ import optuna
 import pandas as pd
 import pytest
 
-from etl_scripts.src import adaptive_search
-from etl_scripts.src.ft_engineering import (
+from mlops_pipeline.src import adaptive_search
+from mlops_pipeline.src.ft_engineering import (
     chronological_train_test_split, load_config, read_raw_data,
 )
-from etl_scripts.src.model_training_evaluation import (
+from mlops_pipeline.src.model_training_evaluation import (
     load_training_config, train_and_evaluate,
 )
 

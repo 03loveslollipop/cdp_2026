@@ -7,8 +7,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from etl_scripts.src.database.migrations import runner
-from etl_scripts.src.database.migrations.versions import v0001_initial
+from mlops_pipeline.src.deployment.database.migrations import runner
+from mlops_pipeline.src.deployment.database.migrations.versions import v0001_initial
 
 
 class Connection:

@@ -10,8 +10,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from etl_scripts.src.model_deploy.__main__ import main as deployment_main
-from etl_scripts.src.model_deploy.services import model_trainer
+from mlops_pipeline.src.deployment.model_deploy.__main__ import main as deployment_main
+from mlops_pipeline.src.deployment.model_deploy.services import model_trainer
 
 
 def deployment_config():

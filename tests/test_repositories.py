@@ -7,15 +7,15 @@ from types import SimpleNamespace
 
 import pytest
 
-from etl_scripts.src.database.repositories.auth_user_repository import AuthUserRepository
-from etl_scripts.src.database.repositories.model_repository import ModelRepository
-from etl_scripts.src.database.repositories.monitoring_repository import MonitoringRepository
-from etl_scripts.src.database.repositories.outcome_repository import (
+from mlops_pipeline.src.deployment.database.repositories.auth_user_repository import AuthUserRepository
+from mlops_pipeline.src.deployment.database.repositories.model_repository import ModelRepository
+from mlops_pipeline.src.deployment.database.repositories.monitoring_repository import MonitoringRepository
+from mlops_pipeline.src.deployment.database.repositories.outcome_repository import (
     OutcomeConflictError,
     OutcomeRepository,
 )
-from etl_scripts.src.database.repositories.prediction_repository import PredictionRepository
-from etl_scripts.src.database.repositories.sample_repository import SampleRepository
+from mlops_pipeline.src.deployment.database.repositories.prediction_repository import PredictionRepository
+from mlops_pipeline.src.deployment.database.repositories.sample_repository import SampleRepository
 
 
 class Session:

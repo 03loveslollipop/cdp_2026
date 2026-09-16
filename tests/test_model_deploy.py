@@ -11,33 +11,33 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from fastapi.testclient import TestClient
 
-from etl_scripts.src.database.passwords import hash_password
-from etl_scripts.src.model_auth.app import create_app as create_auth_app
-from etl_scripts.src.model_auth.services.auth_service import AuthService
-from etl_scripts.src.model_auth.settings import AuthSettings
-from etl_scripts.src.model_deploy.api.model import model_metadata
-from etl_scripts.src.model_deploy.app import create_app
-from etl_scripts.src.model_deploy.models import LoadedArtifact
-from etl_scripts.src.model_deploy.services import artifact_loader
-from etl_scripts.src.service_clients.contracts import (
+from mlops_pipeline.src.deployment.database.passwords import hash_password
+from mlops_pipeline.src.deployment.model_auth.app import create_app as create_auth_app
+from mlops_pipeline.src.deployment.model_auth.services.auth_service import AuthService
+from mlops_pipeline.src.deployment.model_auth.settings import AuthSettings
+from mlops_pipeline.src.deployment.model_deploy.api.model import model_metadata
+from mlops_pipeline.src.deployment.model_deploy.app import create_app
+from mlops_pipeline.src.deployment.model_deploy.models import LoadedArtifact
+from mlops_pipeline.src.deployment.model_deploy.services import artifact_loader
+from mlops_pipeline.src.deployment.service_clients.contracts import (
     AuthRole,
     AuthenticationError,
     SERVICE_TOKEN_HEADER,
     TOKEN_TTL_SECONDS,
 )
-from etl_scripts.src.model_deploy.services.prediction_service import (
+from mlops_pipeline.src.deployment.model_deploy.services.prediction_service import (
     IdempotencyConflictError,
     PredictionService,
     PredictionValidationError,
 )
-from etl_scripts.src.model_deploy.settings import Settings
-from etl_scripts.src.model_monitoring.visualization.app import (
+from mlops_pipeline.src.deployment.model_deploy.settings import Settings
+from mlops_pipeline.src.deployment.model_monitoring.visualization.app import (
     create_app as create_monitoring_app,
 )
-from etl_scripts.src.model_monitoring.visualization.settings import (
+from mlops_pipeline.src.deployment.model_monitoring.visualization.settings import (
     VisualizationSettings,
 )
-from scripts.install_model_runtime import FAMILY_REQUIREMENTS
+from mlops_pipeline.src.deployment.install_model_runtime import FAMILY_REQUIREMENTS
 
 
 class FakeModel:
@@ -259,7 +259,7 @@ def auth_factory():
 @pytest.fixture
 def auth_service(monkeypatch, auth_settings, auth_factory):
     monkeypatch.setattr(
-        "etl_scripts.src.model_auth.services.auth_service.AuthUserRepository",
+        "mlops_pipeline.src.deployment.model_auth.services.auth_service.AuthUserRepository",
         FakeAuthUserRepository,
     )
     return AuthService(auth_settings, auth_factory)
@@ -286,7 +286,7 @@ def test_artifact_loader_verifies_hash_and_class_contract(tmp_path):
 def test_prediction_service_is_atomic_and_idempotent(monkeypatch):
     repository = FakePredictionRepository()
     monkeypatch.setattr(
-        "etl_scripts.src.model_deploy.services.prediction_service.PredictionRepository",
+        "mlops_pipeline.src.deployment.model_deploy.services.prediction_service.PredictionRepository",
         lambda _session: repository,
     )
     service = PredictionService(
@@ -561,7 +561,7 @@ def test_pytorch_runtime_uses_the_cpu_package_index(monkeypatch, tmp_path):
     monkeypatch.setattr(
         "subprocess.run", lambda command, check: commands.append(command)
     )
-    from scripts import install_model_runtime
+    from mlops_pipeline.src.deployment import install_model_runtime
 
     install_model_runtime.main()
     assert "--index-url" in commands[0]

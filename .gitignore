@@ -140,3 +140,4 @@ Thumbs.db
 !README.md
 03_slides/output/pdf/*
 !03_slides/output/pdf/*.pdf
+.playwright-cli/

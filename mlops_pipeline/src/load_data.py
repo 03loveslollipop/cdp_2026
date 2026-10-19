@@ -13,10 +13,15 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
     parser.add_argument("--input", type=Path)
+    parser.add_argument(
+        "--bigquery", action="store_true", help="Read raw dataset from BigQuery"
+    )
     args = parser.parse_args(argv)
     config = load_config(args.config)
     data_path = args.input or (args.config.parent / config["paths"]["raw_data"])
-    raw_data = read_raw_data(config, data_path)
+    raw_data = read_raw_data(
+        config, data_path, use_bigquery=getattr(args, "bigquery", None)
+    )
     print(json.dumps({"rows": len(raw_data), "columns": list(raw_data.columns)}, indent=2))
 
 

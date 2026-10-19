@@ -8,6 +8,10 @@
     "project_id": "nb-risk-ml-dev-99d0",
     "dataset_id": "risk_credit_analytics",
     "table_id": "raw_loans_portfolio",
+    "train_table_id": "prepared_loans_train",
+    "validation_table_id": "prepared_loans_validation",
+    "raw_train_table_id": "raw_loans_train",
+    "raw_test_table_id": "raw_loans_test",
     "enabled": false
   },
   "read_csv": {

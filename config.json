@@ -10,8 +10,6 @@
     "table_id": "raw_loans_portfolio",
     "train_table_id": "prepared_loans_train",
     "validation_table_id": "prepared_loans_validation",
-    "raw_train_table_id": "raw_loans_train",
-    "raw_test_table_id": "raw_loans_test",
     "enabled": false
   },
   "read_csv": {

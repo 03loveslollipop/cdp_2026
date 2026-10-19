@@ -98,12 +98,7 @@ def test_cli_ft_engineering_split_fit_with_bigquery_flag(tmp_path):
             MagicMock(),
         )
 
-        with patch("mlops_pipeline.src.ft_engineering.write_partition_to_bigquery") as mock_write_part, patch(
-            "mlops_pipeline.src.ft_engineering.write_dataframe_to_bigquery"
-        ) as mock_write_df, patch(
-            "mlops_pipeline.src.ft_engineering.chronological_train_test_split"
-        ) as mock_raw_split:
-            mock_raw_split.return_value = MagicMock(train=pd.DataFrame(), test=pd.DataFrame())
+        with patch("mlops_pipeline.src.ft_engineering.write_partition_to_bigquery") as mock_write_part:
             ft_main([
                 "split-fit",
                 "--bigquery",
@@ -118,7 +113,7 @@ def test_cli_ft_engineering_split_fit_with_bigquery_flag(tmp_path):
             _, kwargs = mock_read.call_args
             assert kwargs.get("use_bigquery") is True
             assert mock_write_part.call_count == 2
-            assert mock_write_df.call_count == 2
+
 
 
 def test_write_and_read_partition_bigquery():

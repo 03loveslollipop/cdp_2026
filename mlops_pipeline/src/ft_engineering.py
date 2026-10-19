@@ -977,12 +977,10 @@ def main(argv: list[str] | None = None) -> None:
     split_parser.add_argument(
         "--upload-bigquery",
         action="store_true",
-        help="Upload prepared and raw partitions to BigQuery tables",
+        help="Upload prepared partitions to BigQuery tables",
     )
     split_parser.add_argument("--bigquery-train-table", type=str)
     split_parser.add_argument("--bigquery-validation-table", type=str)
-    split_parser.add_argument("--bigquery-raw-train-table", type=str)
-    split_parser.add_argument("--bigquery-raw-test-table", type=str)
     split_parser.add_argument("--input", type=Path)
     split_parser.add_argument("--train-output", type=Path, required=True)
     split_parser.add_argument("--validation-output", type=Path, required=True)
@@ -1040,21 +1038,10 @@ def main(argv: list[str] | None = None) -> None:
             val_tbl = getattr(args, "bigquery_validation_table", None) or bq_cfg.get(
                 "validation_table_id", "prepared_loans_validation"
             )
-            raw_train_tbl = getattr(
-                args, "bigquery_raw_train_table", None
-            ) or bq_cfg.get("raw_train_table_id", "raw_loans_train")
-            raw_test_tbl = getattr(
-                args, "bigquery_raw_test_table", None
-            ) or bq_cfg.get("raw_test_table_id", "raw_loans_test")
             write_partition_to_bigquery(split.train, train_tbl, config=cfg)
             write_partition_to_bigquery(split.test, val_tbl, config=cfg)
-            raw_split = chronological_train_test_split(
-                raw, cfg, train_fraction=args.train_fraction
-            )
-            write_dataframe_to_bigquery(raw_split.train, raw_train_tbl, config=cfg)
-            write_dataframe_to_bigquery(raw_split.test, raw_test_tbl, config=cfg)
             print(
-                f"Uploaded splitted datasets to BigQuery tables: {train_tbl}, {val_tbl}, {raw_train_tbl}, {raw_test_tbl}"
+                f"Uploaded prepared datasets to BigQuery tables: {train_tbl}, {val_tbl}"
             )
         return
     if args.command == "fit":

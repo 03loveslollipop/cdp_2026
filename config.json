@@ -4,6 +4,14 @@
     "_comment": "raw_data is the source extract supplied with the technical test, versioned alongside the code so the notebook is reproducible. Nothing in the pipeline can regenerate it.",
     "raw_data": "database.csv"
   },
+  "bigquery": {
+    "project_id": "nb-risk-ml-dev-99d0",
+    "dataset_id": "risk_credit_analytics",
+    "table_id": "raw_loans_portfolio",
+    "train_table_id": "prepared_loans_train",
+    "validation_table_id": "prepared_loans_validation",
+    "enabled": false
+  },
   "read_csv": {
     "sep": ";",
     "encoding": "utf-8-sig",

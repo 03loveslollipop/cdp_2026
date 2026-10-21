@@ -99,7 +99,7 @@ class RawCreditSplit:
 
 @dataclass(frozen=True)
 class PreparedCreditSplit:
-    """Prepared train/test datasets and diagnostics from their shared pipeline."""
+    """Prepared train/validation datasets and shared-pipeline diagnostics."""
 
     train: CreditDataset
     test: CreditDataset
@@ -735,34 +735,89 @@ def split_and_prepare(
     *,
     train_fraction: float | None = None,
 ) -> tuple[PreparedCreditSplit, Pipeline]:
-    """Chronologically split raw rows, fit on train, and transform both partitions."""
+    """Chronologically split rows, fit on train, and transform validation rows.
+
+    The returned data remain model-agnostic: no encoding, scaling,
+    discretisation, feature selection, or estimator-specific operation occurs
+    here.  Those learned transformations belong in each training pipeline.
+    """
     cfg = config or load_config()
     raw_split = chronological_train_test_split(
         raw, cfg, train_fraction=train_fraction
     )
     train, pipeline = fit_prepare_training(raw_split.train, cfg)
     train_diagnostics = get_pipeline_diagnostics(pipeline, train)
-    test = transform_for_prediction(raw_split.test, pipeline, cfg)
-    if test.target is None:
-        raise ValueError("The test partition must include the target for evaluation")
-    test_diagnostics = get_pipeline_diagnostics(pipeline, test)
+    validation = transform_for_prediction(raw_split.test, pipeline, cfg)
+    if validation.target is None:
+        raise ValueError(
+            "The validation partition must include the target for evaluation"
+        )
+    validation_diagnostics = get_pipeline_diagnostics(pipeline, validation)
     prepared = PreparedCreditSplit(
         train=train,
-        test=test,
+        test=validation,
         summary=raw_split.summary,
         train_diagnostics=train_diagnostics,
-        test_diagnostics=test_diagnostics,
+        test_diagnostics=validation_diagnostics,
     )
     return prepared, pipeline
+
+
+def read_raw_data_from_bigquery(
+    config: dict[str, Any] | None = None,
+    project_id: str | None = None,
+    dataset_id: str | None = None,
+    table_id: str | None = None,
+    client: Any | None = None,
+) -> pd.DataFrame:
+    """Read the source credit dataset from BigQuery and format it matching read_raw_data."""
+    cfg = config or load_config()
+    bq_cfg = cfg.get("bigquery", {})
+    project = project_id or bq_cfg.get("project_id", "nb-risk-ml-dev-99d0")
+    dataset = dataset_id or bq_cfg.get("dataset_id", "risk_credit_analytics")
+    table = table_id or bq_cfg.get("table_id", "raw_loans_portfolio")
+
+    from google.cloud import bigquery
+
+    bq_client = client or bigquery.Client(project=project)
+    query = f"SELECT * FROM `{project}.{dataset}.{table}`"
+    frame = bq_client.query(query).to_dataframe()
+    date_columns = cfg.get("read_csv", {}).get("date_columns", ["fecha_prestamo"])
+    for col in date_columns:
+        if col in frame.columns and pd.api.types.is_datetime64_any_dtype(frame[col]):
+            frame[col] = frame[col].dt.strftime("%d/%m/%Y %H:%M")
+
+    # Match read_csv behavior: convert to string with empty strings for nulls
+    object_frame = frame.astype(object)
+    return object_frame.where(pd.notnull(object_frame), "").astype(str)
 
 
 def read_raw_data(
     config: dict[str, Any] | None = None,
     input_path: str | Path | None = None,
     config_dir: str | Path = DEFAULT_CONFIG_PATH.parent,
+    *,
+    use_bigquery: bool | None = None,
 ) -> pd.DataFrame:
     """Read the source extract without allowing pandas to infer missing values."""
     cfg = config or load_config()
+    should_use_bq = (
+        use_bigquery
+        if use_bigquery is not None
+        else bool(cfg.get("bigquery", {}).get("enabled", False))
+    )
+    if input_path and str(input_path).startswith(("bq://", "bigquery://")):
+        uri = str(input_path).split("://", 1)[1]
+        parts = uri.split(".")
+        if len(parts) == 3:
+            return read_raw_data_from_bigquery(
+                cfg, project_id=parts[0], dataset_id=parts[1], table_id=parts[2]
+            )
+        return read_raw_data_from_bigquery(cfg, table_id=uri)
+
+    if should_use_bq and (input_path is None or str(input_path) == "bigquery"):
+        return read_raw_data_from_bigquery(cfg)
+
     path = (
         Path(input_path)
         if input_path
@@ -793,6 +848,96 @@ def _write_dataset(
         dataset.metadata.to_csv(metadata_output, index=False)
 
 
+def _write_partition(dataset: CreditDataset, output: Path) -> None:
+    """Write one self-contained prepared training or validation CSV.
+
+    A partition contains the model-agnostic prepared predictors together with
+    its target and split metadata.  This makes ``split-fit`` produce exactly
+    two data files while preserving the information needed by training and
+    evaluation consumers.
+    """
+    if dataset.target is None:
+        raise ValueError("A prepared partition requires a target column")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    frame = pd.concat([dataset.metadata, dataset.target, dataset.predictors], axis=1)
+    frame.to_csv(output, index=False)
+
+
+def write_dataframe_to_bigquery(
+    frame: pd.DataFrame,
+    table_id: str,
+    config: dict[str, Any] | None = None,
+    project_id: str | None = None,
+    dataset_id: str | None = None,
+    client: Any | None = None,
+    write_disposition: str = "WRITE_TRUNCATE",
+) -> str:
+    """Write a pandas DataFrame to a BigQuery table using WRITE_TRUNCATE disposition."""
+    cfg = config or load_config()
+    bq_cfg = cfg.get("bigquery", {})
+    project = project_id or bq_cfg.get("project_id", "nb-risk-ml-dev-99d0")
+    dataset = dataset_id or bq_cfg.get("dataset_id", "risk_credit_analytics")
+
+    from google.cloud import bigquery
+
+    bq_client = client or bigquery.Client(project=project)
+    full_table_id = (
+        f"{project}.{dataset}.{table_id}" if "." not in table_id else table_id
+    )
+    job_config = bigquery.LoadJobConfig(write_disposition=write_disposition)
+    job = bq_client.load_table_from_dataframe(
+        frame, full_table_id, job_config=job_config
+    )
+    job.result()
+    return full_table_id
+
+
+def write_partition_to_bigquery(
+    dataset: CreditDataset,
+    table_id: str,
+    config: dict[str, Any] | None = None,
+    project_id: str | None = None,
+    dataset_id: str | None = None,
+    client: Any | None = None,
+) -> str:
+    """Write one self-contained prepared dataset partition to BigQuery."""
+    if dataset.target is None:
+        raise ValueError("A prepared partition requires a target column")
+    frame = pd.concat([dataset.metadata, dataset.target, dataset.predictors], axis=1)
+    return write_dataframe_to_bigquery(
+        frame,
+        table_id=table_id,
+        config=config,
+        project_id=project_id,
+        dataset_id=dataset_id,
+        client=client,
+    )
+
+
+def read_partition_from_bigquery(
+    table_id: str,
+    config: dict[str, Any] | None = None,
+    project_id: str | None = None,
+    dataset_id: str | None = None,
+    client: Any | None = None,
+) -> pd.DataFrame:
+    """Read a prepared or raw dataset partition from BigQuery."""
+    cfg = config or load_config()
+    bq_cfg = cfg.get("bigquery", {})
+    project = project_id or bq_cfg.get("project_id", "nb-risk-ml-dev-99d0")
+    dataset = dataset_id or bq_cfg.get("dataset_id", "risk_credit_analytics")
+
+    from google.cloud import bigquery
+
+    bq_client = client or bigquery.Client(project=project)
+    full_table_id = (
+        f"{project}.{dataset}.{table_id}" if "." not in table_id else table_id
+    )
+    query = f"SELECT * FROM `{full_table_id}`"
+    return bq_client.query(query).to_dataframe()
+
+
+
 def _write_diagnostics(report: dict[str, Any], path: Path | None) -> None:
     if path is None:
         return
@@ -803,12 +948,18 @@ def _write_diagnostics(report: dict[str, Any], path: Path | None) -> None:
     )
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Prepare credit predictors")
     parser.add_argument("--config", type=Path, default=DEFAULT_CONFIG_PATH)
+    parser.add_argument(
+        "--bigquery", action="store_true", help="Ingest raw data from BigQuery table"
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     fit_parser = subparsers.add_parser("fit", help="Fit on a training partition")
+    fit_parser.add_argument(
+        "--bigquery", action="store_true", help="Ingest raw data from BigQuery table"
+    )
     fit_parser.add_argument("--input", type=Path)
     fit_parser.add_argument("--output", type=Path, required=True)
     fit_parser.add_argument("--target-output", type=Path, required=True)
@@ -817,15 +968,22 @@ def main() -> None:
     fit_parser.add_argument("--diagnostics-output", type=Path)
 
     split_parser = subparsers.add_parser(
-        "split-fit", help="Create a chronological 70/30 split and fit on train"
+        "split-fit",
+        help="Create chronological training/validation data and fit preparation",
     )
+    split_parser.add_argument(
+        "--bigquery", action="store_true", help="Ingest raw data from BigQuery table"
+    )
+    split_parser.add_argument(
+        "--upload-bigquery",
+        action="store_true",
+        help="Upload prepared partitions to BigQuery tables",
+    )
+    split_parser.add_argument("--bigquery-train-table", type=str)
+    split_parser.add_argument("--bigquery-validation-table", type=str)
     split_parser.add_argument("--input", type=Path)
     split_parser.add_argument("--train-output", type=Path, required=True)
-    split_parser.add_argument("--test-output", type=Path, required=True)
-    split_parser.add_argument("--train-target-output", type=Path, required=True)
-    split_parser.add_argument("--test-target-output", type=Path, required=True)
-    split_parser.add_argument("--train-metadata-output", type=Path)
-    split_parser.add_argument("--test-metadata-output", type=Path)
+    split_parser.add_argument("--validation-output", type=Path, required=True)
     split_parser.add_argument("--artifact", type=Path, required=True)
     split_parser.add_argument("--diagnostics-output", type=Path)
     split_parser.add_argument("--train-fraction", type=float)
@@ -839,41 +997,52 @@ def main() -> None:
     transform_parser.add_argument("--metadata-output", type=Path)
     transform_parser.add_argument("--artifact", type=Path, required=True)
     transform_parser.add_argument("--diagnostics-output", type=Path)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     cfg = load_config(args.config)
-    raw = read_raw_data(cfg, args.input, args.config.parent)
+    raw = read_raw_data(
+        cfg,
+        args.input,
+        args.config.parent,
+        use_bigquery=getattr(args, "bigquery", None),
+    )
     if args.command == "split-fit":
         split, pipeline = split_and_prepare(
             raw, cfg, train_fraction=args.train_fraction
         )
         args.artifact.parent.mkdir(parents=True, exist_ok=True)
         joblib.dump(pipeline, args.artifact)
-        _write_dataset(
-            split.train,
-            args.train_output,
-            args.train_target_output,
-            args.train_metadata_output,
-        )
-        _write_dataset(
-            split.test,
-            args.test_output,
-            args.test_target_output,
-            args.test_metadata_output,
-        )
+        _write_partition(split.train, args.train_output)
+        _write_partition(split.test, args.validation_output)
         _write_diagnostics(
             {
                 "split": split.summary,
                 "train": split.train_diagnostics,
-                "test": split.test_diagnostics,
+                "validation": split.test_diagnostics,
             },
             args.diagnostics_output,
         )
         print(
-            f"Prepared train {len(split.train.predictors):,} rows and test "
+            f"Prepared train {len(split.train.predictors):,} rows and validation "
             f"{len(split.test.predictors):,} rows with "
             f"{split.train.predictors.shape[1]} predictors"
         )
+        should_upload_bq = getattr(args, "upload_bigquery", False) or getattr(
+            args, "bigquery", False
+        )
+        if should_upload_bq:
+            bq_cfg = cfg.get("bigquery", {})
+            train_tbl = getattr(args, "bigquery_train_table", None) or bq_cfg.get(
+                "train_table_id", "prepared_loans_train"
+            )
+            val_tbl = getattr(args, "bigquery_validation_table", None) or bq_cfg.get(
+                "validation_table_id", "prepared_loans_validation"
+            )
+            write_partition_to_bigquery(split.train, train_tbl, config=cfg)
+            write_partition_to_bigquery(split.test, val_tbl, config=cfg)
+            print(
+                f"Uploaded prepared datasets to BigQuery tables: {train_tbl}, {val_tbl}"
+            )
         return
     if args.command == "fit":
         dataset, pipeline = fit_prepare_training(raw, cfg)

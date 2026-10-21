@@ -858,6 +858,8 @@ def main(argv=None):
                         help="Ignored SQLite study path for resumable TPE search")
     parser.add_argument("--smoke", action="store_true",
                         help="One small candidate/seed per family; not a benchmark")
+    parser.add_argument("--bigquery", action="store_true",
+                        help="Read training dataset from BigQuery table")
     args = parser.parse_args(argv)
     config = load_config(args.config) if args.config else load_config()
     settings = load_training_config(args.training_config)
@@ -888,6 +890,8 @@ def main(argv=None):
                 float(settings["search"]["timeout_seconds"]), 300.0
             )
     read_options = {"config_dir": args.config.parent} if args.config else {}
+    if getattr(args, "bigquery", False):
+        read_options["use_bigquery"] = True
     raw = read_raw_data(config, args.input, **read_options)
     result = train_and_evaluate(raw, config, args.output_dir,
                                 training_config=settings, device=args.device)

@@ -290,12 +290,12 @@ def test_cli_artifact_loads_from_imported_module(raw_sample, tmp_path):
     assert restored.get_feature_names_out().shape == (84,)
 
 
-def test_split_fit_cli_writes_both_partitions(raw_sample, tmp_path):
+def test_split_fit_cli_writes_self_contained_training_and_validation_files(
+    raw_sample, tmp_path
+):
     source = tmp_path / "source.csv"
-    train_output = tmp_path / "train_predictors.csv"
-    test_output = tmp_path / "test_predictors.csv"
-    train_target = tmp_path / "train_target.csv"
-    test_target = tmp_path / "test_target.csv"
+    train_output = tmp_path / "training.csv"
+    validation_output = tmp_path / "validation.csv"
     artifact = tmp_path / "preparation.joblib"
     diagnostics = tmp_path / "split.json"
     raw_sample.to_csv(source, sep=";", index=False)
@@ -309,12 +309,8 @@ def test_split_fit_cli_writes_both_partitions(raw_sample, tmp_path):
             str(source),
             "--train-output",
             str(train_output),
-            "--test-output",
-            str(test_output),
-            "--train-target-output",
-            str(train_target),
-            "--test-target-output",
-            str(test_target),
+            "--validation-output",
+            str(validation_output),
             "--artifact",
             str(artifact),
             "--diagnostics-output",
@@ -325,11 +321,16 @@ def test_split_fit_cli_writes_both_partitions(raw_sample, tmp_path):
         capture_output=True,
         text=True,
     )
-    assert pd.read_csv(train_output).shape == (2, 84)
-    assert pd.read_csv(test_output).shape == (1, 84)
+    training = pd.read_csv(train_output)
+    validation = pd.read_csv(validation_output)
+    assert training.shape == (2, 86)
+    assert validation.shape == (1, 86)
+    assert {"fecha_prestamo", "Pago_atiempo"}.issubset(training.columns)
+    assert {"fecha_prestamo", "Pago_atiempo"}.issubset(validation.columns)
     report = pd.read_json(diagnostics, typ="series")
     assert report["split"]["train_rows"] == 2
     assert report["split"]["test_rows"] == 1
+    assert "validation" in report
 
 
 def test_missing_required_predictor_fails_during_fit_and_transform(raw_sample, config):

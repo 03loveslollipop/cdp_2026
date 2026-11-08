@@ -1,0 +1,60 @@
+{
+  "report_date": "8 de noviembre de 2026",
+  "screenshots_are_originals": true,
+  "assets": [
+    {
+      "file": "assets/20-cloud-running-console.png",
+      "source": "output/playwright/20-cloud-running-console.png",
+      "sha256": "fba4bd1a09b62a2dbacecb7f9e119dd5c6ace92d865f3a441847074f77405901",
+      "caption": "Figura 1. Consola del build de Jenkins alojado en GCP durante su ejecución."
+    },
+    {
+      "file": "assets/21-cloud-running-stages.png",
+      "source": "output/playwright/21-cloud-running-stages.png",
+      "sha256": "b6fe935e97d43c69e52378ce230c9a19417e10ab1c0615f5312cdd311b388afb",
+      "caption": "Figura 2. Etapas observadas mientras el pipeline cloud seguía ejecutándose."
+    },
+    {
+      "file": "assets/22-cloud-approval.png",
+      "source": "output/playwright/22-cloud-approval.png",
+      "sha256": "068273e44eb302eb4747fbf714298676c1f75865f35b658c381209413ba5c413",
+      "caption": "Figura 3. Solicitud real de aprobación de admin después de superar las puertas de calidad."
+    },
+    {
+      "file": "assets/23-cloud-165-tests.png",
+      "source": "output/playwright/23-cloud-165-tests.png",
+      "sha256": "6deb751669597c4e380b6ac925f5cf164b3f1208f4e9fdada239b0fcf9ffeda0",
+      "caption": "Figura 4. Reporte JUnit cloud: 165 pruebas aprobadas, cero fallidas y cero omitidas."
+    },
+    {
+      "file": "assets/25-cloud-notification-delivered.png",
+      "source": "output/playwright/25-cloud-notification-delivered.png",
+      "sha256": "d1d5d57bcec19bfd68024e0959fc97b19a615705a384684d2fa2c5778438aaf0",
+      "caption": "Figura 5. El receptor privado aceptó la notificación SUCCESS de finalización del build cloud."
+    },
+    {
+      "file": "assets/24-cloud-completed-stages.png",
+      "source": "output/playwright/24-cloud-completed-stages.png",
+      "sha256": "dfae204b67e74e2d98c20187062d1b53ee2cd5f1aaddb0bfe35b0d77050bf095",
+      "caption": "Figura 6. Todas las etapas del build cloud #1 terminaron correctamente."
+    },
+    {
+      "file": "assets/08-local-scm-triggered.png",
+      "source": "output/playwright/08-local-scm-triggered.png",
+      "sha256": "c9a930365d73e4387f9e1e5e23e10cf49d821da333199c4751644f6e6ea3f9d9",
+      "caption": "Figura 7. Evidencia histórica local: build iniciado por un cambio SCM detectado automáticamente."
+    },
+    {
+      "file": "assets/comparison.png",
+      "source": "output/comparison/comparison.png",
+      "sha256": "be3fda42a8fe48d86d658815bb81bfbe88fc5364a0c90c389e5c397f4e00e463",
+      "caption": "Figura 8. Comparación medida del holdout; intervalos de muestreo donde están disponibles. Las etiquetas técnicas originales se conservan."
+    },
+    {
+      "file": "assets/temporal_f1.png",
+      "source": "output/local-baseline/figures/temporal_f1.png",
+      "sha256": "29da562ee3019edd7aeb09dfaf63bc0a7977e3452c4fe51c1458b45023bce0d5",
+      "caption": "Figura 9. Variación del F1 en las ventanas temporales de evaluación."
+    }
+  ]
+}

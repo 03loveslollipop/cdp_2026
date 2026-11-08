@@ -1,0 +1,49 @@
+name: credit-semester
+services:
+  jenkins:
+    build:
+      context: .
+      dockerfile: ci/jenkins/Dockerfile
+    image: credit-semester-jenkins:local
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:18081:8080"
+    environment:
+      JAVA_OPTS: >-
+        -Djenkins.install.runSetupWizard=false
+        -Dhudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT=true
+        -Xms256m -Xmx1536m
+      REPOSITORY_URL: ${JENKINS_REPOSITORY_URL:-file:///opt/source}
+      REPOSITORY_BRANCH: ${JENKINS_REPOSITORY_BRANCH:-ci-review}
+      JENKINS_LAB_URL: http://127.0.0.1:18081/
+      NOTIFY_URL: http://notifications:8081/notify
+      NOTIFY_TOKEN_FILE: /run/secrets/notify_token
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - ./.jenkins/source.git:/opt/source:ro
+    secrets:
+      - jenkins_admin_password
+      - notify_token
+    depends_on:
+      - notifications
+    mem_limit: 4g
+    cpus: 2
+  notifications:
+    image: python:3.12-slim
+    restart: unless-stopped
+    command: ["python", "/app/notification_server.py"]
+    ports:
+      - "127.0.0.1:18082:8081"
+    volumes:
+      - ./ci/jenkins/notification_server.py:/app/notification_server.py:ro
+      - ./.jenkins/receipts:/receipts
+    secrets:
+      - notify_token
+    mem_limit: 128m
+secrets:
+  jenkins_admin_password:
+    file: ./.jenkins/secrets/admin-password
+  notify_token:
+    file: ./.jenkins/secrets/notify-token
+volumes:
+  jenkins_home: {}

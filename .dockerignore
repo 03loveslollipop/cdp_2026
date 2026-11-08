@@ -16,3 +16,16 @@ tests
 *.npy
 *.log
 .env*
+.jenkins
+.playwright-cli
+output
+tmp
+04_jenkins_report
+credentials.json
+secrets.json
+cloud/config.local.json
+cloud/pipeline.json
+**/.terraform
+**/terraform.tfstate*
+**/terraform.tfvars
+**/*.tfplan

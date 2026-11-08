@@ -34,7 +34,7 @@ production services. CUDA is intentionally not part of tracked code or deploymen
 └── .github/workflows/                   tests, SonarCloud, and master-only deployment
 ```
 
-All Markdown other than this README is ignored. Generated artifacts, local runs,
+Exercise runbooks in `docs/` are versioned alongside this README. Generated artifacts, local runs,
 credentials, record-level predictions, and CUDA experiments are also ignored.
 
 ## Local development
@@ -73,3 +73,31 @@ pipeline train and package a different validated winner without application code
 GitHub Actions always runs CPU tests and SonarCloud; only pushes to `master` build and
 release the Heroku images. The release uses explicit `cdp_2026` schema qualification and
 does not modify unrelated PostgreSQL schemas.
+
+## Jenkins and Vertex AI semester exercise
+
+The [Jenkins runbook](docs/jenkins.md) covers the approval pipeline, persistent local
+container, automatic SCM polling, completion receipts and Terraform deployment in
+the verified core IT GCP project. Start locally with:
+
+```bash
+python3 ci/prepare_local.py
+python3 ci/jenkins/fetch_plugins.py
+docker compose up -d --build
+```
+
+Open Jenkins at <http://127.0.0.1:18081>. The administrator credential is generated
+under the ignored `.jenkins/secrets/` directory.
+
+The [GCP training runbook](docs/gcp-training.md) covers AutoML and the custom Vertex
+AI Pipeline, launched through the web dashboard after user approval and login.
+`cloud/` provides offline data export, a KFP compiler, the training container and
+comparison tools. Cloud scores remain pending until real dashboard runs finish.
+The workspace-root `CLOUD_DEPLOYMENT_INVENTORY.md` records identities, project IDs,
+resources, configurations and verified deployment state.
+
+The [five-day expiry policy](docs/expiry-policy.md) schedules the Jenkins VM to stop
+on **2026-11-13 at 02:41:05 UTC**, followed by teardown of its dedicated cloud resources.
+# Informe unificado y webhook GitHub
+
+El [informe de resultados en español](04_jenkins_report/INFORME_RESULTADOS_ES.md) reúne las ejecuciones reales, capturas de Jenkins, métricas, costos y política de eliminación. El PDF autocontenido y el ZIP para compartir se generan con `04_jenkins_report/build_report.py` en `output/pdf/`. El [procedimiento del webhook](docs/github-webhook.md) distingue implementación preparada, instalación y verificación efectiva de push/merge. La integración remota sigue pendiente de acceso del propietario y receptor HTTPS; los builds históricos acreditan polling SCM.

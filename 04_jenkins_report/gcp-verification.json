@@ -1,0 +1,41 @@
+{
+  "pipeline_run": "credit-cpu-demo-20261108-r3",
+  "custom_job_id": "1394998308224630784",
+  "pipeline_state": "PIPELINE_STATE_SUCCEEDED",
+  "worker_state": "JOB_STATE_SUCCEEDED",
+  "training_started_utc": "2026-11-08T09:58:45Z",
+  "training_ended_utc": "2026-11-08T10:02:17Z",
+  "worker_wall_seconds": 212,
+  "dataset_and_holdout_match": true,
+  "key_metric_max_abs_difference": 4.163336342344337e-17,
+  "automl_executed": false,
+  "automl_reason": "UI minimum 1 node-hour exceeds user USD15 budget at standard list price USD21.252/node-hour",
+  "metrics": {
+    "accuracy": 0.8250232270052648,
+    "default_precision": 0.06805293005671077,
+    "default_recall": 0.3333333333333333,
+    "default_f1": 0.1130298273155416,
+    "average_precision": 0.09941451599346664,
+    "roc_auc": 0.6573213713553349,
+    "recall_at_review_budget": 0.3888888888888889,
+    "review_budget_rows": 646,
+    "predicted_default_fraction": 0.16382781046763703,
+    "default_prevalence": 0.03344688758129452,
+    "rows": 3229,
+    "confusion_matrix": [
+      [
+        36,
+        72
+      ],
+      [
+        493,
+        2628
+      ]
+    ]
+  },
+  "stability": {
+    "mean_f1": 0.18711652287985245,
+    "temporal_f1_std": 0.029161504564101968,
+    "seed_f1_std": 0.011031073281552922
+  }
+}

@@ -1,6 +1,6 @@
 # GCP credit classification training — dashboard runbook
 
-Status: **prepared locally; waiting for user approval and GCP browser login**. This document is a runbook, not evidence that cloud training has happened. Launch AutoML and custom Vertex AI Pipeline runs from the web dashboard. Python helpers compile packages and analyze downloaded results; they never submit training jobs.
+Status: **custom Vertex pipeline SUCCEEDED through the dashboard on 2026-11-08; AutoML not executed because its UI minimum exceeds USD15**. Console language remains Japanese. See `gcp-execution.md` for observed evidence and the USD15 training limit; this runbook also describes steps that have not been executed. Launch AutoML and custom Vertex AI Pipeline runs from the web dashboard. Python helpers compile packages and analyze downloaded results; they never submit training jobs.
 
 ## 1. Verify account and project in the persistent browser
 
@@ -19,7 +19,7 @@ In the dashboard, check billing and Vertex AI availability; enable Vertex AI if 
 Local preparation already ran on the tracked approved non-production extract:
 
 ```bash
-python -m cloud.prepare_data --output output/cloud-data
+python -m cloud.prepare_data --output output/cloud-data-gcp
 ```
 
 This refuses to overwrite an existing export. `manifest.json` records source, normalized-dataset and holdout SHA-256 fingerprints, exact time boundaries, feature columns and class counts. No labels, timestamps, `puntaje` (post-outcome score), or row IDs are predictive features.
@@ -27,7 +27,7 @@ This refuses to overwrite an existing export. `manifest.json` records source, no
 | Partition | Rows | Defaults (label 0) | Role |
 |---|---:|---:|---|
 | TRAIN | 6,027 | 331 | Earliest 56%; fits AutoML export preprocessing |
-| VALIDATION | 1,507 | 72 | Next 14%; AutoML tuning |
+| VALIDATE | 1,507 | 72 | Next 14%; AutoML tuning |
 | TEST | 3,229 | 108 | Final 30%; frozen audit |
 
 Timestamp groups stay together. The shared preparation transformer learns imputation only from TRAIN before exporting AutoML features. Python/custom use the existing raw-record pipeline and temporal folds in the first 70%, so this comparison includes differences in tuning/preprocessing workflows as well as model search. The final test rows are identical. The historical holdout was examined in EDA; it is not a fresh external validation set.
@@ -38,7 +38,9 @@ Through **Vertex AI → Datasets → Create dataset**, choose **Tabular → Clas
 
 ## 3. Run AutoML from the dashboard
 
-On the dataset page choose **Train new model → AutoML → Classification**. Set target to `Pago_atiempo`; use binary classification. Under data split choose the predefined/manual split column `data_split`, whose values are `TRAIN`, `VALIDATION`, `TEST`. Confirm that split metadata is excluded from features. Do not choose a random split.
+On the dataset page choose **Train new model → AutoML → Classification**. Set target to `Pago_atiempo`; use binary classification. Under data split choose the predefined/manual split column `data_split`, whose values are `TRAIN`, `VALIDATE`, `TEST`. Confirm that split metadata is excluded from features. Do not choose a random split.
+
+**Budget decision 2026-11-08:** The actual classic AutoML form rejected 0.7 node-hours and requires 1–72. One node-hour costs USD21.252 at the standard published rate, exceeding the user’s USD15 limit. The form was cancelled without submission. Do not run AutoML or batch inference under this limit. The alternative AutoML workflow has additional Dataflow, storage and training charges, so it is not treated as a USD15 fallback. The configuration below is a future runbook only.
 
 Review included predictors and transformations, then choose the ranking objective suited to rare defaults (AUC PR if available), and the minimum budget allowed by the UI, initially one node-hour if supported, with early stopping enabled. Record the exact offered objective, node-hours and price estimate. Any increase beyond the reviewed initial budget needs the user's choice. Capture the configuration and cost summary **before** clicking **Start training**, then capture the submitted run, training in progress and completion page, including model/run IDs and timestamps.
 
@@ -70,7 +72,7 @@ python -m cloud.compile_pipeline \
 
 `output/pipeline-draft.json` was compiled successfully using a dummy digest as an offline structural check. It is not the final package. Replace the digest and compile again before upload.
 
-Through **Vertex AI → Pipelines → Create run**, upload `cloud/pipeline.json`; select the dedicated service account and pipeline root `gs://BUCKET/pipeline-root`. Enter:
+The final package is now `output/credit-pipeline-dashboard.json`, using the published digest recorded in `output/training-runtime.json`. Through **Vertex AI → Pipelines → Create run**, upload that package; select the dedicated service account and pipeline root `gs://BUCKET/pipeline-root`. Enter:
 
 | Parameter | Value |
 |---|---|
@@ -87,8 +89,8 @@ The already measured Python baseline is in `output/local-baseline`. Normalize it
 ```bash
 python -m cloud.compare local --run output/local-baseline --output output/python-local.json
 python -m cloud.compare report \
-  --inputs output/python-local.json output/vertex-custom/comparison.json output/vertex-automl.json \
-  --output output/comparison
+  --inputs output/python-local.json output/vertex-custom/comparison.json \
+  --output output/comparison-gcp --language es
 ```
 
 The report refuses comparisons across different source/holdout hashes and emits a CSV table, chart and discussion. Until cloud runs finish, its report explicitly lists them as pending. Bootstrap intervals describe holdout sampling uncertainty conditional on observed class counts; they do not establish repeated-training stability. Python/custom report variation over temporal folds and three seeds. A single AutoML run cannot establish seed stability: repeat the same dashboard configuration and budget, if approved, and compare its holdout results. Record failed/cancelled runs as such, including charged duration.
@@ -101,8 +103,10 @@ Manual Python provides direct control over temporal validation, preprocessing, c
 
 Save real screenshots under `output/playwright/gcp/` and inspect each saved PNG for legible settings, job status, project and timestamps. Maintain a run log with screenshot path, UTC timestamp, URL, action, observed result, run/model ID and next step. The minimum evidence sequence is: identity/project, service enabled, uploaded objects, dataset import, AutoML configuration, AutoML running, AutoML completed/evaluation, custom package parameters, custom DAG running, custom completed/artifacts, comparison chart and cleanup.
 
-No GCP screenshots exist yet: the user has not approved or logged into this session. Do not use generic or local screenshots to represent cloud training.
+Actual Japanese-console screenshots are indexed in `output/playwright/gcp/index.json`; the user authorized and signed into this session. AutoML configuration was cancelled because its minimum exceeds USD15. Setup screenshots must not be represented as completed cloud training.
 
 After evidence is saved, remove lab endpoints if any were explicitly deployed, and remove only this exercise's models/datasets/bucket artifacts and images when the user is ready. No online endpoint is required. Never delete an existing shared project or another workload. Update the root inventory with retained resources and recurring charges.
 
 References: [Vertex AutoML training SDK and split definitions](https://docs.cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.aiplatform.AutoMLTabularTrainingJob), [AutoML batch input/output requirements](https://docs.cloud.google.com/gemini-enterprise-agent-platform/machine-learning/tabular-data/tabular-workflows/e2e-automl-batch-predictions), [Vertex AI Pipeline runs](https://docs.cloud.google.com/vertex-ai/docs/pipelines/run-pipeline).
+
+The completed dashboard run and observed billing/credits are documented in [gcp-execution.md](gcp-execution.md). AutoML remains unrun under the current USD15 limit; do not add fabricated or local substitute scores.

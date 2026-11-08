@@ -12,8 +12,18 @@ def compile_pipeline(image, output):
     @dsl.component(base_image=image, install_kfp_package=False)
     def train_credit(input_uri: str, dataset_sha256: str, holdout_sha256: str,
                      results: dsl.Output[dsl.Artifact], metrics: dsl.Output[dsl.Metrics]):
+        import signal
         from cloud.training import run
-        report = run(input_uri, dataset_sha256, holdout_sha256, results.path)
+
+        def deadline(_signum, _frame):
+            raise TimeoutError('The low-cost demonstration exceeded its 10-minute training limit')
+
+        signal.signal(signal.SIGALRM, deadline)
+        signal.alarm(600)
+        try:
+            report = run(input_uri, dataset_sha256, holdout_sha256, results.path)
+        finally:
+            signal.alarm(0)
         for name in ['accuracy', 'default_f1', 'roc_auc', 'average_precision']:
             metrics.log_metric(name, report['metrics'][name])
         for name, value in report['stability'].items():
@@ -24,7 +34,7 @@ def compile_pipeline(image, output):
     def credit_pipeline(input_uri: str, dataset_sha256: str, holdout_sha256: str):
         task = train_credit(input_uri=input_uri, dataset_sha256=dataset_sha256,
                             holdout_sha256=holdout_sha256)
-        task.set_cpu_limit('2').set_memory_limit('8G').set_caching_options(False)
+        task.set_cpu_limit('2').set_memory_limit('8G').set_caching_options(False).set_retry(num_retries=0)
 
     Path(output).parent.mkdir(parents=True, exist_ok=True)
     compiler.Compiler().compile(pipeline_func=credit_pipeline, package_path=str(output))

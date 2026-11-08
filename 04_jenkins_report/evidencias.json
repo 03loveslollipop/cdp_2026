@@ -91,6 +91,54 @@
       "source": "output/playwright/40-github-completion-notifications.png",
       "sha256": "be729e2ddf7c13ef16e22f87496ab2ac5cbc7d8d1e8ec4d56c501543bfeeac8e",
       "caption": "Figura 15. Receptor privado: SUCCESS y SHA exacto de los builds #1, #2 y #3 del nuevo job."
+    },
+    {
+      "file": "assets/11-data-files-uploaded-ja.png",
+      "source": "output/playwright/gcp/11-data-files-uploaded-ja.png",
+      "sha256": "729ecc3f3e3cc4a383afcbc28a6368c7df6d3a57e34c1cb4736b239dc1f6692b",
+      "caption": "GCP, consola en japonés: carga de los cuatro archivos en el bucket dedicado del proyecto de riesgo."
+    },
+    {
+      "file": "assets/19-automl-manual-temporal-split-ja.png",
+      "source": "output/playwright/gcp/19-automl-manual-temporal-split-ja.png",
+      "sha256": "cebbb2ce4068c6d1658d31ffaa0e1f3212b3f77e646afa948ed3143f1c463833",
+      "caption": "Configuración de AutoML: objetivo Pago_atiempo y división manual mediante data_split. No se envió este entrenamiento."
+    },
+    {
+      "file": "assets/20-automl-minimum-budget-ja.png",
+      "source": "output/playwright/gcp/20-automl-minimum-budget-ja.png",
+      "sha256": "cc154cccf692da16c25bcf829f165e1f3b3839fb4dbbda37ca5836999fe79e8d",
+      "caption": "Restricción observada: presupuesto 0,7 inválido; el formulario exige 1–72. El botón de iniciar entrenamiento permanece deshabilitado."
+    },
+    {
+      "file": "assets/27-pipeline-dag-running-ja.png",
+      "source": "output/playwright/gcp/27-pipeline-dag-running-ja.png",
+      "sha256": "42a7fc56053b4f1b7f1279467db4bd762525459e954912d93bc31cd20c616ae1",
+      "caption": "Ejecución real credit-cpu-demo-20261108-r3 en el dashboard japonés; el DAG muestra RUNNING. No implica por sí solo entrenamiento finalizado."
+    },
+    {
+      "file": "assets/33-training-search-live-logs-ja.png",
+      "source": "output/playwright/gcp/33-training-search-live-logs-ja.png",
+      "sha256": "9b1b28aaf48ecbd56853be71cbbcfbea3574c2bb79627338dcc1ff4ffeeba2e6",
+      "caption": "Logs reales durante la búsqueda: F1 temporal de candidatos y comienzo de random forest, con el nodo todavía Running. Estos valores no son métricas finales del holdout."
+    },
+    {
+      "file": "assets/35-cloud-metrics-metadata-ja.png",
+      "source": "output/playwright/gcp/35-cloud-metrics-metadata-ja.png",
+      "sha256": "78c6d1791b4735aa36547fd4e1bfa1d06f5ecf0469626d270af2ab379af7af16",
+      "caption": "ML Metadata muestra las métricas reales del entrenamiento: accuracy, F1 de incumplimiento, ROC-AUC, AP y variación entre folds/semillas. La consola se mantiene en japonés."
+    },
+    {
+      "file": "assets/comparacion-python-vertex.png",
+      "source": "output/comparison-gcp/comparacion-python-vertex.png",
+      "sha256": "3dac589f88c44183404f8b5cca3b23841b9fff98caf4197c3ff8ec403f3f3e82",
+      "caption": "Resultados medidos sobre el mismo holdout. Las barras de error son intervalos bootstrap condicionales de muestreo, no estabilidad de reentrenamiento. AutoML no se ejecutó y no tiene barra."
+    },
+    {
+      "file": "assets/31-education-credit-balance-ja.png",
+      "source": "output/playwright/gcp/31-education-credit-balance-ja.png",
+      "sha256": "cc45097a8595c396224d88c8f993153821f396403c202ac77997946d04351067",
+      "caption": "Crédito Ciencia de datos en producción: USD50,00 iniciales, USD49,86 restantes, vencimiento 6 de octubre de 2027."
     }
   ]
 }

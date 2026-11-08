@@ -142,21 +142,30 @@ def build():
         for path in [markdown, DIRECTORY / 'README.md', DIRECTORY / 'requirements.txt',
                      DIRECTORY / 'informe.json', DIRECTORY / 'evidencias.json',
                      DIRECTORY / 'github-verification.json', DIRECTORY / 'cleanup-verification.json',
+                     DIRECTORY / 'gcp-verification.json',
                      DIRECTORY / 'build_report.py', *sorted(assets.glob('*'))]:
             archive.write(path, str(Path('fuentes') / path.relative_to(DIRECTORY)))
         for path in ['docs/jenkins.md', 'docs/jenkins-execution.md', 'docs/model-results.md',
-                     'docs/gcp-training.md', 'docs/github-webhook.md', 'docs/expiry-policy.md',
-                     'output/jenkins-receipts/summary.json', 'output/playwright/index.json']:
+                     'docs/gcp-training.md', 'docs/gcp-execution.md', 'docs/github-webhook.md', 'docs/expiry-policy.md',
+                     'output/jenkins-receipts/summary.json', 'output/playwright/index.json',
+                     'output/playwright/gcp/index.json', 'output/training-runtime.json',
+                     'output/credit-pipeline-dashboard.json']:
             archive.write(ROOT / path, 'anexos/' + path)
         # Keep the relative screenshot/chart links in the annex runbooks usable.
-        for folder in ['output/playwright', 'output/local-baseline/figures', 'output/comparison']:
-            for path in sorted((ROOT / folder).glob('*.png')):
+        for folder in ['output/playwright', 'output/local-baseline/figures', 'output/comparison',
+                       'output/comparison-gcp']:
+            for path in sorted((ROOT / folder).rglob('*.png')):
                 archive.write(path, 'anexos/' + str(path.relative_to(ROOT)))
         archive.write(ROOT.parent / 'CLOUD_DEPLOYMENT_INVENTORY.md',
                       'anexos/CLOUD_DEPLOYMENT_INVENTORY.md')
         for path in sorted((ROOT / 'output/github-webhook').glob('*')):
             if path.is_file():
                 archive.write(path, 'anexos/output/github-webhook/' + path.name)
+        for path in sorted((ROOT / 'output/gcp-receipts').glob('*.json')):
+            archive.write(path, 'anexos/output/gcp-receipts/' + path.name)
+        for path in ['output/comparison-gcp/comparison.csv', 'output/comparison-gcp/README.md',
+                     'output/vertex-custom/comparison.json', 'output/vertex-custom-normalized.json']:
+            archive.write(ROOT / path, 'anexos/' + path)
     print(f'PDF: {pdf}\nMarkdown: {markdown}\nBundle: {bundle}\nOriginal images: {len(manifest)}')
 
 

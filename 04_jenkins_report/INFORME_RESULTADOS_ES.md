@@ -15,10 +15,10 @@ La primera validación local (#5) y cloud (#1 del job original) completó 165 pr
 | Jenkins local y GCP | Histórico local #5 y cloud #1: SUCCESS, 165 tests. Integración posterior GitHub: job independiente con pruebas ampliadas. |
 | Activación automática | Webhook GitHub activo. Push y merge reales en la rama de laboratorio; ver sección 9. |
 | Comparación de modelos Python | Regresión logística, árbol, random forest y dos referencias evaluados con el mismo holdout. |
-| Vertex AI y AutoML | Preparación técnica disponible. Entrenamiento en el dashboard pendiente de aprobación e inicio de sesión. |
+| Vertex AI y AutoML | Pipeline Vertex CPU: SUCCEEDED; métricas y huellas coincidentes con Python local. AutoML no ejecutado: mínimo nominal USD21,252 > límite USD15. |
 | Control de costos y vencimiento | Parada programada el 13/11/2026 a las 02:41:05 UTC y limpieza desde un minuto después. |
 
-El entrenamiento medido en Jenkins GCP se ejecutó con Python sobre una VM. El servicio Cloud Run actúa exclusivamente como receptor del webhook. No se lanzó entrenamiento AutoML ni Vertex AI; esa fase exige aprobación e inicio de sesión en el dashboard.
+El entrenamiento de Jenkins GCP se ejecutó con Python sobre una VM. Además, el pipeline personalizado de Vertex se lanzó desde el dashboard y finalizó correctamente con métricas coincidentes. Cloud Run recibe el webhook. AutoML no se ejecutó porque su mínimo nominal supera el límite de USD15.
 
 El PDF incorpora las imágenes. El paquete ZIP añade originales PNG, fuente editable, índices y anexos de operación. No incluye contraseñas, tokens, estado de Terraform ni registros individuales del conjunto de datos.
 
@@ -224,29 +224,113 @@ La documentación conserva el ping inicial HTTP 403, la corrección del secreto 
 Fuentes de evidencia: github-verification.json, cleanup-verification.json y anexos de output/github-webhook/. Los JSON publicados contienen métricas agregadas y metadatos de ejecución; no incluyen tokens, contraseñas ni predicciones individuales.
 
 
-## 10. Entrenamiento en GCP: comparación pendiente
+## 10. GCP: acceso, proyecto y datos
 
-La segunda fase se ejecutará desde el dashboard de GCP, previa aprobación e inicio de sesión del usuario en la sesión persistente de Playwright. Esta entrega no inició AutoML, Vertex AI Pipelines ni despliegues de endpoints.
+El usuario autorizó la fase GCP e inició sesión en el navegador persistente semester-gcp. Se verificó contact@02labs.me, cuenta administrada por 02labs.me, y el proyecto novabank-riesgo-ml-dev (nb-risk-ml-dev-99d0, número 727006212991). Se reutilizó este proyecto existente del área de riesgo. La consola permanece en japonés por instrucción del usuario.
 
-| Método | Evidencia actual | Resultado |
+Se habilitó la API de Vertex AI desde la consola, actualmente presentada como Agent Platform. Se creó un bucket privado Standard en us-central1 con acceso uniforme y prevención de acceso público; se subieron raw.csv, automl.csv, holdout-features.csv y manifest.json. Las etiquetas del holdout se conservan locales.
+
+![GCP, consola en japonés: carga de los cuatro archivos en el bucket dedicado del proyecto de riesgo.](assets/11-data-files-uploaded-ja.png)
+
+Exportación real: output/cloud-data-gcp. Particiones cronológicas: 6.027 TRAIN, 1.507 VALIDATE y 3.229 TEST. El nombre oficial de la partición de validación es VALIDATE. Las huellas de dataset y holdout coinciden con el benchmark local.
+
+
+## 10.1. Dataset y preparación de AutoML
+
+Se creó el dataset tabular credit-classification-temporal-20261108, ID 2799060011056103424, región us-central1. La fuente es gs://nb-risk-ml-dev-99d0-credit-lab-20261108/automl.csv. Se solicitó generar estadísticas; esta operación es preparación de datos, no entrenamiento de un modelo.
+
+![Configuración de AutoML: objetivo Pago_atiempo y división manual mediante data_split. No se envió este entrenamiento.](assets/19-automl-manual-temporal-split-ja.png)
+
+Se configuró el objetivo Pago_atiempo y el reparto manual para conservar las mismas filas de prueba. La opción de AutoML sobre Pipelines exige Dataflow y servicios adicionales; se revisó su pantalla sin lanzar el workflow. La documentación anexa conserva los pasos y las capturas originales.
+
+
+## 10.2. Límite de gasto y AutoML no ejecutado
+
+El usuario dispone de USD50 en créditos e indicó reducir la demostración a aproximadamente USD15 como máximo. La opción clásica de AutoML exige entre 1 y 72 horas-nodo. La prueba de 0,7 horas-nodo fue rechazada por la UI; se capturó el mensaje y se canceló el formulario sin iniciar entrenamiento.
+
+![Restricción observada: presupuesto 0,7 inválido; el formulario exige 1–72. El botón de iniciar entrenamiento permanece deshabilitado.](assets/20-automl-minimum-budget-ja.png)
+
+La tarifa pública estándar es USD21,252 por hora-nodo de clasificación/regresión. Por tanto, el presupuesto mínimo nominal excede USD15. No se confía en detener anticipadamente el job para garantizar el límite. AutoML sobre Pipelines también factura infraestructura dependiente; el ejemplo público suma USD27,03 sin destilación y no es una cotización de este dataset.
+
+Resultado: no hay modelo ni métricas de AutoML. La comparación cuantitativa queda limitada a modelos efectivamente ejecutados. Se evita inferencia batch y despliegues de endpoints para este ejercicio.
+
+
+## 10.3. Pipeline personalizado de bajo costo
+
+Se preparó una imagen Python/scikit-learn en Artifact Registry, fijada por digest inmutable, y una especificación KFP real para cargar en el dashboard. Esta preparación por CLI no envía entrenamiento; la ejecución se crea desde la consola japonesa.
+
+| Control | Configuración |
+| --- | --- |
+| Región y recursos | us-central1; 2 CPU, memoria 8G; sin GPU |
+| Límite del cuerpo de entrenamiento | 600 segundos; no incluye provisión ni espera del servicio |
+| Reintentos y caché | Cero reintentos automáticos; caché desactivada |
+| Identidad | credit-semester-pipeline; sin claves; bucket y repositorio acotados |
+| Entrada | raw.csv; verificación de huellas de dataset y holdout |
+| Salida | Artefactos y métricas; sin endpoint permanente |
+
+Se reutiliza el protocolo local: selección previa al holdout, folds temporales y tres semillas. La alarma limita el código, no constituye un tope monetario de facturación. La comparación final se construyó con los artefactos de la ejecución exitosa r3.
+
+Demostración Vertex CPU: 212 s en una réplica e2-highmem-2, aproximadamente USD0,0061 de cómputo a tarifa de lista. Contando conservadoramente USD0,03 por cada uno de los 3 pipelines creados, el subtotal es USD0,0961, más SSD temporal, almacenamiento y operaciones. Se espera un importe del orden de centavos y muy inferior a USD15; es una estimación, no una factura ni un tope garantizado. Los recursos de riesgo retenidos siguen generando pequeños cargos de almacenamiento.
+
+
+## 10.4. Evidencia del pipeline en ejecución
+
+La ejecución r3 fue enviada desde el dashboard y pasó a RUNNING el 08/11/2026 a las 09:52:33 UTC, tras dos envíos fallidos antes de crear workers por acceso inicial del agente a Artifact Registry. IAM Troubleshooter confirmó acceso; se conservan todos los estados. Vertex asignó una réplica e2-highmem-2 y disco temporal SSD de 100 GB, sin GPU. Solicitud del componente: 2 CPU y memoria 8G; máquina compatible asignada: 2 vCPU y 16 GiB.
+
+![Ejecución real credit-cpu-demo-20261108-r3 en el dashboard japonés; el DAG muestra RUNNING. No implica por sí solo entrenamiento finalizado.](assets/27-pipeline-dag-running-ja.png)
+
+El pipeline conserva dos artefactos de salida: results y metrics. La vista de tarea muestra los hashes de entrada, la imagen por digest y el CustomJob asociado. El estado RUNNING confirma orquestación activa; la disponibilidad de métricas se comprueba al finalizar el worker.
+
+
+## 10.5. Evidencia del entrenamiento y sus logs
+
+El CustomJob comenzó su ejecución el 08/11/2026 a las 09:58:45 UTC. El dashboard y Cloud Logging muestran búsqueda real de regresión logística, árbol y random forest, con evaluación temporal. El nodo del pipeline incluye la espera de provisión en su duración; no es una medida de tiempo puro de entrenamiento.
+
+![Logs reales durante la búsqueda: F1 temporal de candidatos y comienzo de random forest, con el nodo todavía Running. Estos valores no son métricas finales del holdout.](assets/33-training-search-live-logs-ja.png)
+
+Se conservan dos envíos fallidos al inicio, antes de crear workers, y la ejecución r3 completada correctamente. La prueba no usa GPUs, Dataflow ni endpoints online. Los artefactos exportados se verificaron antes de añadir la comparación cuantitativa.
+
+
+## 10.6. Finalización y métricas del dashboard
+
+Resultado comprobado: pipeline credit-cpu-demo-20261108-r3, SUCCEEDED el 08/11/2026 a las 10:02:37 UTC. CustomJob 1394998308224630784: SUCCEEDED, 09:58:45–10:02:17 UTC, 212 segundos. El dashboard conserva la relación entre el run, la tarea, los datos y los artefactos. El modelo se conserva como best_model.joblib en el bucket privado; no se desplegó un endpoint.
+
+![ML Metadata muestra las métricas reales del entrenamiento: accuracy, F1 de incumplimiento, ROC-AUC, AP y variación entre folds/semillas. La consola se mantiene en japonés.](assets/35-cloud-metrics-metadata-ja.png)
+
+Se descargaron modelo, tablas, predicciones y figuras del artefacto results, sin enviar nuevos jobs. La huella de cada archivo, el estado completo y los resultados de verificación se conservan en los anexos GCP. La captura 34 documenta el DAG finalizado con sus logs.
+
+
+## 10.7. Comparación Python y Vertex CPU
+
+Se verificó el mismo dataset y las mismas 3.229 filas del holdout mediante SHA-256. Ambos entornos seleccionaron random forest. Las diferencias en cuatro métricas clave son menores que 1e-12: este experimento acredita reproducibilidad, no superioridad del entrenamiento cloud.
+
+| Métrica | Python local | Vertex CPU |
 | --- | --- | --- |
-| Python local | Entrenamiento y holdout medidos | Tabla de la sección 7. |
-| Python en Jenkins GCP | Ejecución CPU en VM y métricas coincidentes | Reproducibilidad del baseline. |
-| Vertex AI Pipelines personalizado | Código de entrenamiento y compilación offline preparados | Pendiente de ejecución real en dashboard. |
-| AutoML Tabular | Datos con splits fijos preparados | Pendiente de entrenamiento y evaluación en dashboard. |
+| Accuracy | 0,825023 | 0,825023 |
+| F1 incumplimiento | 0,113030 | 0,113030 |
+| Recall incumplimiento | 0,333333 | 0,333333 |
+| ROC-AUC | 0,657321 | 0,657321 |
+| Average Precision | 0,099415 | 0,099415 |
+| Desv. F1 temporal | 0,029162 | 0,029162 |
+| Desv. F1 semillas | 0,011031 | 0,011031 |
 
-Secuencia prevista: seleccionar nb-risk-ml-dev-99d0 y comprobar facturación; habilitar Vertex AI; importar datos tabulares con splits fijos; lanzar AutoML con presupuesto acotado; registrar métricas y exportar predicciones; compilar y subir una especificación con imagen real fijada por digest; ejecutar el pipeline personalizado desde el dashboard y descargar sus artefactos.
+![Resultados medidos sobre el mismo holdout. Las barras de error son intervalos bootstrap condicionales de muestreo, no estabilidad de reentrenamiento. AutoML no se ejecutó y no tiene barra.](assets/comparacion-python-vertex.png)
 
-Se prepararon 6.027 filas TRAIN, 1.507 VALIDATION y 3.229 TEST para AutoML, con imputación ajustada exclusivamente en entrenamiento. La especificación compilada de demostración contiene un digest de imagen de ceros: no es un pipeline listo para ejecutar ni prueba de un job enviado.
+Se detectaron 36 de 108 incumplimientos; se omitieron 72 y hubo 493 falsas alarmas. La calidad sigue siendo limitada pese a la coincidencia entre entornos. Los desvíos provienen de folds y semillas dentro del protocolo, no de tres jobs cloud independientes. Una comparación con AutoML y su estabilidad de reentrenamiento queda sin medir bajo el límite actual.
 
-La comparación usará las mismas huellas de datos y holdout, probabilidades de la clase de incumplimiento e identificadores únicos. Se mostrarán accuracy, F1, recall, ROC-AUC, AP y umbrales. No se sustituirán resultados cloud faltantes por los de Python.
 
-El entrenamiento manual ofrece control sobre folds temporales, variables, calibración, umbrales y semillas. AutoML reduce búsqueda e integración manual a cambio de presupuesto administrado y menor visibilidad de la búsqueda. Su superioridad y consistencia deberán medirse; una única ejecución no demuestra estabilidad de reentrenamiento.
+## 10.8. Evidencia de créditos y facturación
+
+La página de créditos confirma el importe inicial y el saldo observado para esta cuenta educativa. USD49,86 restantes no es un saldo en tiempo real garantizado: los consumos más recientes pueden no haberse descontado todavía.
+
+![Crédito Ciencia de datos en producción: USD50,00 iniciales, USD49,86 restantes, vencimiento 6 de octubre de 2027.](assets/31-education-credit-balance-ja.png)
+
+El reporte mensual muestra USD0,00 netos del 1 al 8 de noviembre, con USD0,06 de ahorros/créditos. El saldo promocional acumula desde su concesión y tiene otro alcance temporal. Se conserva la captura del reporte y un recibo de observación con sus filtros. El límite para la demostración de entrenamiento se mantiene en aproximadamente USD15.
 
 
 ## 11. Costos y eliminación automática
 
-Cuenta de facturación verificada: Billing Account for Education, 01ADCB-D56D56-B45DCC, en USD. El total efectivamente facturado y el saldo de créditos educativos no se verificaron desde el dashboard; los valores siguientes son una estimación de lista del entorno Jenkins.
+Cuenta de facturación verificada en consola: Billing Account for Education, 01ADCB-D56D56-B45DCC, USD. El reporte del 1–8/11/2026, con todos los 6 proyectos, muestra USD0,00 netos e incluye USD0,06 de ahorros/créditos. La promoción educativa de USD50,00 muestra USD49,86 restantes y vencimiento 06/10/2027. Los datos pueden tener retraso y no constituyen una factura final del trabajo actual. Las cifras de lista de Jenkins se presentan por separado.
 
 | Componente | Estimación por 730 horas |
 | --- | --- |
@@ -273,7 +357,7 @@ Se verificaron por lectura FULL los 49 nuevos payloads cleanup-webhook y la para
 
 ## 12. Trazabilidad, incidencias y próximos pasos
 
-Origen de las ejecuciones finales: snapshot Git aislado 242e2edf71981a4ea10dd8bb8756d0b614c569b6, construido sobre HEAD original b5c51c7b92c99364cab1857ea1a972a5b838e79f. Los cambios preparados del webhook pertenecen a una revisión posterior; las capturas históricas no se atribuyen a esa nueva versión.
+Origen de las primeras ejecuciones Jenkins: snapshot Git aislado 242e2edf71981a4ea10dd8bb8756d0b614c569b6, construido sobre HEAD original b5c51c7b92c99364cab1857ea1a972a5b838e79f. Los cambios preparados del webhook pertenecen a una revisión posterior; las capturas históricas no se atribuyen a esa nueva versión.
 
 Incidencias resueltas: el primer build terminó UNSTABLE por faltar BUILD_URL al notificar; se configuró la URL y un fallback probado. También se corrigió la inclusión de cinco pruebas nuevas en el snapshot. Los builds anteriores de 160 pruebas no se presentan como si contuvieran 165. En la preparación del webhook se detectó un JUnit incompatible con Jenkins 2.580.2; se restauró la versión compatible y se incorporaron dos pruebas y un guard de versión de plugins. El primer ping GitHub reveló un salto de línea en el secreto; se normalizó, se probó y la reentrega pasó a HTTP 200. El PR de verificación también expuso un import pytest sin uso, previo a Jenkins, en las pruebas BigQuery; se retiró en la revisión final y se verificó Ruff.
 
@@ -282,11 +366,11 @@ Dataset SHA-256:
 Holdout SHA-256:
 f0f8ec775541328cfcaf07fa5a8455a089b2f3832549c583de35804f5216329a
 
-Artefactos de soporte: output/jenkins-receipts/summary.json; output/playwright/index.json; docs/jenkins-execution.md; docs/model-results.md; docs/expiry-policy.md; docs/github-webhook.md; docs/gcp-training.md y el inventario de cuentas de la raíz. evidencias.json identifica cada imagen incorporada con su SHA-256. La evidencia nueva del webhook y las notificaciones se encuentra en output/github-webhook/ y en las fuentes JSON de este informe.
+Artefactos de soporte: output/jenkins-receipts/summary.json; output/playwright/index.json; docs/jenkins-execution.md; docs/model-results.md; docs/expiry-policy.md; docs/github-webhook.md; docs/gcp-training.md y el inventario de cuentas de la raíz. evidencias.json identifica cada imagen incorporada con su SHA-256. La evidencia nueva del webhook y las notificaciones se encuentra en output/github-webhook/ y en las fuentes JSON de este informe. La fase GCP añade docs/gcp-execution.md, output/playwright/gcp/index.json y output/training-runtime.json.
 
-Prioridades restantes: revisar el PR de implementación antes de integrar en otras ramas; obtener aprobación para el entrenamiento desde el dashboard; incorporar resultados reales AutoML y Vertex al mismo informe; verificar el retiro automático en la fecha fijada y conservar evidencia local. El job activo vigila la rama de laboratorio; master no fue modificado.
+Prioridades restantes: revisar el PR antes de integrar en otras ramas; conservar los recibos del entrenamiento personalizado y mantener AutoML sin ejecutar bajo el límite actual; verificar el retiro automático de Jenkins en la fecha fijada. El job GitHub activo vigila la rama de laboratorio; master no fue modificado.
 
-Conclusión: el laboratorio acredita clonación, pruebas, entrenamiento, puertas de calidad, aprobación y notificación en local y GCP, más activación real por webhook al hacer push y merge en una rama de laboratorio. La detección de incumplimiento sigue siendo limitada. La comparación con AutoML y Vertex permanece pendiente de ejecución aprobada en el dashboard.
+El laboratorio acredita clonación, pruebas, entrenamiento, puertas de calidad, aprobación y notificación en local y GCP, más activación real por webhook al hacer push y merge en una rama de laboratorio. El pipeline personalizado de Vertex terminó SUCCEEDED desde el dashboard y reprodujo las métricas locales. La detección de incumplimiento sigue siendo limitada. AutoML no se entrenó por el límite de gasto; no se le atribuyen resultados de Python.
 
 
 ## Referencias
@@ -300,3 +384,6 @@ Conclusión: el laboratorio acredita clonación, pruebas, entrenamiento, puertas
 - [Google Cloud: precios de Artifact Registry](https://cloud.google.com/artifact-registry/pricing)
 - [Google Cloud: precio de instancia mínima Cloud Run](https://cloud.google.com/run/pricing)
 - [GitHub: PR #16 integrado en la rama de laboratorio](https://github.com/03loveslollipop/cdp_2026/pull/16)
+- [Precios oficiales de entrenamiento y servicios de Vertex/Agent Platform](https://cloud.google.com/products/gemini-enterprise-agent-platform/pricing)
+- [Costos de AutoML Tabular Workflows e infraestructura dependiente](https://cloud.google.com/gemini-enterprise-agent-platform/tabular-workflows-pricing)
+- [Divisiones manuales de datos tabulares: TRAIN, VALIDATE y TEST](https://docs.cloud.google.com/gemini-enterprise-agent-platform/machine-learning/tabular-data/data-splits)

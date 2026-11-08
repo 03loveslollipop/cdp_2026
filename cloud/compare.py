@@ -106,7 +106,7 @@ def score_automl(prediction_paths, data, output):
     return report
 
 
-def compare(paths, output):
+def compare(paths, output, language='en'):
     reports = [json.loads(Path(path).read_text()) for path in paths]
     if len({(r['dataset_sha256'], r['holdout_sha256']) for r in reports}) != 1:
         raise ValueError('Cannot compare different datasets or holdout partitions')
@@ -121,6 +121,10 @@ def compare(paths, output):
     frame = pd.DataFrame(rows)
     frame.to_csv(output / 'comparison.csv', index=False)
     fig, axes = plt.subplots(1, 3, figsize=(13, 4), constrained_layout=True)
+    labels = {'python-local': 'Python local', 'vertex-custom': 'Vertex CPU',
+              'vertex-automl': 'AutoML'} if language == 'es' else {}
+    metric_labels = {'accuracy': 'Exactitud', 'default_f1': 'F1 de incumplimiento',
+                     'roc_auc': 'ROC-AUC'} if language == 'es' else {}
     for axis, name in zip(axes, columns[:3]):
         for position, report in enumerate(reports):
             value = report['metrics'][name]
@@ -130,10 +134,11 @@ def compare(paths, output):
                 # Quantile intervals can miss the point estimate slightly on discrete metrics.
                 low, high = min(value, interval[0]), max(value, interval[1])
                 axis.errorbar(position, value, yerr=[[value-low], [high-value]], color='black', capsize=4)
-        axis.set(title=name, ylim=(0, 1), xticks=range(len(reports)),
-                 xticklabels=[r['origin'] for r in reports])
+        axis.set(title=metric_labels.get(name, name), ylim=(0, 1), xticks=range(len(reports)),
+                 xticklabels=[labels.get(r['origin'], r['origin']) for r in reports])
         axis.tick_params(axis='x', labelrotation=20)
-    fig.suptitle('Measured frozen-holdout results (default = 0)')
+    fig.suptitle('Resultados medidos sobre el mismo holdout (incumplimiento = 0)'
+                 if language == 'es' else 'Measured frozen-holdout results (default = 0)')
     fig.savefig(output / 'comparison.png', dpi=160)
     plt.close(fig)
     present = {r['origin'] for r in reports}
@@ -174,10 +179,11 @@ if __name__ == '__main__':
     report = subs.add_parser('report')
     report.add_argument('--inputs', nargs='+', required=True)
     report.add_argument('--output', required=True)
+    report.add_argument('--language', choices=['en', 'es'], default='en')
     args = parser.parse_args()
     if args.command == 'local':
         normalize_local(args.run, args.output, args.origin)
     elif args.command == 'automl':
         score_automl(args.predictions, args.data, args.output)
     else:
-        compare(args.inputs, args.output)
+        compare(args.inputs, args.output, args.language)

@@ -28,7 +28,8 @@ def prepare(destination):
     frames = []
     holdout = None
     counts = {}
-    for name, frame in [('TRAIN', inner.train), ('VALIDATION', inner.test), ('TEST', outer.test)]:
+    # Vertex's case-sensitive manual split token is VALIDATE.
+    for name, frame in [('TRAIN', inner.train), ('VALIDATE', inner.test), ('TEST', outer.test)]:
         dataset = extract_dataset(frame, config, require_target=True)
         if set(dataset.target) != {0, 1}:
             raise ValueError(f'{name} must contain both classes')

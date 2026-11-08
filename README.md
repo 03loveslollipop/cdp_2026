@@ -92,7 +92,9 @@ under the ignored `.jenkins/secrets/` directory.
 The [GCP training runbook](docs/gcp-training.md) covers AutoML and the custom Vertex
 AI Pipeline, launched through the web dashboard after user approval and login.
 `cloud/` provides offline data export, a KFP compiler, the training container and
-comparison tools. Cloud scores remain pending until real dashboard runs finish.
+comparison tools. The [GCP execution log](docs/gcp-execution.md) records the successful
+CPU dashboard run and matching local/cloud metrics. AutoML was cancelled because
+its one-node-hour minimum exceeds the user's USD15 training limit.
 The workspace-root `CLOUD_DEPLOYMENT_INVENTORY.md` records identities, project IDs,
 resources, configurations and verified deployment state.
 

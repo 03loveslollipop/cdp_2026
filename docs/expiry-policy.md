@@ -75,3 +75,11 @@ The VM has `expires-on`, `lab-expiry-at` and `lab-expiry-queue` metadata/labels.
 No further confirmation is required at the deadline: the user's five-day cleanup instruction authorizes the scheduled deletion. Any extension must be an explicit policy change and rescheduling action, not a side effect of restarting Jenkins or rerunning Terraform.
 
 References: [authenticated Cloud Tasks](https://docs.cloud.google.com/tasks/docs/creating-http-target-tasks), [Cloud Build service accounts](https://docs.cloud.google.com/build/docs/securing-builds/configure-user-specified-service-accounts), [Artifact Registry repository deletion](https://docs.cloud.google.com/artifact-registry/docs/reference/rest/v1/projects.locations.repositories/delete).
+
+## Ampliación para el webhook GitHub
+
+El 8/11 se incorporó el receptor Cloud Run `semester-jenkins-webhook`, su subred `10.81.1.0/26`, firewall privado, secreto y cuenta de servicio. El rol temporal del worker suma `run.services.get`, `run.services.delete` y `run.operations.get` (29 permisos en total). El servicio se elimina antes de liberar la red; si Direct VPC conserva temporalmente direcciones, los reintentos idempotentes continúan.
+
+Las 49 tareas `cleanup-webhook-00` a `cleanup-webhook-48` reemplazan los payloads anteriores después de verificar el contenido FULL de todas las páginas. **No se cambió ninguna fecha**: la parada sigue en `2026-11-13T02:41:05Z` y la limpieza empieza a las `02:42:05Z`. Los logs locales de migración conservan las 49 retiradas; la verificación final vuelve a leer las nuevas. El Cloud Build de solo lectura `ce5426ac-f105-4027-87f8-636c16ddcf1d` terminó SUCCESS tras crear el receptor.
+
+Reproducir comprobación: `python3 cloud/expiry/schedule.py verify`. La opción `retire-legacy` solo retira las tareas de la generación anterior cuando todas las nuevas coinciden con el worker y la política locales; no extiende el vencimiento. El hook en GitHub es un registro externo: tras retirar el receptor su URL queda inactiva, y puede eliminarse desde los ajustes del repositorio sin conservar credenciales GitHub en GCP.

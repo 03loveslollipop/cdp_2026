@@ -61,7 +61,7 @@ The notification receiver is an authenticated private local HTTP service. It acc
 
 ## 3. Verify automatic triggering
 
-The current candidate also defines `githubPush()` with the locked GitHub plugin; the [GitHub webhook runbook](github-webhook.md) records its local validation and the remaining owner-access/HTTPS requirements. It has not yet been activated on the remote repository or cloud controller. The historical execution evidence below remains SCM-polling evidence.
+The live GitHub job `credit-classification-github` now uses `githubPush()` and the signed Cloud Run receiver. The [GitHub webhook runbook](github-webhook.md) records actual push/merge verification on `ci/jenkins-lab-20261108`; master remains unchanged. The original `credit-classification` job and the historical execution evidence below remain SCM-polling evidence.
 
 `pollSCM('H/2 * * * *')` polls the configured branch every two minutes at Jenkins' hashed minute offset. It is not a periodic unconditional build. The initial manual build registers the Jenkinsfile trigger; subsequent SCM changes should start a build with cause **Started by an SCM change**. Capture the polling log and the automatically started build, then review/approve it as above.
 

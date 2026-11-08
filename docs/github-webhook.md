@@ -1,66 +1,73 @@
-# GitHub → Jenkins: activación y evidencia
+# GitHub → Jenkins: integración y evidencia
 
-Estado de esta entrega: **implementación preparada; webhook remoto pendiente de acceso del propietario y de receptor HTTPS**. El usuario conectado es `02loveslollipop`, con WRITE, sin ADMIN, en `03loveslollipop/cdp_2026`. La consulta de hooks devuelve HTTP 404. El repositorio pertenece a una cuenta personal (`03loveslollipop`); no se debe interpretar WRITE como permiso para administrar hooks.
+La cuenta propietaria `03loveslollipop` está activa y tiene ADMIN en `03loveslollipop/cdp_2026`. Se publicó la implementación en **`ci/jenkins-lab-20261108`** y se instaló el webhook **708866067**, activo, para `push`, con TLS verificado y secreto HMAC SHA-256. La rama `master` no se modificó.
 
-El `Jenkinsfile` incorpora `githubPush()` y conserva `pollSCM('H/2 * * * *')` como respaldo. El plugin `github` y sus dependencias están fijados en `ci/jenkins/plugins.lock.json`. Estos cambios deben llegar al controlador y a la rama remota antes de afirmar que están activos. Los builds históricos local #5 y cloud #1 corresponden a la versión anterior, con polling; no prueban el webhook.
+## Configuración desplegada
 
-Verificación de esta revisión: imagen Compose local reconstruida con 76 plugins conservando el volumen existente; `github` 1.47.0 activo y `Jenkinsfile successfully validated` mediante el validador del controlador real. Pasaron 15 pruebas enfocadas (ocho casos del instalador de hooks, dos regresiones de compatibilidad de plugins y cinco regresiones CI existentes). La VM GCP no se actualizó ni se reemplazó por estos cambios. Se detectó y corrigió un JUnit incompatible en los metadatos de actualización: se conservó el pin 1458.v38661c0638e2 y se agregó una comprobación de versión mínima de Jenkins al instalador de plugins.
+| Elemento | Valor |
+|---|---|
+| Receptor HTTPS | `https://semester-jenkins-webhook-tcwenm7hba-uc.a.run.app/github-webhook/` |
+| Servicio Cloud Run | `semester-jenkins-webhook`, proyecto `nb-core-dev-99d0`, región `us-central1` |
+| Capacidad | 1 vCPU, 256 MiB; una instancia mínima y máxima; CPU fuera de solicitudes limitada |
+| Red | Direct VPC egress, subred dedicada `10.81.1.0/26`; acceso privado a `10.81.0.3:8080` |
+| Seguridad | Firma SHA-256; repo ID 1311514433; allowlist de ramas; límite 2 MiB; sin proxy de otras rutas Jenkins |
+| Identidad y secreto | `semester-jenkins-webhook@nb-core-dev-99d0.iam.gserviceaccount.com`; acceso solo a su secreto homónimo |
+| Jenkins | Job `credit-classification-github`, SCM HTTPS público, rama `*/ci/jenkins-lab-20261108`, `Jenkinsfile` |
+| Trigger | `githubPush()`; `pollSCM('H/2 * * * *')` como respaldo |
+| Vencimiento | **13/11/2026 02:41:05 UTC**, idéntico al de la VM |
 
-## 1. Obtener acceso del propietario
+Cloud Run termina TLS. El receptor solo reenvía solicitudes `POST /github-webhook/` firmadas y autorizadas; `/` devuelve 404 y una firma inválida devuelve 403. `GET /healthz` comprueba conectividad privada para el arranque. La consola de Jenkins sigue protegida por IAP y autenticación.
 
-En una terminal del equipo compartido, completar el flujo web con la cuenta propietaria:
+Se mantiene una instancia pequeña caliente porque Direct VPC puede tardar más que el plazo de respuesta de GitHub al arrancar desde cero. Su costo orientativo de inactividad es USD 0,27/día antes de créditos/franquicias, más solicitudes activas, almacenamiento y secretos. No es una lectura de la factura. Fuente: [precios Cloud Run](https://cloud.google.com/run/pricing).
 
-```bash
-gh auth login --hostname github.com --web --git-protocol ssh --scopes admin:repo_hook
-gh api repos/03loveslollipop/cdp_2026 --jq '.permissions'
-```
+## Ejecución reproducible
 
-Si ambas cuentas ya están conectadas, `gh auth switch --hostname github.com --user 03loveslollipop` selecciona la propietaria. Un token de alcance suficiente tampoco amplía los permisos del usuario en el repositorio. No pegar contraseñas ni tokens en el informe.
-
-## 2. Publicar y seleccionar la fuente correcta
-
-Publicar la implementación en una rama de trabajo y abrir un PR. No mezclar los commits automáticamente en `master`. Configurar el job con URL `https://github.com/03loveslollipop/cdp_2026.git`, la rama publicada y script `Jenkinsfile`; el repositorio es público y no requiere credenciales de lectura. Ejecutar una vez para registrar sus triggers. Tras integrar el PR, seleccionar `*/master` para comprobar los cambios de esa rama.
-
-Reconstruir el controlador con los 76 plugins fijados. Actualizar la VM requiere conservar su volumen e historial: el módulo mínimo reemplaza VM/disco al cambiar la imagen del startup script. No aplicar ese reemplazo sin respaldo; tampoco modificar la fecha de vencimiento.
-
-## 3. Preparar el receptor HTTPS
-
-GitHub necesita una URL pública `https://<receptor>/github-webhook/`. Los puertos 18081/18083 de localhost y el acceso privado mediante IAP **no son receptores válidos para GitHub**. No se abrió la consola administrativa de Jenkins a Internet.
-
-El receptor debe ofrecer TLS válido y reenviar únicamente `/github-webhook/` a Jenkins, con validación del secreto de firma de GitHub, límite de tamaño de solicitudes y registro del identificador de entrega. Mantener privadas las demás rutas de Jenkins. Si se agrega un relay administrado, incluir servicio, identidad, secretos, red y almacenamiento en el teardown del **13 de noviembre de 2026 a las 02:41:05 UTC**, sin ampliar el plazo. La política existente contiene un payload fijo: editar el worker local no actualiza las tareas ya programadas.
-
-Configurar en **Manage Jenkins → System → GitHub → Advanced → Shared secret** el mismo secreto aleatorio que se usará en GitHub. Mantener desactivado el manejo automático de hooks si se utiliza el instalador de este documento. Comprobar que solicitudes con firma incorrecta se rechazan y que el receptor no funciona después del vencimiento.
-
-## 4. Crear el hook de forma revisable
-
-Guardar el secreto en un archivo local ignorado, con permisos 600; no suministrarlo como argumento literal. Primero obtener el plan, y después instalar:
+1. Aplicar la base Terraform de `cloud/webhook` sin el servicio (`deploy_receiver=false`). Crea API Run, cuenta de servicio, contenedor Secret Manager, binding de lectura, subred y firewall privado.
+2. Ejecutar `python3 cloud/webhook/publish.py`: genera un secreto local con permisos 600, crea su versión fuera del estado Terraform, construye la imagen fijada a una base por digest y la publica en el Artifact Registry existente. Las credenciales Docker son temporales.
+3. Planificar y aplicar el servicio con `python3 cloud/webhook/terraform.py plan -out=receiver.tfplan` y `python3 cloud/webhook/terraform.py apply receiver.tfplan`. El wrapper comprueba organización/cuenta y rechaza recreación después del vencimiento.
+4. En Jenkins, instalar los cinco plugins GitHub adicionales y sus dependencias comprobando sus hashes del lock de 76 plugins. En este entorno se cargaron dinámicamente mediante la API administrativa a través de IAP; VM, volumen y build histórico #1 quedaron intactos. JUnit sigue fijado a `1458.v38661c0638e2`, compatible con Jenkins 2.580.2.
+5. Crear una credencial Jenkins de tipo Secret text, alcance SYSTEM, ID `semester-github-webhook`, con el mismo secreto. Seleccionarla en **Manage Jenkins → System → GitHub → Advanced → Shared secret**, algoritmo SHA256; mantener desactivada la gestión automática de hooks.
+6. Crear el job de Pipeline from SCM con la URL y rama de la tabla; ejecutar una vez para registrar SCM y triggers. El primer build remoto también pudo recibir polling, por lo que no se atribuye al webhook.
+7. Instalar exclusivamente el hook de esta URL con el plan e instalador siguientes:
 
 ```bash
-python3 ci/github_webhook.py --url https://<receptor>/github-webhook/
-python3 ci/github_webhook.py --url https://<receptor>/github-webhook/ \
+python3 ci/github_webhook.py --url https://semester-jenkins-webhook-tcwenm7hba-uc.a.run.app/github-webhook/
+python3 ci/github_webhook.py --url https://semester-jenkins-webhook-tcwenm7hba-uc.a.run.app/github-webhook/ \
   --secret-file .jenkins/secrets/github-webhook --apply
 ```
 
-El instalador solo administra el hook que coincide con esa URL en este repositorio. Comprueba acceso ADMIN, HTTPS, dirección pública, validación TLS, evento `push` y lectura posterior; no modifica otros hooks. No imprime secretos. Su recibo diferencia instalación de entrega efectiva. También se puede usar **Settings → Webhooks → Add webhook**: Content type `application/json`, secreto compartido, evento **Just the push event**, Active y TLS habilitados.
+El instalador confirma identidad ADMIN, dirección HTTPS pública, evento push, TLS habilitado y lectura posterior; no modifica hooks de otros receptores ni imprime secretos. No se entregó al controlador ningún token GitHub del propietario.
 
-## 5. Casos y criterios de aceptación
+## Verificación de push y merge
 
-| Caso | Comportamiento esperado |
+Para aislar la causa, se dejó temporalmente vacío el cron SCM antes de cada evento observado. Los builds arrancados por el webhook registran **Started by GitHub push by 03loveslollipop**. El Jenkinsfile restablece el polling de respaldo al comenzar cada ejecución.
+
+- Push directo: commit `7775c84526afb3836b272f6595ee30cddbfb3207`, entrega GitHub HTTP 200 y build **#2**.
+- Merge real: [PR #16](https://github.com/03loveslollipop/cdp_2026/pull/16), integrado únicamente en la rama de laboratorio; commit `501952de01570ea5e29b04cf230c7f886dad387b`, entrega HTTP 200 y build **#3**.
+- El push de la rama no vigilada `ci/webhook-merge-check-20261108` recibió HTTP 202 (ignorado), sin build independiente del job de laboratorio.
+- El primer ping tuvo HTTP 403 por un salto de línea final en el secreto de Secret Manager. Se normalizó el secreto, se añadió una regresión y su reentrega recibió HTTP 200. El intento fallido se conserva en la evidencia.
+
+Los resultados completos, SHA de checkout, JUnit, aprobación y notificación se registran en `output/github-webhook/verification.json` y los recibos de cada build. Un HTTP 200 o un ping por sí solos no acreditan éxito de las pruebas. Las capturas de Jenkins son de navegador; los recibos de GitHub se obtienen de su API real, sin simular una sesión autenticada del dashboard de GitHub.
+
+## Alcance de eventos
+
+| Caso | Comportamiento |
 |---|---|
-| Push con commit nuevo a la rama vigilada | Entrega `push` válida; polling solicitado por GitHub; nuevo build con SHA coincidente |
-| Merge, squash merge o rebase merge en la rama vigilada | El `push` de la rama destino activa sus pruebas; verificar el SHA resultante |
-| Push a otra rama | El job de una sola rama no debe evaluar una rama diferente |
-| Push de una etiqueta o borrado de rama | No equivale a un commit nuevo de la rama vigilada |
-| Reenvío de la misma entrega | Sin build adicional si SCM no cambió; revisar cola y log |
-| Apertura/actualización de PR sin integración | No está cubierta por este job de rama única; requiere Multibranch Pipeline/GitHub Branch Source para checks previos al merge |
-| Cierre de PR sin merge | No constituye un cambio en la rama destino |
-| Firma inválida | Rechazar; sin build |
-| Receptor temporalmente caído | Polling periódico conserva detección de cambios; revisar/reentregar el hook |
+| Push nuevo a la rama vigilada | Solicita polling mediante GitHub y ejecuta la revisión observada |
+| Merge / squash / rebase merge a la rama vigilada | El push de la rama destino solicita sus tests; se probó merge con commit de integración |
+| Otra rama, tag o borrado | El receptor ignora lo que no sea un push válido a una rama permitida |
+| Reentrega del mismo evento | Se deduplica por ID de entrega; SCM protege frente al mismo estado después de reiniciar el receptor |
+| PR abierto / actualizado sin integrar | Este job de una rama no ejecuta checks previos al merge; el repositorio ya tiene GitHub Actions para PRs, que se reportan por separado |
+| Cierre de PR sin merge | No equivale a un push sobre la rama destino |
+| Firma inválida o repositorio distinto | Rechazo sin ejecución de Jenkins |
+| Tras vencimiento | El receptor rechaza con 410; la parada y limpieza retiran el servicio y su conectividad |
 
-No se suscribe `pull_request` solo para aparentar pruebas de PR. El trigger estándar inicia una comprobación de SCM; una entrega HTTP 2xx o un `ping` por sí solos no prueban ejecución ni éxito de tests.
+El receptor permite también la referencia `master` para una futura configuración, pero **el job actual vigila solo la rama de laboratorio**. La presencia de un hook no activa tests de todas las ramas ni protección de merges. Cambiar la rama del job requiere que esa rama contenga la implementación y una decisión explícita sobre los despliegues ya asociados a `master`.
 
-## 6. Capturas pendientes
+## Limpieza
 
-Con Playwright, conservar una sesión autenticada y capturar: configuración del hook sin mostrar el secreto, Recent Deliveries con HTTP 2xx y evento/ref/SHA, build iniciado automáticamente, checkout del mismo SHA, reporte JUnit, aprobación y notificación final. Para acreditar merge, añadir el PR integrado y la entrega `push` de su rama destino. Guardar los recibos con UTC y hashes; actualizar el informe español únicamente con resultados observados.
+El worker incorpora servicio Run, firewall y subred del receptor, su secreto e identidad. Se ampliaron tres permisos Run en el rol temporal y se instalaron 49 nuevos payloads de limpieza `cleanup-webhook-00` a `cleanup-webhook-48`, con los horarios originales. Tras verificar cada payload por lectura FULL y todas las páginas, se retiraron los 49 payloads anteriores. La tarea `stop-vm-at-expiry` quedó intacta.
 
-Referencias: [GitHub: crear webhooks](https://docs.github.com/en/webhooks/using-webhooks/creating-webhooks), [plugin GitHub de Jenkins](https://plugins.jenkins.io/github/), [permisos de repositorios personales](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/repository-access-and-collaboration/permission-levels-for-a-personal-account-repository).
+El Cloud Build de solo lectura `1b7b638c-d558-44e3-8670-19416c132f3d` verificó los 29 permisos del worker. La política no elimina proyectos compartidos ni el entorno de entrenamiento. El hook de GitHub es configuración externa sin costo de cómputo: tras retirar el receptor, su URL deja de servir; eliminar ese registro desde GitHub cuando finalice el ejercicio evita entregas futuras a una URL retirada.
+
+Referencias: [crear webhooks](https://docs.github.com/en/webhooks/using-webhooks/creating-webhooks), [validar firmas](https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries), [plugin GitHub de Jenkins](https://plugins.jenkins.io/github/), [Direct VPC egress](https://docs.cloud.google.com/run/docs/configuring/vpc-direct-vpc).

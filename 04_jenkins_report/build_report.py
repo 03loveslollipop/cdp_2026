@@ -141,6 +141,7 @@ def build():
         archive.write(pdf, pdf.name)
         for path in [markdown, DIRECTORY / 'README.md', DIRECTORY / 'requirements.txt',
                      DIRECTORY / 'informe.json', DIRECTORY / 'evidencias.json',
+                     DIRECTORY / 'github-verification.json', DIRECTORY / 'cleanup-verification.json',
                      DIRECTORY / 'build_report.py', *sorted(assets.glob('*'))]:
             archive.write(path, str(Path('fuentes') / path.relative_to(DIRECTORY)))
         for path in ['docs/jenkins.md', 'docs/jenkins-execution.md', 'docs/model-results.md',
@@ -153,6 +154,9 @@ def build():
                 archive.write(path, 'anexos/' + str(path.relative_to(ROOT)))
         archive.write(ROOT.parent / 'CLOUD_DEPLOYMENT_INVENTORY.md',
                       'anexos/CLOUD_DEPLOYMENT_INVENTORY.md')
+        for path in sorted((ROOT / 'output/github-webhook').glob('*')):
+            if path.is_file():
+                archive.write(path, 'anexos/output/github-webhook/' + path.name)
     print(f'PDF: {pdf}\nMarkdown: {markdown}\nBundle: {bundle}\nOriginal images: {len(manifest)}')
 
 

@@ -55,6 +55,42 @@
       "source": "output/local-baseline/figures/temporal_f1.png",
       "sha256": "29da562ee3019edd7aeb09dfaf63bc0a7977e3452c4fe51c1458b45023bce0d5",
       "caption": "Figura 9. Variación del F1 en las ventanas temporales de evaluación."
+    },
+    {
+      "file": "assets/35-jenkins-github-hook-log.png",
+      "source": "output/playwright/35-jenkins-github-hook-log.png",
+      "sha256": "e18c5446bc55a36b4b349148b38a54274f1c048ed72080cb402ab292d876dfb3",
+      "caption": "Figura 10. Log real del hook en Jenkins: evento recibido por la red privada y nueva revisión de la rama destino."
+    },
+    {
+      "file": "assets/36-github-merge-console-running.png",
+      "source": "output/playwright/36-github-merge-console-running.png",
+      "sha256": "71297607a64c8526363c60d46000f2fb5fd8d0e9dc73b540a8702c1494db0040",
+      "caption": "Figura 11. Consola en ejecución del build #3: Started by GitHub push y checkout del commit de merge 501952de…"
+    },
+    {
+      "file": "assets/31-github-pr-16-merged.png",
+      "source": "output/playwright/31-github-pr-16-merged.png",
+      "sha256": "4b594d47dbcf5459dabfc5f3435f81432a2461aa60c3b678df070b321055623e",
+      "caption": "Figura 12. GitHub público: PR #16 integrado en ci/jenkins-lab-20261108; master no fue modificado."
+    },
+    {
+      "file": "assets/39-github-push-merge-completed-stages.png",
+      "source": "output/playwright/39-github-push-merge-completed-stages.png",
+      "sha256": "e28a8b31a9d06cd2eb3b8b28cf07c860fecce84fc8ed1ccbd3abac159d4e5572",
+      "caption": "Figura 13. Las tres ejecuciones GitHub completaron todas sus etapas. El bootstrap no se atribuye al webhook."
+    },
+    {
+      "file": "assets/38-github-merge-186-tests.png",
+      "source": "output/playwright/38-github-merge-186-tests.png",
+      "sha256": "f74b02a7a32afb6ac338a1e2b916a9bc8050ccd2a19ffbbb1cfc863e9aaef077",
+      "caption": "Figura 14. JUnit del build de merge: 186 aprobadas, cero fallos y cero omisiones."
+    },
+    {
+      "file": "assets/40-github-completion-notifications.png",
+      "source": "output/playwright/40-github-completion-notifications.png",
+      "sha256": "be729e2ddf7c13ef16e22f87496ab2ac5cbc7d8d1e8ec4d56c501543bfeeac8e",
+      "caption": "Figura 15. Receptor privado: SUCCESS y SHA exacto de los builds #1, #2 y #3 del nuevo job."
     }
   ]
 }

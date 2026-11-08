@@ -1,6 +1,6 @@
 # Jenkins execution evidence
 
-The [unified Spanish report](../04_jenkins_report/INFORME_RESULTADOS_ES.md) embeds the selected screenshots and measured results. The later [GitHub webhook candidate](github-webhook.md) was validated locally with 76 plugins; it does not change the source or trigger attribution of the historical builds recorded here.
+The [unified Spanish report](../04_jenkins_report/INFORME_RESULTADOS_ES.md) embeds the selected screenshots and measured results. The later [GitHub webhook integration](github-webhook.md) uses 76 plugins in GCP and the separate job `credit-classification-github`. Its push/merge receipts live in `output/github-webhook/verification.json`; it does not change the source or trigger attribution of the historical builds recorded here.
 
 The pipeline was exercised locally and on the Terraform-managed GCP Jenkins controller. This document records observed executions; the [Jenkins runbook](jenkins.md) supplies the reproducible setup and configuration steps. Vertex AI/AutoML training is a separate, approval-gated dashboard exercise described in the [GCP runbook](gcp-training.md).
 

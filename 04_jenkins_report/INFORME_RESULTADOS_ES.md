@@ -8,17 +8,17 @@ Informe unificado de resultados
 
 Proyecto cdp_2026 | Corte: 8 de noviembre de 2026. Este documento reúne la implementación, los resultados medidos y las capturas reales del navegador. Su alcance es académico y de prueba; no acredita un modelo listo para producción.
 
-Se ejecutó un pipeline de aprobación tanto en Docker local como en Jenkins alojado en Google Cloud. Los dos builds finales completaron 165 pruebas, entrenamiento temporal, controles de calidad, aprobación de admin y notificación de finalización. Los indicadores del modelo seleccionado coincidieron entre ambos entornos con tolerancia de 1e-12.
+La primera validación local (#5) y cloud (#1 del job original) completó 165 pruebas, entrenamiento temporal, controles de calidad, aprobación de admin y notificación. Después se activó un segundo job desde GitHub para verificar push y merge reales. Las ejecuciones y sus revisiones se distinguen para no atribuir pruebas nuevas a capturas históricas.
 
 | Entregable | Estado comprobado |
 | --- | --- |
-| Jenkins local y GCP | Build local #5 y cloud #1: SUCCESS; 165 aprobadas, 0 fallos y 0 omitidas. |
-| Activación automática | Polling SCM observado en la revisión aislada. Webhook GitHub preparado, aún no instalado ni acreditado. |
+| Jenkins local y GCP | Histórico local #5 y cloud #1: SUCCESS, 165 tests. Integración posterior GitHub: job independiente con pruebas ampliadas. |
+| Activación automática | Webhook GitHub activo. Push y merge reales en la rama de laboratorio; ver sección 9. |
 | Comparación de modelos Python | Regresión logística, árbol, random forest y dos referencias evaluados con el mismo holdout. |
 | Vertex AI y AutoML | Preparación técnica disponible. Entrenamiento en el dashboard pendiente de aprobación e inicio de sesión. |
 | Control de costos y vencimiento | Parada programada el 13/11/2026 a las 02:41:05 UTC y limpieza desde un minuto después. |
 
-La evidencia de Jenkins en GCP corresponde a entrenamiento Python ejecutado en una VM. No corresponde a AutoML ni a un job de entrenamiento en Vertex AI. El informe conserva esta distinción para que cada conclusión pueda rastrearse hasta su ejecución real.
+El entrenamiento medido en Jenkins GCP se ejecutó con Python sobre una VM. El servicio Cloud Run actúa exclusivamente como receptor del webhook. No se lanzó entrenamiento AutoML ni Vertex AI; esa fase exige aprobación e inicio de sesión en el dashboard.
 
 El PDF incorpora las imágenes. El paquete ZIP añade originales PNG, fuente editable, índices y anexos de operación. No incluye contraseñas, tokens, estado de Terraform ni registros individuales del conjunto de datos.
 
@@ -31,16 +31,16 @@ El PDF incorpora las imágenes. El paquete ZIP añade originales PNG, fuente edi
 | Organización / aprovisionamiento | 02labs.me (408308144073) | contact@02labs.me |
 | Proyecto Jenkins | nb-core-dev-99d0 | VM semester-jenkins | us-central1-a |
 | Cómputo y persistencia | e2-medium, 2 vCPU, 4 GB RAM; disco de arranque pd-balanced de 40 GB; volumen Docker persistente. |
-| Controlador | Jenkins 2.580.2, Java 21, Python 3.13 CPU. Ejecuciones documentadas con 71 plugins fijados. |
+| Controlador | Jenkins 2.580.2, Java 21, Python 3.13 CPU. Builds históricos con 71 plugins; integración GitHub con 76 plugins compatibles. |
 | Acceso | Local: 127.0.0.1:18081. GCP: túnel IAP en 127.0.0.1:18083. Sin ingreso público a la consola. |
 | Proyecto de entrenamiento | nb-risk-ml-dev-99d0. Separado del entorno Jenkins; no se inició entrenamiento Vertex. |
 | Facturación | Billing Account for Education | 01ADCB-D56D56-B45DCC | USD. |
 
-Terraform creó la infraestructura de Jenkins y una política independiente de vencimiento. La identidad del controlador solo lee su repositorio de imágenes y sus dos secretos; no recibe permisos de entrenamiento en Vertex. No se generaron claves de cuentas de servicio.
+Terraform creó la infraestructura de Jenkins y una política independiente de vencimiento. La identidad del controlador solo lee su repositorio de imágenes y sus dos secretos; no recibe permisos de entrenamiento en Vertex. No se generaron claves de cuentas de servicio. El receptor webhook usa Cloud Run y conectividad VPC privada; la consola sigue detrás de IAP.
 
 La VM se eligió por la persistencia y el trabajo continuo de Jenkins, incluidos polling y aprobaciones. Las credenciales y el estado del navegador se conservan fuera de la evidencia compartida. La configuración de cuentas y recursos se registra además en CLOUD_DEPLOYMENT_INVENTORY.md, en la raíz del workspace.
 
-La actualización de GitHub amplía el lock a 76 plugins. La imagen local se reconstruyó conservando el volumen; el plugin GitHub 1.47.0 está activo y el validador real de Jenkins aceptó el Jenkinsfile con githubPush(). El controlador GCP conserva su versión anterior y los builds históricos corresponden a 71 plugins.
+La actualización amplió el lock a 76 plugins compatibles. GitHub 1.47.0 y JUnit 1458.v38661c0638e2 están activos también en GCP. Los cinco plugins adicionales se cargaron dinámicamente comprobando hashes; la VM y su volumen no se reemplazaron y el historial anterior se conserva.
 
 
 ## 2. Procedimiento reproducible de Jenkins
@@ -113,7 +113,7 @@ Las duraciones incluyen la espera de aprobación. La notificación es un webhook
 
 El polling H/2 * * * * observa la rama configurada cada dos minutos aproximadamente y solo ejecuta cuando encuentra cambios. El build local #5 se originó por SCM; el cloud #1 fue iniciado por admin.
 
-Esta automatización se verificó sobre el snapshot de revisión aislado. A la fecha de corte no acredita un push o merge real de GitHub: la implementación original no se había publicado en la rama remota. La integración webhook se registra por separado en la sección 9.
+La evidencia histórica de polling se obtuvo sobre un snapshot aislado. Posteriormente se publicó la implementación en GitHub y se verificaron pushes reales, incluido el de un merge, con el nuevo job credit-classification-github. Sus capturas y recibos se presentan en la sección 9.
 
 
 ## 7. Resultados de clasificación crediticia
@@ -152,24 +152,76 @@ Los intervalos usan 200 remuestreos estratificados y describen incertidumbre del
 Las coincidencias local/GCP prueban reproducibilidad para la imagen, datos y protocolo ensayados. El holdout ya había sido inspeccionado en el EDA anterior; hace falta una muestra externa nueva para sostener una conclusión independiente de generalización. La disponibilidad de predictores en el momento de decisión sigue siendo un supuesto del contrato de datos.
 
 
-## 9. GitHub: push, merge y webhook
+## 9. GitHub: webhook desplegado
 
-Estado comprobado: el usuario conectado 02loveslollipop tiene WRITE, sin ADMIN, sobre el repositorio personal de 03loveslollipop. La consulta de webhooks responde HTTP 404. El usuario está resolviendo el acceso de propietario. No se informa un hook instalado ni una entrega GitHub verificada.
+La cuenta propietaria 03loveslollipop quedó autenticada con ADMIN. Se publicó la implementación en ci/jenkins-lab-20261108 y se creó el webhook 708866067, activo, para el evento push. No se modificó master ni se activaron sus despliegues Heroku.
 
-Implementación preparada: githubPush() en Jenkinsfile, plugin GitHub fijado con sus dependencias y ci/github_webhook.py para planificar e instalar únicamente el hook de este repositorio. Se conserva polling como respaldo. El controlador GCP histórico todavía no incorpora estos cambios. La revisión pasó 15 pruebas enfocadas y validación del Jenkinsfile en el controlador local real.
-
-| Evento / caso | Cobertura prevista del job de rama única |
+| Configuración | Valor desplegado |
 | --- | --- |
-| Push a la rama vigilada | El hook solicita polling y el cambio inicia tests. Verificar SHA del evento, checkout y build. |
-| Merge, squash o rebase merge | El push resultante en la rama destino activa sus pruebas si esa rama está vigilada. |
-| Push a otra rama / etiqueta | No debe evaluar una rama distinta de la configurada. |
-| Reentrega / sin cambios SCM | No debe producir builds repetidos por el mismo estado de la rama. |
-| Abrir o actualizar un PR | Requiere Multibranch Pipeline/GitHub Branch Source para checks previos al merge; no está acreditado con este job. |
-| Cerrar PR sin merge | No equivale a actualizar la rama destino. |
+| Receptor HTTPS | https://semester-jenkins-webhook-tcwenm7hba-uc.a.run.app/github-webhook/ |
+| Cloud Run / proyecto | semester-jenkins-webhook / nb-core-dev-99d0 / us-central1 |
+| Capacidad | 1 vCPU, 256 MiB; mínimo 1 y máximo 1; CPU limitada en inactividad. |
+| Red privada | Direct VPC egress, 10.81.1.0/26 → Jenkins 10.81.0.3:8080. |
+| Firma y secreto | HMAC SHA-256 validado en relay y Jenkins; secreto en Secret Manager y credencial SYSTEM. |
+| Job / fuente | credit-classification-github / GitHub HTTPS / */ci/jenkins-lab-20261108 |
+| Trigger | githubPush(); polling H/2 como respaldo. |
+| Vencimiento | 13/11/2026 02:41:05 UTC; no se amplió el plazo. |
 
-Pasos restantes: autenticar al propietario; publicar la rama con el Jenkinsfile; seleccionar la fuente remota; instalar el plugin en el controlador conservando su historial; habilitar un receptor HTTPS limitado a /github-webhook/ y con secreto compartido; instalar el hook push y verificar Recent Deliveries más un build real.
+El receptor rechaza firmas inválidas (403), repositorios distintos y referencias fuera del alcance; solo reenvía el webhook autorizado. La raíz responde 404 y la consola Jenkins no se expone. Antes de cada prueba de trigger se pausó el cron SCM: el build quedó atribuido a Started by GitHub push by 03loveslollipop.
 
-El acceso actual por IAP/localhost no es alcanzable desde GitHub. No se abrió Jenkins a Internet ni se añadieron servicios fuera del teardown existente. Cualquier relay nuevo deberá retirarse en la misma fecha de vencimiento. El detalle y el instalador están en docs/github-webhook.md.
+La activación solo cubre la rama vigilada del laboratorio. Los checks de PR previos al merge en Jenkins requerirían Multibranch/GitHub Branch Source; el repositorio ya tiene un workflow GitHub Actions separado. La recepción HTTP no sustituye la comprobación de SHA, pruebas y finalización.
+
+
+## 9.1. Evidencia del trigger y del checkout
+
+GitHub entregó el push directo y el push de integración con HTTP 200. Jenkins registró GitHubPushCause, con el cron SCM temporalmente vacío antes de cada evento. Se verificó igualdad entre SHA del evento, revisión SCM y recibo de aprobación. El Jenkinsfile restauró después el polling H/2.
+
+![Figura 10. Log real del hook en Jenkins: evento recibido por la red privada y nueva revisión de la rama destino.](assets/35-jenkins-github-hook-log.png)
+
+![Figura 11. Consola en ejecución del build #3: Started by GitHub push y checkout del commit de merge 501952de…](assets/36-github-merge-console-running.png)
+
+Las capturas pueden mostrar la zona horaria del navegador; el índice y los recibos conservan UTC. No se utilizó una captura de consola todavía vacía como prueba de ejecución.
+
+
+## 9.2. Merge real y casos de entrega
+
+![Figura 12. GitHub público: PR #16 integrado en ci/jenkins-lab-20261108; master no fue modificado.](assets/31-github-pr-16-merged.png)
+
+| Caso observado | HTTP / efecto |
+| --- | --- |
+| Push 7775c845… | 200; inicia build #2 del job GitHub. |
+| Merge PR #16 → 501952de… | 200; inicia build #3. |
+| Push a la rama del PR | 202; ignorado por el job de laboratorio. |
+| Reentrega del push original | 200, duplicate: true; no se inicia un build extra. |
+| Firma inválida / ruta raíz | 403 / 404; no expone la consola. |
+
+Estos resultados se verificaron con la API real de entregas de GitHub y los recibos Jenkins. Abrir o actualizar un PR todavía no ejecuta este job de rama única antes del merge. El workflow GitHub Actions del repositorio es independiente y su resultado no se confunde con el de Jenkins.
+
+
+## 9.3. Resultado de los builds GitHub
+
+| Build / origen | Resultado | Pruebas P/F/O | Duración total |
+| --- | --- | --- | --- |
+| #1 / bootstrap | SUCCESS | 185/0/0 | 305.03 s |
+| #2 / push | SUCCESS | 186/0/0 | 229.81 s |
+| #3 / merge | SUCCESS | 186/0/0 | 246.33 s |
+
+![Figura 13. Las tres ejecuciones GitHub completaron todas sus etapas. El bootstrap no se atribuye al webhook.](assets/39-github-push-merge-completed-stages.png)
+
+![Figura 14. JUnit del build de merge: 186 aprobadas, cero fallos y cero omisiones.](assets/38-github-merge-186-tests.png)
+
+Las dos ejecuciones automáticas superaron las puertas del modelo y fueron aprobadas por admin. Las métricas del bosque coinciden con la evaluación original a tolerancia 1e-12. Los 186 casos incluyen las regresiones del hook y del receptor; no se atribuyen retrospectivamente a los builds históricos de 165 pruebas.
+
+
+## 9.4. Notificaciones y trazabilidad GitHub
+
+![Figura 15. Receptor privado: SUCCESS y SHA exacto de los builds #1, #2 y #3 del nuevo job.](assets/40-github-completion-notifications.png)
+
+Push directo: 7775c84526afb3836b272f6595ee30cddbfb3207. Merge: 501952de01570ea5e29b04cf230c7f886dad387b. Cada recibo incluye URL del build, estado, revisión y hora UTC de aceptación.
+
+La documentación conserva el ping inicial HTTP 403, la corrección del secreto y el ping reentregado con HTTP 200. El PR de ensayo también mostró un fallo del workflow GitHub Actions por un import pytest sin uso en una prueba BigQuery anterior; se retiró ese import y Ruff pasó en la revisión final. Ese fallo histórico no se presenta como si el workflow hubiese pasado.
+
+Fuentes de evidencia: github-verification.json, cleanup-verification.json y anexos de output/github-webhook/. Los JSON publicados contienen métricas agregadas y metadatos de ejecución; no incluyen tokens, contraseñas ni predicciones individuales.
 
 
 ## 10. Entrenamiento en GCP: comparación pendiente
@@ -204,6 +256,8 @@ Cuenta de facturación verificada: Billing Account for Education, 01ADCB-D56D56-
 | Artifact Registry, aproximadamente 1,407 GiB | USD 0,14 |
 | Total orientativo | USD 32,25 al mes; aproximadamente USD 1,06 al día. |
 
+El receptor caliente añade aproximadamente USD 0,27/día (USD 1,35 por cinco días completos) de CPU/memoria en inactividad, antes de franquicias y créditos, más actividad y almacenamiento. La base Jenkins de USD 1,06/día pasa a unos USD 1,33/día con ese supuesto; no es factura consolidada. Se mantiene caliente para atender GitHub sin el retraso posible de un arranque Direct VPC.
+
 Valores antes de créditos, descuentos, impuestos, tráfico y futuras ejecuciones. No representan una factura consolidada de todos los proyectos ni el costo de AutoML. A las 02:32 UTC del 8/11, el período de la VM actual sumaba aproximadamente 2,476 horas, unos USD 0,11 brutos; esa observación no incluye una VM anterior reemplazada.
 
 | Hito de la política | Fecha / alcance |
@@ -211,28 +265,28 @@ Valores antes de créditos, descuentos, impuestos, tráfico y futuras ejecucione
 | Parada de la VM | 13/11/2026 02:41:05 UTC = 11:41:05 JST. |
 | Primera limpieza | 13/11/2026 02:42:05 UTC. La finalización depende de las APIs. |
 | Reintentos | 49 envíos de limpieza cada 30 minutos, hasta 14/11/2026 02:42:05 UTC. |
-| Recursos objetivo | VM, disco, IP efímera, red/subred/firewall dedicados, imágenes, secretos e identidades temporales del laboratorio. |
+| Recursos objetivo | VM, disco, IP efímera, red/subred/firewall dedicados, imágenes, secretos e identidades; también servicio Run, subred, firewall, secreto e identidad del relay. |
 | Recursos preservados | Proyectos compartidos, cuenta de facturación y entorno de entrenamiento de riesgo. |
 
-Se verificaron 50 tareas futuras mediante lectura completa y un Cloud Build de solo lectura terminó SUCCESS, con todos los permisos de limpieza necesarios. La programación vive en GCP y no depende del portátil. La política evita eliminar antes del plazo. No se ejecutó ahora la eliminación real.
+Se verificaron por lectura FULL los 49 nuevos payloads cleanup-webhook y la parada original; se retiró la generación anterior sin cambiar horarios. Los Cloud Builds de solo lectura validaron los 29 permisos de limpieza, incluido el servicio Run. La eliminación real sigue programada para el futuro; no se ejecutó anticipadamente.
 
 
 ## 12. Trazabilidad, incidencias y próximos pasos
 
 Origen de las ejecuciones finales: snapshot Git aislado 242e2edf71981a4ea10dd8bb8756d0b614c569b6, construido sobre HEAD original b5c51c7b92c99364cab1857ea1a972a5b838e79f. Los cambios preparados del webhook pertenecen a una revisión posterior; las capturas históricas no se atribuyen a esa nueva versión.
 
-Incidencias resueltas: el primer build terminó UNSTABLE por faltar BUILD_URL al notificar; se configuró la URL y un fallback probado. También se corrigió la inclusión de cinco pruebas nuevas en el snapshot. Los builds anteriores de 160 pruebas no se presentan como si contuvieran 165. En la preparación del webhook se detectó un JUnit incompatible con Jenkins 2.580.2; se restauró la versión compatible y se incorporaron dos pruebas y un guard de versión de plugins.
+Incidencias resueltas: el primer build terminó UNSTABLE por faltar BUILD_URL al notificar; se configuró la URL y un fallback probado. También se corrigió la inclusión de cinco pruebas nuevas en el snapshot. Los builds anteriores de 160 pruebas no se presentan como si contuvieran 165. En la preparación del webhook se detectó un JUnit incompatible con Jenkins 2.580.2; se restauró la versión compatible y se incorporaron dos pruebas y un guard de versión de plugins. El primer ping GitHub reveló un salto de línea en el secreto; se normalizó, se probó y la reentrega pasó a HTTP 200. El PR de verificación también expuso un import pytest sin uso, previo a Jenkins, en las pruebas BigQuery; se retiró en la revisión final y se verificó Ruff.
 
 Dataset SHA-256:
 48e34610b823055a5f4e7a107142e25b08ba40920848eab1a68ff6396eb26927
 Holdout SHA-256:
 f0f8ec775541328cfcaf07fa5a8455a089b2f3832549c583de35804f5216329a
 
-Artefactos de soporte: output/jenkins-receipts/summary.json; output/playwright/index.json; docs/jenkins-execution.md; docs/model-results.md; docs/expiry-policy.md; docs/github-webhook.md; docs/gcp-training.md y el inventario de cuentas de la raíz. evidencias.json identifica cada imagen incorporada con su SHA-256.
+Artefactos de soporte: output/jenkins-receipts/summary.json; output/playwright/index.json; docs/jenkins-execution.md; docs/model-results.md; docs/expiry-policy.md; docs/github-webhook.md; docs/gcp-training.md y el inventario de cuentas de la raíz. evidencias.json identifica cada imagen incorporada con su SHA-256. La evidencia nueva del webhook y las notificaciones se encuentra en output/github-webhook/ y en las fuentes JSON de este informe.
 
-Prioridades restantes: (1) completar acceso de propietario e integración HTTPS del webhook; (2) acreditar push y merge reales con entregas, SHA y pruebas; (3) obtener aprobación para entrenamiento desde el dashboard; (4) incorporar resultados reales AutoML y Vertex al mismo informe; (5) verificar el retiro automático en la fecha fijada y conservar evidencia local.
+Prioridades restantes: revisar el PR de implementación antes de integrar en otras ramas; obtener aprobación para el entrenamiento desde el dashboard; incorporar resultados reales AutoML y Vertex al mismo informe; verificar el retiro automático en la fecha fijada y conservar evidencia local. El job activo vigila la rama de laboratorio; master no fue modificado.
 
-Conclusión: el laboratorio acredita una cadena ejecutable de clonación, pruebas, entrenamiento, puertas de calidad, revisión humana y notificación, repetida en local y en GCP. La detección de incumplimiento sigue siendo limitada. La aceptación del webhook y la comparación con entrenamiento administrado permanecen pendientes y están señaladas expresamente.
+Conclusión: el laboratorio acredita clonación, pruebas, entrenamiento, puertas de calidad, aprobación y notificación en local y GCP, más activación real por webhook al hacer push y merge en una rama de laboratorio. La detección de incumplimiento sigue siendo limitada. La comparación con AutoML y Vertex permanece pendiente de ejecución aprobada en el dashboard.
 
 
 ## Referencias
@@ -244,3 +298,5 @@ Conclusión: el laboratorio acredita una cadena ejecutable de clonación, prueba
 - [Google Cloud: discos, red y Artifact Registry](https://cloud.google.com/compute/disks-image-pricing)
 - [Google Cloud: precios de IPv4 externa](https://cloud.google.com/vpc/network-pricing)
 - [Google Cloud: precios de Artifact Registry](https://cloud.google.com/artifact-registry/pricing)
+- [Google Cloud: precio de instancia mínima Cloud Run](https://cloud.google.com/run/pricing)
+- [GitHub: PR #16 integrado en la rama de laboratorio](https://github.com/03loveslollipop/cdp_2026/pull/16)

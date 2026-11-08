@@ -1,0 +1,149 @@
+{
+  "verified_at_utc": "2026-11-08T05:16:29.346986+00:00",
+  "repository": "03loveslollipop/cdp_2026",
+  "branch": "ci/jenkins-lab-20261108",
+  "job": "credit-classification-github",
+  "hook": {
+    "id": 708866067,
+    "active": true,
+    "events": [
+      "push"
+    ],
+    "url": "https://semester-jenkins-webhook-tcwenm7hba-uc.a.run.app/github-webhook/",
+    "tls_verification": true
+  },
+  "deliveries": [
+    {
+      "id": "3852831638387949568",
+      "guid": "1974c9b6-db32-11f1-8784-7b98d1cbc951",
+      "event": "push",
+      "status_code": 200,
+      "redelivery": true,
+      "delivered_at": "2026-11-08T05:09:00.545Z",
+      "ref": "refs/heads/ci/jenkins-lab-20261108",
+      "sha": "7775c84526afb3836b272f6595ee30cddbfb3207",
+      "response": "{\"duplicate\": true}"
+    },
+    {
+      "id": "3852831512477057024",
+      "guid": "5ececcd2-db32-11f1-8c7b-2b6e408a7765",
+      "event": "push",
+      "status_code": 200,
+      "redelivery": false,
+      "delivered_at": "2026-11-08T05:08:01.94Z",
+      "ref": "refs/heads/ci/jenkins-lab-20261108",
+      "sha": "501952de01570ea5e29b04cf230c7f886dad387b",
+      "response": "{\"accepted\": true, \"delivery\": \"5ececcd2-db32-11f1-8c7b-2b6e408a7765\"}"
+    },
+    {
+      "id": "3852831372433424384",
+      "guid": "381729e0-db32-11f1-94a9-b35ccb1eb5fb",
+      "event": "push",
+      "status_code": 202,
+      "redelivery": false,
+      "delivered_at": "2026-11-08T05:06:56.712Z",
+      "ref": "refs/heads/ci/webhook-merge-check-20261108",
+      "sha": "f071d6d570e09dccc403e79d03b94bea521242c2",
+      "response": "{\"ignored\": \"event or ref outside configured branches\"}"
+    },
+    {
+      "id": "3852831263249399808",
+      "guid": "1974c9b6-db32-11f1-8784-7b98d1cbc951",
+      "event": "push",
+      "status_code": 200,
+      "redelivery": false,
+      "delivered_at": "2026-11-08T05:06:05.882Z",
+      "ref": "refs/heads/ci/jenkins-lab-20261108",
+      "sha": "7775c84526afb3836b272f6595ee30cddbfb3207",
+      "response": "{\"accepted\": true, \"delivery\": \"1974c9b6-db32-11f1-8784-7b98d1cbc951\"}"
+    },
+    {
+      "id": "3852831071089459200",
+      "guid": "7a1d6df0-db31-11f1-94e1-50158d9876d7",
+      "event": "ping",
+      "status_code": 200,
+      "redelivery": true,
+      "delivered_at": "2026-11-08T05:04:36.364Z",
+      "ref": null,
+      "sha": null,
+      "response": "{\"accepted\": \"ping\"}"
+    },
+    {
+      "id": "3852830688329859072",
+      "guid": "7a1d6df0-db31-11f1-94e1-50158d9876d7",
+      "event": "ping",
+      "status_code": 403,
+      "redelivery": false,
+      "delivered_at": "2026-11-08T05:01:38.042Z",
+      "ref": null,
+      "sha": null,
+      "response": "{\"error\": \"invalid signature\"}"
+    }
+  ],
+  "builds": [
+    {
+      "number": 3,
+      "result": "SUCCESS",
+      "building": false,
+      "started_utc": "2026-11-08T05:10:58.388000+00:00",
+      "duration_seconds": 246.332,
+      "causes": [
+        {
+          "_class": "com.cloudbees.jenkins.GitHubPushCause",
+          "shortDescription": "Started by GitHub push by 03loveslollipop"
+        }
+      ],
+      "commit": "501952de01570ea5e29b04cf230c7f886dad387b",
+      "passed": 186,
+      "failed": 0,
+      "skipped": 0,
+      "approval": "Approved by admin; build http://127.0.0.1:18083/job/credit-classification-github/3/; commit 501952de01570ea5e29b04cf230c7f886dad387b"
+    },
+    {
+      "number": 2,
+      "result": "SUCCESS",
+      "building": false,
+      "started_utc": "2026-11-08T05:07:08.549000+00:00",
+      "duration_seconds": 229.811,
+      "causes": [
+        {
+          "_class": "com.cloudbees.jenkins.GitHubPushCause",
+          "shortDescription": "Started by GitHub push by 03loveslollipop"
+        }
+      ],
+      "commit": "7775c84526afb3836b272f6595ee30cddbfb3207",
+      "passed": 186,
+      "failed": 0,
+      "skipped": 0,
+      "approval": "Approved by admin; build http://127.0.0.1:18083/job/credit-classification-github/2/; commit 7775c84526afb3836b272f6595ee30cddbfb3207"
+    },
+    {
+      "number": 1,
+      "result": "SUCCESS",
+      "building": false,
+      "started_utc": "2026-11-08T05:02:03.480000+00:00",
+      "duration_seconds": 305.031,
+      "causes": [
+        {
+          "_class": "hudson.triggers.SCMTrigger$SCMTriggerCause",
+          "shortDescription": "Started by an SCM change"
+        },
+        {
+          "_class": "hudson.model.Cause$UserIdCause",
+          "shortDescription": "Started by user admin",
+          "userId": "admin",
+          "userName": "admin"
+        }
+      ],
+      "commit": "3d2a1950e17d26af86e3a4e0f77785779c4f7fb5",
+      "passed": 185,
+      "failed": 0,
+      "skipped": 0,
+      "approval": "Approved by admin; build http://127.0.0.1:18083/job/credit-classification-github/1/; commit 3d2a1950e17d26af86e3a4e0f77785779c4f7fb5"
+    }
+  ],
+  "expires_at": "2026-11-13T02:41:05Z",
+  "receiver": {
+    "image": "us-central1-docker.pkg.dev/nb-core-dev-99d0/semester-jenkins/webhook@sha256:a6822f8a23d0feb797fa2916a10e788f4136815de9eee2497e1f284b1584a890"
+  }
+}

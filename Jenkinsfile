@@ -7,14 +7,11 @@ pipeline {
         timeout(time: 45, unit: 'MINUTES')
         buildDiscarder(logRotator(numToKeepStr: '10'))
     }
-    // A GitHub push (including a merged PR's destination-branch push) asks
-    // Jenkins to poll the configured SCM branch. Polling is also a fallback
-    // when the webhook receiver is unavailable. Neither builds unchanged SCM.
-    // Requires the locked "github" plugin and a reachable /github-webhook/.
-    triggers {
-        githubPush()
-        pollSCM('H/2 * * * *')
-    }
+    // Multibranch discovery handles every repository branch, including branches
+    // without a Jenkinsfile, using this shared definition. Only the configured
+    // primary branch proceeds from tests to model training and approval.
+    // GitHubSCMSource on the parent consumes push events. Its periodic index
+    // provides fallback discovery without duplicate child polling triggers.
     environment {
         MPLBACKEND = 'Agg'
         OMP_NUM_THREADS = '2'
@@ -28,12 +25,30 @@ pipeline {
                 script {
                     def revision = checkout(scm)
                     env.GIT_COMMIT = revision.GIT_COMMIT
+                    env.PIPELINE_MODE = (!env.BRANCH_NAME ||
+                        env.BRANCH_NAME == (env.SEMESTER_PRIMARY_BRANCH ?: 'master')) ? 'full' : 'tests'
+                    currentBuild.description = "${env.BRANCH_NAME ?: 'legacy'} ${env.GIT_COMMIT.take(12)} (${env.PIPELINE_MODE})"
                 }
                 sh 'git rev-parse HEAD'
             }
         }
+        stage('Load shared CI tools') {
+            steps {
+                script {
+                    env.CI_TOOLS = '.'
+                    if (env.SEMESTER_CI_REVISION) {
+                        dir('.semester-ci') {
+                            checkout(changelog: false, poll: false, scm: [
+                                $class: 'GitSCM', branches: [[name: env.SEMESTER_CI_REVISION]],
+                                userRemoteConfigs: [[url: 'https://github.com/03loveslollipop/cdp_2026.git']]])
+                        }
+                        env.CI_TOOLS = '.semester-ci'
+                    }
+                }
+            }
+        }
         stage('Validate structure') {
-            steps { sh 'python ci/validate_structure.py' }
+            steps { sh 'python "$CI_TOOLS/ci/validate_structure.py" --mode "$PIPELINE_MODE" --without-ci-files' }
         }
         stage('Repository tests') {
             steps {
@@ -41,20 +56,23 @@ pipeline {
             }
         }
         stage('Train and evaluate') {
+            when { expression { env.PIPELINE_MODE == 'full' } }
             steps {
                 sh '''python -m mlops_pipeline.src.model_training_evaluation \
-                    --training-config ci/training.json --output-dir reports/models'''
+                    --training-config "$CI_TOOLS/ci/training.json" --output-dir reports/models'''
             }
         }
         stage('Quality and stability') {
+            when { expression { env.PIPELINE_MODE == 'full' } }
             steps {
-                sh 'python ci/check_metrics.py reports/models'
+                sh 'python "$CI_TOOLS/ci/check_metrics.py" reports/models --policy "$CI_TOOLS/ci/quality-gates.json"'
                 // Make the actual evaluation available while approval is pending.
                 archiveArtifacts artifacts: 'reports/models/*summary.csv,reports/models/*metrics.json,reports/models/quality-gate.json,reports/models/selection.json,reports/models/manifest.json,reports/models/report.md,reports/models/figures/*.png',
                     fingerprint: true
             }
         }
         stage('Approve model') {
+            when { expression { env.PIPELINE_MODE == 'full' } }
             steps {
                 timeout(time: 20, unit: 'MINUTES') {
                     script {
@@ -67,6 +85,7 @@ pipeline {
             }
         }
         stage('Record approval') {
+            when { expression { env.PIPELINE_MODE == 'full' } }
             steps {
                 writeFile file: 'reports/approval.txt',
                     text: "Approved by ${env.APPROVER}; build ${env.BUILD_URL}; commit ${env.GIT_COMMIT}\n"
@@ -81,7 +100,7 @@ pipeline {
                 withEnv(["PIPELINE_RESULT=${currentBuild.currentResult}"]) {
                     // Notification errors mark the run unstable and remain visible.
                     catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
-                        sh 'python ci/notify.py'
+                        sh 'python "${CI_TOOLS:-.}/ci/notify.py"'
                     }
                 }
             }

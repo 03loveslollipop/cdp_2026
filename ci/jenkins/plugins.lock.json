@@ -125,6 +125,12 @@
     "url": "https://repo.jenkins-ci.org/public/org/jenkins-ci/plugins/github-api/1.330-492.v3941a_032db_2a_/github-api-1.330-492.v3941a_032db_2a_.hpi",
     "required_core": "2.479.3"
   },
+  "github-branch-source": {
+    "version": "1986.v801e40614d00",
+    "sha256": "ladE6vUjd9uJ507PjsrkmzwDDB891HJgJVap11F2C8g=",
+    "url": "https://repo.jenkins-ci.org/public/org/jenkins-ci/plugins/github-branch-source/1986.v801e40614d00/github-branch-source-1986.v801e40614d00.hpi",
+    "required_core": "2.541.1"
+  },
   "gson-api": {
     "version": "2.15.0-212.v085f60a_8093b_",
     "sha256": "2zkDVhkc0BC+zPn3dceLIGtaXRMtXCztpqSd+rgt1jE=",
@@ -190,6 +196,12 @@
     "sha256": "ON30z122GlkQRBMML3zLK3qpq+vI/NimlT+NpVDQAu0=",
     "url": "https://repo.jenkins-ci.org/public/io/jenkins/plugins/jaxb/2.3.9-143.v5979df3304e6/jaxb-2.3.9-143.v5979df3304e6.hpi",
     "required_core": "2.479.1"
+  },
+  "jjwt-api": {
+    "version": "0.13.0-141.vd58b_a_9592b_6c",
+    "sha256": "iZ0oER32yTuTJhbeXG4s+UpRRNL99rXQzN3zAUo329M=",
+    "url": "https://repo.jenkins-ci.org/public/io/jenkins/plugins/jjwt-api/0.13.0-141.vd58b_a_9592b_6c/jjwt-api-0.13.0-141.vd58b_a_9592b_6c.hpi",
+    "required_core": "2.479.3"
   },
   "joda-time-api": {
     "version": "2.15.1-211.ve499f52b_da_33",
@@ -334,6 +346,12 @@
     "sha256": "K3qngJ4PZWr86YwLagqbYoha9q6FrZC+1npPGPGOg1Q=",
     "url": "https://repo.jenkins-ci.org/public/io/jenkins/plugins/prism-api/1.30.0-741.v034eb_0b_0a_a_fa_/prism-api-1.30.0-741.v034eb_0b_0a_a_fa_.hpi",
     "required_core": "2.555.1"
+  },
+  "remote-file": {
+    "version": "1.24",
+    "sha256": "T3YW30F+a+5zKoA4VQl5TJz6v5w5HgnucfsXQ1bI7DA=",
+    "url": "https://repo.jenkins-ci.org/public/io/jenkins/plugins/remote-file/1.24/remote-file-1.24.hpi",
+    "required_core": "2.361.4"
   },
   "scm-api": {
     "version": "728.vc30dcf7a_0df5",

@@ -75,3 +75,25 @@ def test_expired_policy_refuses_all_requests():
 def test_public_upstream_is_refused():
     with pytest.raises(ValueError):
         Relay(SECRET, 'http://example.com:8080', '2026-11-13T02:41:05Z', ['master'])
+
+
+@pytest.mark.parametrize('ref', ['refs/heads/main', 'refs/heads/master',
+                               'refs/heads/feature/new-tests', 'refs/heads/fix/日本語'])
+def test_all_branches_forwards_signed_pushes(ref):
+    r = Relay(SECRET, 'http://10.81.0.3:8080', '2026-11-13T02:41:05Z', ['*'])
+    headers, body = fixture_payload(ref=ref)
+    assert r.handle(headers, body, forward=lambda *a: 200, now=NOW)[0] == 200
+
+
+@pytest.mark.parametrize('ref', ['refs/tags/v1', 'refs/pull/1/head', 'refs/heads/',
+                               'refs/heads/a..b', 'refs/heads/a.lock', 'refs/heads/x\nInjected', None])
+def test_all_branches_does_not_widen_to_tags_or_invalid_refs(ref):
+    r = Relay(SECRET, 'http://10.81.0.3:8080', '2026-11-13T02:41:05Z', ['*'])
+    headers, body = fixture_payload(ref=ref)
+    assert r.handle(headers, body, forward=lambda *a: pytest.fail('invalid ref forwarded'), now=NOW)[0] == 202
+
+
+def test_all_branches_ignores_branch_deletion():
+    r = Relay(SECRET, 'http://10.81.0.3:8080', '2026-11-13T02:41:05Z', ['*'])
+    headers, body = fixture_payload(ref='refs/heads/feature/deleted', deleted=True)
+    assert r.handle(headers, body, forward=lambda *a: pytest.fail('deletion forwarded'), now=NOW)[0] == 202

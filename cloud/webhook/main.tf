@@ -20,9 +20,9 @@ variable "image" {
   type    = string
   default = ""
 }
-variable "branch" {
-  type    = string
-  default = "ci/jenkins-lab-20261108"
+variable "branches" {
+  type    = list(string)
+  default = ["*"]
 }
 resource "google_project_service" "run" {
   service            = "run.googleapis.com"
@@ -113,7 +113,7 @@ resource "google_cloud_run_v2_service" "relay" {
       }
       env {
         name  = "BRANCHES"
-        value = "${var.branch},master"
+        value = join(",", var.branches)
       }
       startup_probe {
         http_get { path = "/healthz" }

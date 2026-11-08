@@ -18,6 +18,17 @@ REPOSITORY_ID = 1311514433
 MAX_BODY = 2 * 1024 * 1024
 
 
+def branch_ref(ref):
+    """Accept branch refs only; wildcard watching never includes tags/deletions."""
+    if not isinstance(ref, str) or not ref.startswith('refs/heads/'):
+        return False
+    name = ref[len('refs/heads/'):]
+    return bool(name) and not (
+        name.endswith(('/', '.')) or any(ord(c) <= 32 or ord(c) == 127 or c in '~^:?*[\\' for c in name)
+        or any(s in name for s in ['..', '@{', '//'])
+        or any(part.startswith('.') or part.endswith('.lock') for part in name.split('/')))
+
+
 class Relay:
     def __init__(self, secret, upstream, expires_at, branches):
         secret = secret.strip()
@@ -31,6 +42,7 @@ class Relay:
         self.secret, self.upstream = secret.encode(), upstream.rstrip('/') + '/github-webhook/'
         self.expires = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
         self.branches = {'refs/heads/' + branch for branch in branches}
+        self.watch_all_branches = '*' in branches
         self.seen, self.lock = {}, threading.Lock()
 
     def handle(self, headers, body, *, forward=None, now=None):
@@ -55,7 +67,9 @@ class Relay:
         event = headers.get('X-GitHub-Event', '')
         if event == 'ping':
             return 200, {'accepted': 'ping'}
-        if event != 'push' or payload.get('deleted') or payload.get('ref') not in self.branches:
+        ref = payload.get('ref')
+        if (event != 'push' or payload.get('deleted') or not branch_ref(ref)
+                or not (self.watch_all_branches or ref in self.branches)):
             return 202, {'ignored': 'event or ref outside configured branches'}
         if not re.fullmatch(r'[0-9a-f]{40}', str(payload.get('after', ''))):
             return 400, {'error': 'invalid revision'}

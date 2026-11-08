@@ -107,7 +107,7 @@ def build():
                 md.append(f'![{block["caption"]}](assets/{target.name})\n')
 
     md += ['\n## Referencias\n']
-    flow += [Spacer(1, 8), paragraph('Referencias', 'SectionES')]
+    flow += [PageBreak(), paragraph('Referencias', 'SectionES')]
     for reference in report['references']:
         label, url = reference['label'], reference['url']
         flow.append(Paragraph(f'<a href="{escape(url, {chr(34): "&quot;"})}" color="#246a8b">'

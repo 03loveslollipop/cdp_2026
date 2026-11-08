@@ -8,7 +8,6 @@ import os
 import re
 import socket
 import threading
-import time
 from datetime import datetime, timezone
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
@@ -21,6 +20,7 @@ MAX_BODY = 2 * 1024 * 1024
 
 class Relay:
     def __init__(self, secret, upstream, expires_at, branches):
+        secret = secret.strip()
         parsed = urlsplit(upstream)
         if (parsed.scheme != 'http' or parsed.port != 8080 or parsed.path not in {'', '/'}
                 or parsed.username or parsed.password or parsed.query or parsed.fragment

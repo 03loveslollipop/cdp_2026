@@ -44,6 +44,12 @@ def test_bad_signature_never_reaches_jenkins():
     assert relay().handle(headers, body, forward=lambda *a: pytest.fail('unauthorized forward'), now=NOW)[0] == 403
 
 
+def test_secret_file_newline_is_not_part_of_the_shared_key():
+    r = Relay(SECRET + '\n', 'http://10.81.0.3:8080', '2026-11-13T02:41:05Z', ['ci/jenkins-lab-20261108'])
+    headers, body = fixture_payload()
+    assert r.handle(headers, body, forward=lambda *a: 200, now=NOW)[0] == 200
+
+
 @pytest.mark.parametrize('changes,status', [
     ({'repository': {'id': 1, 'full_name': 'other/repo'}}, 403),
     ({'ref': 'refs/heads/unrelated'}, 202), ({'ref': 'refs/tags/v1'}, 202),

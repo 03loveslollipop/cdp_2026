@@ -76,7 +76,9 @@ resource "google_cloud_run_v2_service" "relay" {
     timeout                          = "15s"
     max_instance_request_concurrency = 8
     scaling {
-      min_instance_count = 0
+      # GitHub's delivery timeout is shorter than a possible Direct VPC cold
+      # start. Keep one small instance warm until the fixed lab expiry.
+      min_instance_count = 1
       max_instance_count = 1
     }
     vpc_access {

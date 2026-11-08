@@ -92,3 +92,23 @@ Una sola réplica CPU completó el entrenamiento; los dos primeros envíos falla
 Al terminar no quedan workers de entrenamiento activos ni endpoints creados por esta demostración. Se conservan el dataset, el bucket privado, el modelo como artefacto, la imagen y la SA para trazabilidad; su almacenamiento puede seguir generando cargos pequeños. El retiro programado de Jenkins no incluye estos recursos de riesgo.
 
 Para la gráfica se calculan intervalos bootstrap condicionales a partir de las predicciones cloud descargadas. `vertex-custom-normalized.json` es un derivado de análisis, no una sustitución del `comparison.json` original; se verificó que conserva sus huellas y métricas. ML Metadata también coincide con la exportación (`metrics-artifact.json`).
+
+## AutoML: autorización ampliada (9 de noviembre de 2026 JST)
+
+Después de la entrega anterior, el usuario autorizó explícitamente ejecutar AutoML por aproximadamente USD21,25. La decisión anterior de no ejecutarlo correspondía al límite anterior de USD15; queda como registro histórico. La nueva autorización cubre **un entrenamiento AutoML clásico de 1 hora-nodo (1000 milli-node-hours)**, con early stopping y las mismas particiones manuales. No autoriza aumentar horas-nodo, iniciar inferencia batch ni desplegar endpoints. Se reutiliza el dataset existente y la sesión Playwright `semester-gcp` con la consola en japonés. La tarifa publicada verificada sigue siendo USD21,252/hora-nodo.
+
+La autenticación CLI caducó, pero la sesión del navegador continúa autenticada como `contact@02labs.me`. Se continúa el entrenamiento desde el dashboard; no se necesita restaurar la sesión CLI para iniciarlo. El recibo de autorización se conserva en `output/gcp-receipts/automl-authorization.json`.
+
+### Envío AutoML confirmado
+
+Se pulsó **Iniciar entrenamiento** en el dashboard japonés el **2026-11-08T17:17:19.666474Z** (9/11 a las 02:17:19 JST). La respuesta del navegador fue HTTP200 y creó `projects/727006212991/locations/us-central1/trainingPipelines/7023547864391352320`, nombre `credit-automl-temporal-20261109`, estado inicial `PIPELINE_STATE_PENDING`. La consola confirma que notificará por email al finalizar; se trata de la notificación automática del servicio solicitada al iniciar el job.
+
+Configuración verificada en la respuesta real: `trainBudgetMilliNodeHours=1000`, `optimizationObjective=maximize-au-prc`, target `Pago_atiempo`, dataset `2799060011056103424` y `predefinedSplit.key=data_split`. Se comprobaron exactamente 84 transformaciones de predictores; no incluyen `Pago_atiempo`, `data_split`, `row_id`, `puntaje` ni `fecha_prestamo`. Early stopping estaba habilitado en el formulario. No se exportó el TEST a BigQuery.
+
+Capturas 36-41: dataset, división, objetivo, presupuesto válido, confirmación del envío y job pendiente. Recibo: `output/gcp-receipts/automl-submission.json`. La respuesta de aceptación **no acredita entrenamiento completado ni métricas finales**; se conserva el estado real por separado.
+
+El seguimiento de la consola muestra **Data preprocessing** como etapa de entrenamiento, aunque el estado global todavía indica **保留 (Pending)**. Esto confirma preparación en curso, no evaluación terminada. El estado observado se conserva en `automl-status.json`, obtenido de la página autenticada sin credenciales CLI.
+
+### AutoML activo
+
+La consola confirmó el estado **トレーニング (Training)** y un inicio a las **2026-11-09 02:19:36 JST = 2026-11-08 17:19:36 UTC** (43). La etapa continúa en Data preprocessing. `automl-latest-observation.json` conserva el texto de la página y la fecha UTC de observación. No se ha enviado un segundo job ni aumentado el presupuesto. Las métricas de evaluación todavía no están disponibles; el trabajo gestionado continúa en GCP.

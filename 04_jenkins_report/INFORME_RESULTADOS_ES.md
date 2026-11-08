@@ -6,7 +6,7 @@ Proyecto cdp_2026 · Evidencia de ejecución, modelos, integración GitHub y est
 ## Jenkins y clasificación crediticia
 Informe unificado de resultados
 
-Proyecto cdp_2026 | Corte: 8 de noviembre de 2026. Este documento reúne la implementación, los resultados medidos y las capturas reales del navegador. Su alcance es académico y de prueba; no acredita un modelo listo para producción.
+Proyecto cdp_2026 | Corte: 9 de noviembre de 2026. Este documento reúne la implementación, los resultados medidos y las capturas reales del navegador. Su alcance es académico y de prueba; no acredita un modelo listo para producción.
 
 La primera validación local (#5) y cloud (#1 del job original) completó 165 pruebas, entrenamiento temporal, controles de calidad, aprobación de admin y notificación. Después se activó un segundo job desde GitHub para verificar push y merge reales. Las ejecuciones y sus revisiones se distinguen para no atribuir pruebas nuevas a capturas históricas.
 
@@ -15,10 +15,10 @@ La primera validación local (#5) y cloud (#1 del job original) completó 165 pr
 | Jenkins local y GCP | Histórico local #5 y cloud #1: SUCCESS, 165 tests. Integración posterior GitHub: job independiente con pruebas ampliadas. |
 | Activación automática | Webhook GitHub activo. Push y merge reales en la rama de laboratorio; ver sección 9. |
 | Comparación de modelos Python | Regresión logística, árbol, random forest y dos referencias evaluados con el mismo holdout. |
-| Vertex AI y AutoML | Pipeline Vertex CPU: SUCCEEDED; métricas y huellas coincidentes con Python local. AutoML no ejecutado: mínimo nominal USD21,252 > límite USD15. |
+| Vertex AI y AutoML | Vertex CPU: SUCCEEDED, métricas reproducidas. AutoML enviado el 9/11 JST con 1 hora-nodo aprobada; métricas finales pendientes. |
 | Control de costos y vencimiento | Parada programada el 13/11/2026 a las 02:41:05 UTC y limpieza desde un minuto después. |
 
-El entrenamiento de Jenkins GCP se ejecutó con Python sobre una VM. Además, el pipeline personalizado de Vertex se lanzó desde el dashboard y finalizó correctamente con métricas coincidentes. Cloud Run recibe el webhook. AutoML no se ejecutó porque su mínimo nominal supera el límite de USD15.
+El entrenamiento de Jenkins GCP se ejecutó con Python sobre una VM. El pipeline personalizado de Vertex también finalizó correctamente desde el dashboard con métricas coincidentes. Tras ampliar el presupuesto, el 9/11 JST se inició AutoML clásico con 1 hora-nodo; sus métricas finales todavía no están disponibles. Cloud Run recibe el webhook.
 
 El PDF incorpora las imágenes. El paquete ZIP añade originales PNG, fuente editable, índices y anexos de operación. No incluye contraseñas, tokens, estado de Terraform ni registros individuales del conjunto de datos.
 
@@ -244,15 +244,15 @@ Se creó el dataset tabular credit-classification-temporal-20261108, ID 27990600
 Se configuró el objetivo Pago_atiempo y el reparto manual para conservar las mismas filas de prueba. La opción de AutoML sobre Pipelines exige Dataflow y servicios adicionales; se revisó su pantalla sin lanzar el workflow. La documentación anexa conserva los pasos y las capturas originales.
 
 
-## 10.2. Límite de gasto y AutoML no ejecutado
+## 10.2. Presupuesto inicial y nueva autorización
 
-El usuario dispone de USD50 en créditos e indicó reducir la demostración a aproximadamente USD15 como máximo. La opción clásica de AutoML exige entre 1 y 72 horas-nodo. La prueba de 0,7 horas-nodo fue rechazada por la UI; se capturó el mensaje y se canceló el formulario sin iniciar entrenamiento.
+En la primera etapa, el usuario indicó USD50 de créditos y un límite de aproximadamente USD15. AutoML exige entre 1 y 72 horas-nodo; el intento de configurar 0,7 fue rechazado y el formulario se canceló sin enviar entrenamiento. Posteriormente, el 9/11/2026 JST, el usuario autorizó explícitamente aproximadamente USD21,25 para una ejecución de 1 hora-nodo.
 
 ![Restricción observada: presupuesto 0,7 inválido; el formulario exige 1–72. El botón de iniciar entrenamiento permanece deshabilitado.](assets/20-automl-minimum-budget-ja.png)
 
-La tarifa pública estándar es USD21,252 por hora-nodo de clasificación/regresión. Por tanto, el presupuesto mínimo nominal excede USD15. No se confía en detener anticipadamente el job para garantizar el límite. AutoML sobre Pipelines también factura infraestructura dependiente; el ejemplo público suma USD27,03 sin destilación y no es una cotización de este dataset.
+La tarifa pública estándar es USD21,252 por hora-nodo de clasificación/regresión. El mínimo superaba el límite inicial de USD15. La nueva autorización permitió enviar exactamente 1000 milli-node-hours, con early stopping. Se mantuvo la opción clásica; el workflow alternativo con Dataflow no se envió. El ejemplo público de ese workflow, USD27,03 sin destilación, no es una cotización de este dataset.
 
-Resultado: no hay modelo ni métricas de AutoML. La comparación cuantitativa queda limitada a modelos efectivamente ejecutados. Se evita inferencia batch y despliegues de endpoints para este ejercicio.
+Estado actualizado: AutoML fue enviado al aprobar el nuevo presupuesto. La comparación cuantitativa presentada corresponde a Python y Vertex CPU; todavía no hay métricas finales AutoML que añadir. No se despliegan endpoints ni se inicia inferencia batch dentro de esta autorización.
 
 
 ## 10.3. Pipeline personalizado de bajo costo
@@ -314,9 +314,9 @@ Se verificó el mismo dataset y las mismas 3.229 filas del holdout mediante SHA-
 | Desv. F1 temporal | 0,029162 | 0,029162 |
 | Desv. F1 semillas | 0,011031 | 0,011031 |
 
-![Resultados medidos sobre el mismo holdout. Las barras de error son intervalos bootstrap condicionales de muestreo, no estabilidad de reentrenamiento. AutoML no se ejecutó y no tiene barra.](assets/comparacion-python-vertex.png)
+![Resultados medidos sobre el mismo holdout. Barras de error: intervalos bootstrap condicionales de muestreo. AutoML está enviado; se omite hasta disponer de su evaluación final.](assets/comparacion-python-vertex.png)
 
-Se detectaron 36 de 108 incumplimientos; se omitieron 72 y hubo 493 falsas alarmas. La calidad sigue siendo limitada pese a la coincidencia entre entornos. Los desvíos provienen de folds y semillas dentro del protocolo, no de tres jobs cloud independientes. Una comparación con AutoML y su estabilidad de reentrenamiento queda sin medir bajo el límite actual.
+Se detectaron 36 de 108 incumplimientos; se omitieron 72 y hubo 493 falsas alarmas. La calidad sigue siendo limitada pese a la coincidencia entre entornos. Los desvíos provienen de folds y semillas dentro del protocolo, no de tres jobs cloud independientes. AutoML está enviado y sus métricas siguen pendientes. Su estabilidad de reentrenamiento no se mide con una única ejecución.
 
 
 ## 10.8. Evidencia de créditos y facturación
@@ -326,6 +326,24 @@ La página de créditos confirma el importe inicial y el saldo observado para es
 ![Crédito Ciencia de datos en producción: USD50,00 iniciales, USD49,86 restantes, vencimiento 6 de octubre de 2027.](assets/31-education-credit-balance-ja.png)
 
 El reporte mensual muestra USD0,00 netos del 1 al 8 de noviembre, con USD0,06 de ahorros/créditos. El saldo promocional acumula desde su concesión y tiene otro alcance temporal. Se conserva la captura del reporte y un recibo de observación con sus filtros. El límite para la demostración de entrenamiento se mantiene en aproximadamente USD15.
+
+
+## 10.9. AutoML: presupuesto autorizado y configuración
+
+El usuario autorizó expresamente aproximadamente USD21,25 para un entrenamiento AutoML clásico. Se reutilizaron proyecto, región y dataset existentes. Nombre del modelo solicitado: credit-automl-temporal-20261109. Target Pago_atiempo; división manual data_split; objetivo maximize-au-prc; early stopping habilitado.
+
+![Consola japonesa: presupuesto válido de 1 hora-nodo y early stopping activo antes de iniciar el entrenamiento.](assets/39-automl-one-node-hour-approved-ja.png)
+
+La respuesta real del servicio confirma trainBudgetMilliNodeHours=1000 y 84 transformaciones de predictores. No incluyen target, data_split, row_id, puntaje ni fecha_prestamo. El esquema conserva los mismos grupos TRAIN, VALIDATE y TEST. No se exportó el conjunto TEST a BigQuery.
+
+
+## 10.10. AutoML: envío confirmado y seguimiento
+
+El servicio aceptó el job 7023547864391352320 el 08/11/2026 a las 17:17:19 UTC (9/11 02:17:19 JST). El estado inicial fue PENDING. Posteriormente la consola confirmó Training e inicio 17:19:36 UTC (02:19:36 JST), con etapa Data preprocessing. La consola indica que notificará por email al finalizar.
+
+![AutoML activo en la consola japonesa: estado Training, inicio 02:19:36 JST, presupuesto inicial 1 hora-nodo y etapa Data preprocessing.](assets/43-automl-training-active-ja.png)
+
+El envío no equivale a entrenamiento completado. Al corte de esta actualización no hay métricas AutoML finales; se incorporarán únicamente desde la evaluación real del modelo. Esta autorización no incluye un segundo entrenamiento, más horas-nodo, endpoints ni inferencia batch. Los recibos y las capturas 36-43 conservan configuración y trazabilidad.
 
 
 ## 11. Costos y eliminación automática
@@ -368,9 +386,9 @@ f0f8ec775541328cfcaf07fa5a8455a089b2f3832549c583de35804f5216329a
 
 Artefactos de soporte: output/jenkins-receipts/summary.json; output/playwright/index.json; docs/jenkins-execution.md; docs/model-results.md; docs/expiry-policy.md; docs/github-webhook.md; docs/gcp-training.md y el inventario de cuentas de la raíz. evidencias.json identifica cada imagen incorporada con su SHA-256. La evidencia nueva del webhook y las notificaciones se encuentra en output/github-webhook/ y en las fuentes JSON de este informe. La fase GCP añade docs/gcp-execution.md, output/playwright/gcp/index.json y output/training-runtime.json.
 
-Prioridades restantes: revisar el PR antes de integrar en otras ramas; conservar los recibos del entrenamiento personalizado y mantener AutoML sin ejecutar bajo el límite actual; verificar el retiro automático de Jenkins en la fecha fijada. El job GitHub activo vigila la rama de laboratorio; master no fue modificado.
+Prioridades restantes: obtener la evaluación final del job AutoML autorizado e incorporar sus métricas reales; revisar el PR antes de integrar en otras ramas; verificar el retiro automático de Jenkins en la fecha fijada. El job GitHub activo vigila la rama de laboratorio; master no fue modificado.
 
-El laboratorio acredita clonación, pruebas, entrenamiento, puertas de calidad, aprobación y notificación en local y GCP, más activación real por webhook al hacer push y merge en una rama de laboratorio. El pipeline personalizado de Vertex terminó SUCCEEDED desde el dashboard y reprodujo las métricas locales. La detección de incumplimiento sigue siendo limitada. AutoML no se entrenó por el límite de gasto; no se le atribuyen resultados de Python.
+El laboratorio acredita clonación, pruebas, entrenamiento, puertas de calidad, aprobación y notificación en local y GCP, más activación real por webhook al hacer push y merge en una rama de laboratorio. El pipeline personalizado de Vertex terminó SUCCEEDED desde el dashboard y reprodujo las métricas locales. La detección de incumplimiento sigue siendo limitada. AutoML se inició después de autorizar 1 hora-nodo; su evaluación final está pendiente. No se le atribuyen resultados de Python.
 
 
 ## Referencias

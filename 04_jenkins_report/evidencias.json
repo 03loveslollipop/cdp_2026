@@ -1,5 +1,5 @@
 {
-  "report_date": "8 de noviembre de 2026",
+  "report_date": "9 de noviembre de 2026",
   "screenshots_are_originals": true,
   "assets": [
     {
@@ -132,13 +132,25 @@
       "file": "assets/comparacion-python-vertex.png",
       "source": "output/comparison-gcp/comparacion-python-vertex.png",
       "sha256": "3dac589f88c44183404f8b5cca3b23841b9fff98caf4197c3ff8ec403f3f3e82",
-      "caption": "Resultados medidos sobre el mismo holdout. Las barras de error son intervalos bootstrap condicionales de muestreo, no estabilidad de reentrenamiento. AutoML no se ejecutó y no tiene barra."
+      "caption": "Resultados medidos sobre el mismo holdout. Barras de error: intervalos bootstrap condicionales de muestreo. AutoML está enviado; se omite hasta disponer de su evaluación final."
     },
     {
       "file": "assets/31-education-credit-balance-ja.png",
       "source": "output/playwright/gcp/31-education-credit-balance-ja.png",
       "sha256": "cc45097a8595c396224d88c8f993153821f396403c202ac77997946d04351067",
       "caption": "Crédito Ciencia de datos en producción: USD50,00 iniciales, USD49,86 restantes, vencimiento 6 de octubre de 2027."
+    },
+    {
+      "file": "assets/39-automl-one-node-hour-approved-ja.png",
+      "source": "output/playwright/gcp/39-automl-one-node-hour-approved-ja.png",
+      "sha256": "3148fe7b0ccd705132c7a4b2b33468621af3a21d08948f43b3627e121fcfb236",
+      "caption": "Consola japonesa: presupuesto válido de 1 hora-nodo y early stopping activo antes de iniciar el entrenamiento."
+    },
+    {
+      "file": "assets/43-automl-training-active-ja.png",
+      "source": "output/playwright/gcp/43-automl-training-active-ja.png",
+      "sha256": "495dbbd2aac0269340ff2e0bbc79b966597060dbbe997596aced0ff3b0834fae",
+      "caption": "AutoML activo en la consola japonesa: estado Training, inicio 02:19:36 JST, presupuesto inicial 1 hora-nodo y etapa Data preprocessing."
     }
   ]
 }

@@ -102,7 +102,7 @@
       "file": "assets/19-automl-manual-temporal-split-ja.png",
       "source": "output/playwright/gcp/19-automl-manual-temporal-split-ja.png",
       "sha256": "cebbb2ce4068c6d1658d31ffaa0e1f3212b3f77e646afa948ed3143f1c463833",
-      "caption": "Configuración de AutoML: objetivo Pago_atiempo y división manual mediante data_split. No se envió este entrenamiento."
+      "caption": "Preparación inicial de AutoML: objetivo Pago_atiempo y split manual data_split. Este formulario inicial se canceló; la ejecución autorizada posterior conserva esa división."
     },
     {
       "file": "assets/20-automl-minimum-budget-ja.png",
@@ -129,16 +129,16 @@
       "caption": "ML Metadata muestra las métricas reales del entrenamiento: accuracy, F1 de incumplimiento, ROC-AUC, AP y variación entre folds/semillas. La consola se mantiene en japonés."
     },
     {
-      "file": "assets/comparacion-python-vertex.png",
-      "source": "output/comparison-gcp/comparacion-python-vertex.png",
-      "sha256": "3dac589f88c44183404f8b5cca3b23841b9fff98caf4197c3ff8ec403f3f3e82",
-      "caption": "Resultados medidos sobre el mismo holdout. Barras de error: intervalos bootstrap condicionales de muestreo. AutoML está enviado; se omite hasta disponer de su evaluación final."
+      "file": "assets/comparacion-final-python-vertex-automl.png",
+      "source": "output/comparison-final/comparacion-final-python-vertex-automl.png",
+      "sha256": "e9171136df89afaafb75fe62fc40f8d823ad580a519285cabd89e494a9b3a615",
+      "caption": "Comparación medida. Los intervalos bootstrap solo existen para Python/custom; la ausencia de intervalo AutoML no implica incertidumbre cero. AP sklearn y PR-AUC nativo permanecen separados."
     },
     {
-      "file": "assets/31-education-credit-balance-ja.png",
-      "source": "output/playwright/gcp/31-education-credit-balance-ja.png",
-      "sha256": "cc45097a8595c396224d88c8f993153821f396403c202ac77997946d04351067",
-      "caption": "Crédito Ciencia de datos en producción: USD50,00 iniciales, USD49,86 restantes, vencimiento 6 de octubre de 2027."
+      "file": "assets/50-billing-credits-after-training-ja.png",
+      "source": "output/playwright/gcp/50-billing-credits-after-training-ja.png",
+      "sha256": "f56b2d15e088a52a169095b356fc3217310b62172651f60f6a5d90df36509821",
+      "caption": "Observación posterior al entrenamiento: USD28,01 restantes de USD50,00 (56%). Crédito Ciencia de datos en producción, vence 6/10/2027."
     },
     {
       "file": "assets/39-automl-one-node-hour-approved-ja.png",
@@ -151,6 +151,24 @@
       "source": "output/playwright/gcp/43-automl-training-active-ja.png",
       "sha256": "495dbbd2aac0269340ff2e0bbc79b966597060dbbe997596aced0ff3b0834fae",
       "caption": "AutoML activo en la consola japonesa: estado Training, inicio 02:19:36 JST, presupuesto inicial 1 hora-nodo y etapa Data preprocessing."
+    },
+    {
+      "file": "assets/44-automl-training-completed-ja.png",
+      "source": "output/playwright/gcp/44-automl-training-completed-ja.png",
+      "sha256": "590882c31ead0a0fa60bcae0e94aa54c4e03ffbaeeeb906e573026b1851dccf7",
+      "caption": "Consola japonesa: 完了 (completado), fin 04:55:04 JST, 1 hora-nodo inicial, split manual y objetivo AUC PRC."
+    },
+    {
+      "file": "assets/48-automl-default-class-curves-ja.png",
+      "source": "output/playwright/gcp/48-automl-default-class-curves-ja.png",
+      "sha256": "75039e286ac224956045339cfe12e0fb6ea173969d82c34f338fcfede857a7d4",
+      "caption": "Clase 0, umbral 0,5: F1 0,1037037; ROC-AUC 0,654; PR-AUC 0,12; precisión 25,9% y recall 6,5%. Curvas reales del modelo."
+    },
+    {
+      "file": "assets/52-automl-confusion-counts-visible-ja.png",
+      "source": "output/playwright/gcp/52-automl-confusion-counts-visible-ja.png",
+      "sha256": "67fed5c1bd7bb8714382b78e6384b76c6cd95cbfd2f29487847173346d360fb7",
+      "caption": "Matriz AutoML real a 0,5: [[7,101],[20,3101]]. Siete incumplimientos detectados, 101 omitidos, 20 falsas alarmas y 3.101 pagos a tiempo bien clasificados."
     }
   ]
 }

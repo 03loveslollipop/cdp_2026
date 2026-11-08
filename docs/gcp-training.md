@@ -1,6 +1,6 @@
 # GCP credit classification training — dashboard runbook
 
-Status: **custom Vertex pipeline SUCCEEDED on 2026-11-08; user authorized one classic AutoML run at approximately USD21.25 on 2026-11-09 JST**. Console language remains Japanese. See `gcp-execution.md` for observed evidence and the revised one-node-hour AutoML authorization; this runbook also describes steps that have not been executed. Launch AutoML and custom Vertex AI Pipeline runs from the web dashboard. Python helpers compile packages and analyze downloaded results; they never submit training jobs.
+Status: **custom Vertex pipeline SUCCEEDED on 2026-11-08; classic AutoML SUCCEEDED on 2026-11-09 at 04:55:04 JST, within the authorized one-node-hour configuration**. Console language remains Japanese. See `gcp-execution.md` for observed evidence and the revised one-node-hour AutoML authorization; this runbook also describes steps that have not been executed. Launch AutoML and custom Vertex AI Pipeline runs from the web dashboard. Python helpers compile packages and analyze downloaded results; they never submit training jobs.
 
 ## 1. Verify account and project in the persistent browser
 
@@ -51,7 +51,7 @@ Open **Model Registry → model → Evaluate**. Capture overall metrics, default
 ```bash
 python -m cloud.compare automl \
   --predictions output/automl-batch/predictions*.jsonl \
-  --data output/cloud-data --output output/vertex-automl.json
+  --data output/cloud-data-gcp --output output/vertex-automl.json
 ```
 
 The scorer maps the returned class names to `P(default=0)` even if class order changes; it rejects missing, extra or duplicate row IDs, malformed probabilities and prediction errors. It computes Accuracy, default precision/recall/F1, ROC-AUC, PR-AUC, a confusion matrix, conditional bootstrap intervals and three chronological holdout block summaries. Thresholds are never tuned on TEST. Preserve native evaluation screenshots separately from this fixed-threshold comparison.
@@ -97,7 +97,7 @@ The report refuses comparisons across different source/holdout hashes and emits 
 
 Discuss rare-default prevalence, calibration/threshold effects, temporal drift and repeat variance. Compare ROC/PR ranking metrics alongside operating-point F1; Python/custom use calibrated validation-derived thresholds whereas AutoML scoring fixes 0.5. Accuracy alone rewards predicting everyone on-time (96.66% on this holdout). RMSE is a regression metric and is not presented as credit-classification quality.
 
-Manual Python provides direct control over temporal validation, preprocessing, class conventions, thresholds, seeds and runtime costs. AutoML supplies managed search and evaluation with less manual model design, but training budget and internal choices are less transparent. Draw superiority conclusions only after the actual dashboard runs complete.
+Manual Python provides direct control over temporal validation, preprocessing, class conventions, thresholds, seeds and runtime costs. AutoML supplies managed search and evaluation with less manual model design, but training budget and internal choices are less transparent. Both dashboard methods completed. Their default-class ROC-AUC is similar (custom 0.6573, AutoML 0.6542), and operating-point differences depend on threshold policies. These results do not establish a general advantage.
 
 ## 6. Evidence and cleanup
 
@@ -110,3 +110,28 @@ After evidence is saved, remove lab endpoints if any were explicitly deployed, a
 References: [Vertex AutoML training SDK and split definitions](https://docs.cloud.google.com/python/docs/reference/aiplatform/latest/google.cloud.aiplatform.AutoMLTabularTrainingJob), [AutoML batch input/output requirements](https://docs.cloud.google.com/gemini-enterprise-agent-platform/machine-learning/tabular-data/tabular-workflows/e2e-automl-batch-predictions), [Vertex AI Pipeline runs](https://docs.cloud.google.com/vertex-ai/docs/pipelines/run-pipeline).
 
 The completed dashboard run and observed billing/credits are documented in [gcp-execution.md](gcp-execution.md). The earlier USD15 restriction was superseded for one explicitly authorized AutoML run at approximately USD21.25. Record its actual submission and outcome; never add local substitute scores for AutoML.
+
+## Completed native AutoML evaluation (no paid batch prediction)
+
+Model `3834067964554903552`, version `1`, evaluation `2989617876806692894`, training pipeline `7023547864391352320` completed successfully. The authenticated browser read the model, evaluation, all class slices, dataset and training pipeline using `gapi.client.request` GET requests; no training was submitted by code. Clean receipts are in `output/gcp-receipts/automl-native-*.json`. Open the completed run, then Model Registry → model → Evaluate → label **0**, threshold **0.5**, and switch the confusion matrix to counts. Screenshots 44–52 preserve the Japanese console.
+
+Normalize the downloaded native evaluation and build the actual three-way comparison:
+
+```bash
+python -m cloud.native_evaluation \
+  --evaluation output/gcp-receipts/automl-native-evaluation.json \
+  --slices output/gcp-receipts/automl-native-evaluation-slices.json \
+  --pipeline output/gcp-receipts/automl-native-training-pipeline.json \
+  --dataset output/gcp-receipts/automl-native-dataset.json \
+  --model output/gcp-receipts/automl-native-model.json \
+  --manifest output/cloud-data-gcp/manifest.json \
+  --input-uri gs://nb-risk-ml-dev-99d0-credit-lab-20261108/automl.csv \
+  --output output/vertex-automl-native.json
+python -m cloud.compare report \
+  --inputs output/python-local.json output/vertex-custom-normalized.json output/vertex-automl-native.json \
+  --output output/comparison-final --language es
+```
+
+The native normalizer validates the model/version/evaluation chain, successful pipeline, dataset source URI, manual split, predictors, exact threshold and TEST class counts. The copied source/holdout fingerprints originate from the uploaded local manifest; native aggregates do not independently expose a row-level hash. For class 0, TP=7, FN=101, FP=20, TN=3101, accuracy=0.962527, F1=0.103704 and ROC-AUC=0.654208. Native PR-AUC=0.120123 is reported separately from sklearn AP, which is unavailable for AutoML without individual predictions. Overall micro ROC-AUC=0.976393 is not a default-class metric.
+
+One AutoML run does not measure retraining variance; native aggregates cannot supply the prediction-level bootstrap or chronological block analysis used for Python/custom. No second run, batch job or endpoint was created. The final credit observation was USD28.01 remaining out of USD50, or USD21.99 consumed across the account, with billing lag and no per-job attribution.

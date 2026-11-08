@@ -1,8 +1,8 @@
-# Measured Python baseline and pending cloud comparison
+# Measured credit-classification results and cloud comparison
 
 Measured on the tracked non-production extract with `ci/training.json`. There are 10,763 records; the first 7,534 form the training period and the final 3,229 form the chronological holdout. Default is `Pago_atiempo=0`.
 
-Selection uses temporal validation before the holdout is evaluated. References (heuristic and dummy) are not selection candidates. The selected model is **random forest**. These results were reproduced by the Jenkins CPU environment and a local execution of the custom training container. Neither execution is a Vertex AI training result.
+Selection uses temporal validation before the holdout is evaluated. References (heuristic and dummy) are not selection candidates. The selected model is **random forest**. These results were reproduced by the Jenkins CPU environment and a local execution of the custom training container. Those initial checks were followed by a real Vertex AI custom pipeline, `credit-cpu-demo-20261108-r3`, which succeeded on 2026-11-08 and reproduced the same metrics and data fingerprints; see [GCP execution evidence](gcp-execution.md).
 
 | Python model | Holdout accuracy | Default F1 | Default recall | ROC-AUC | PR-AUC |
 |---|---:|---:|---:|---:|---:|
@@ -11,8 +11,8 @@ Selection uses temporal validation before the holdout is evaluated. References (
 | Random forest (selected before holdout) | 0.8250 | 0.1130 | 0.3333 | 0.6573 | 0.0994 |
 | Heuristic reference | 0.7928 | 0.0798 | 0.2685 | 0.6241 | 0.0858 |
 | Majority-class dummy | 0.9666 | 0.0000 | 0.0000 | 0.5000 | 0.0334 |
-| Vertex AI custom pipeline | Pending dashboard run | — | — | — | — |
-| Vertex AI AutoML Tabular | Pending dashboard run | — | — | — | — |
+| Vertex AI custom pipeline (same selected forest) | 0.8250 | 0.1130 | 0.3333 | 0.6573 | 0.0994 |
+| Vertex AI AutoML Tabular (fixed 0.5) | 0.9625 | 0.1037 | 0.0648 | 0.6542 | N/A: native PR-AUC 0.1201 |
 
 PR-AUC in these tables uses scikit-learn's average precision (AP); keep native AutoML `auPrc` separately labeled. The decision tree's better holdout F1 is an audit finding; it does not change the training-selected winner. Tuning or reselecting on this table would compromise the frozen comparison.
 
@@ -28,13 +28,30 @@ Defaults fall from 403/7,534 (5.35%) in the training period to 108/3,229 (3.34%)
 
 Additional measured figures: [ROC curves](../output/local-baseline/figures/holdout_roc.png), [PR curves](../output/local-baseline/figures/holdout_pr.png), [temporal F1](../output/local-baseline/figures/temporal_f1.png), [confusion matrices](../output/local-baseline/figures/holdout_confusion_matrices.png). These local generated artifacts are excluded from Git; include the `output/` evidence when sharing the lab submission.
 
-## How cloud results will be added
+## Completed comparison with native AutoML
 
-Follow the [dashboard training runbook](gcp-training.md) after user approval/login. Both cloud methods must use the same dataset and final holdout fingerprints. AutoML receives leakage-safe engineered data and fixed TRAIN/VALIDATION/TEST labels. Custom Vertex training uses the repository's existing temporal selection and calibration code.
+AutoML pipeline `7023547864391352320` completed **SUCCEEDED** at 2026-11-08T19:55:04.833658Z (9 November 04:55:04 JST). Model `3834067964554903552`, version 1, evaluation `2989617876806692894` uses the original dataset, manual `data_split`, 84 checked predictors and a 1000 milli-node-hour budget. Its 2h35m wall duration includes managed processing and does not multiply the configured node-hour budget.
 
-Download real predictions/artifacts and run `python -m cloud.compare`. No missing cloud score is replaced with a local score. Compare ranking metrics alongside F1 because the Python/custom calibrated threshold and the AutoML fixed 0.5 default threshold represent different operating policies. Repeated AutoML training at a fixed split and budget is needed to measure its retraining consistency; one run's bootstrap intervals cannot supply that evidence.
+| Holdout measure | Python local | Vertex custom | AutoML native |
+|---|---:|---:|---:|
+| Accuracy | 0.825023 | 0.825023 | 0.962527 |
+| Default precision | 0.068053 | 0.068053 | 0.259259 |
+| Default recall | 0.333333 | 0.333333 | 0.064815 |
+| Default F1 | 0.113030 | 0.113030 | 0.103704 |
+| Default ROC-AUC | 0.657321 | 0.657321 | 0.654208 |
+| sklearn average precision | 0.099415 | 0.099415 | Not available |
+| Native default PR-AUC | Not available | Not available | 0.120123 |
+| Default probability threshold | 0.088279, temporal OOF | 0.088279, temporal OOF | 0.5, fixed |
 
-Manual training provides explicit control over temporal folds, feature processing, calibration, thresholds, seeds and runtime costs. AutoML reduces manual search work and provides managed evaluation, while spending a cloud budget and exposing less of its internal search. Superiority and stability conclusions about AutoML remain pending. The holdout was already examined during earlier EDA, and a fresh external dataset would be needed for an independent generalization claim. Predictor availability at the original credit-decision time remains an assumption in the source data contract.
+AutoML's default-first confusion matrix is `[[7,101],[20,3101]]`: 7 of 108 defaults detected with 20 false alarms. Python/custom detect 36 with 493 false alarms. F1 and recall compare different operating policies as well as fitted models; neither threshold was tuned on TEST. AutoML accuracy is below the majority dummy's 0.966553, which detects no defaults. ROC-AUC is similar across methods; these results do not establish a material ranking advantage. Native PR-AUC and sklearn AP have different integration/aggregation definitions and must not be ranked as the same metric. Overall native **micro ROC-AUC 0.976393 and micro PR-AUC 0.971952** are retained separately, never substituted for default-class ranking scores.
+
+![Final measured Python, Vertex custom and AutoML comparison](../output/comparison-final/comparacion-final-python-vertex-automl.png)
+
+The native evaluation's 3,229 observations and 108 defaults match the TEST manifest. The provenance chain links uploaded export manifest → dataset GCS URI → manual split → successful pipeline → model/version → default evaluation slice. AutoML's source/holdout hashes are inherited from that verified upload manifest; the native aggregate API does not independently provide row hashes. See `cloud/native_evaluation.py`, its rejection tests and `output/vertex-automl-native.json`.
+
+Python/custom temporal F1 std is 0.029162 and seed F1 std is 0.011031 (three seeds). Their identical results demonstrate environment consistency for this protocol, not independent cloud retraining variance. AutoML has one run; temporal/seed stability is **unmeasured**, not zero. No raw AutoML predictions were purchased, so no AutoML bootstrap or chronological TEST-block analysis is claimed. Additional paid runs are unnecessary for the current academic demonstration and were not launched.
+
+Manual training provides explicit control over temporal folds, feature processing, calibration, thresholds, seeds and runtime costs. AutoML reduces model-search work and supplies managed evaluation, with less control over its internal search and a higher training budget for this small exercise. This observed run provides no general superiority claim. The holdout was already examined during EDA; a fresh external dataset is needed for independent validation. Predictor availability at the original decision time remains an assumption. RMSE is not used for this classification task.
 
 Reproduce the measured baseline and comparison:
 

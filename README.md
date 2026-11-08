@@ -95,7 +95,7 @@ AI Pipeline, launched through the web dashboard after user approval and login.
 comparison tools. The [GCP execution log](docs/gcp-execution.md) records the successful
 CPU dashboard run and matching local/cloud metrics. After the user authorized approximately USD21.25, one classic AutoML run was
 submitted through the Japanese dashboard with a one-node-hour budget and early stopping.
-Its final metrics remain pending; the prior USD15 decision is preserved as history.
+AutoML completed successfully on 2026-11-09 at 04:55:04 JST. Native default-class ROC-AUC is 0.6542 and F1 is 0.1037 at threshold 0.5; Python/custom ROC-AUC is 0.6573. See the [measured comparison](docs/model-results.md) and Spanish report. The prior USD15 decision is preserved as history.
 The workspace-root `CLOUD_DEPLOYMENT_INVENTORY.md` records identities, project IDs,
 resources, configurations and verified deployment state.
 

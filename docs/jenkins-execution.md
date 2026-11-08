@@ -85,4 +85,4 @@ The final local #5 and cloud #1 builds both use snapshot `242e2edf71981a4ea10dd8
 
 ![Cloud completion receipt](../output/playwright/25-cloud-notification-delivered.png)
 
-Machine-readable [summary](../output/jenkins-receipts/summary.json) and [screenshot index with UTC times, page URLs and SHA-256 checksums](../output/playwright/index.json). Both controller environments and the cloud IAP tunnels remain available for review. No Vertex AI or AutoML run was launched.
+Machine-readable [summary](../output/jenkins-receipts/summary.json) and [screenshot index with UTC times, page URLs and SHA-256 checksums](../output/playwright/index.json). Both controller environments and the cloud IAP tunnels remain available for review. No Vertex AI or AutoML run was launched during these historical Jenkins checks. The later custom Vertex success and authorized AutoML submission are documented separately in [gcp-execution.md](gcp-execution.md).

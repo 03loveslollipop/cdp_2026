@@ -153,7 +153,7 @@ def build():
             archive.write(ROOT / path, 'anexos/' + path)
         # Keep the relative screenshot/chart links in the annex runbooks usable.
         for folder in ['output/playwright', 'output/local-baseline/figures', 'output/comparison',
-                       'output/comparison-gcp']:
+                       'output/comparison-gcp', 'output/comparison-final']:
             for path in sorted((ROOT / folder).rglob('*.png')):
                 archive.write(path, 'anexos/' + str(path.relative_to(ROOT)))
         archive.write(ROOT.parent / 'CLOUD_DEPLOYMENT_INVENTORY.md',
@@ -164,7 +164,10 @@ def build():
         for path in sorted((ROOT / 'output/gcp-receipts').glob('*.json')):
             archive.write(path, 'anexos/output/gcp-receipts/' + path.name)
         for path in ['output/comparison-gcp/comparison.csv', 'output/comparison-gcp/README.md',
-                     'output/vertex-custom/comparison.json', 'output/vertex-custom-normalized.json']:
+                     'output/vertex-custom/comparison.json', 'output/vertex-custom-normalized.json',
+                     'output/vertex-automl-native.json', 'output/comparison-final/comparison.csv',
+                     'output/comparison-final/README.md', 'cloud/native_evaluation.py',
+                     'cloud/compare.py', 'output/cloud-data-gcp/manifest.json']:
             archive.write(ROOT / path, 'anexos/' + path)
     print(f'PDF: {pdf}\nMarkdown: {markdown}\nBundle: {bundle}\nOriginal images: {len(manifest)}')
 

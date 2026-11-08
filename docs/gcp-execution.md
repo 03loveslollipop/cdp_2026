@@ -22,7 +22,7 @@ La exportación realmente subida es `output/cloud-data-gcp`; usa los valores ofi
 
 ## Decisión de presupuesto y AutoML
 
-El usuario indicó USD50 de créditos y un máximo aproximado de USD15 para esta demostración. Se revisó AutoML sobre Pipelines (18), que requiere Dataflow y factura infraestructura adicional. No se envió ese flujo. En la opción clásica se eligió `Pago_atiempo`, división manual `data_split` (19), y se probó un presupuesto de 0,7 horas-nodo sin enviarlo. El formulario lo rechazó: exige un número entre 1 y 72 (20). Una hora-nodo a tarifa pública estándar cuesta USD21,252, fuera del límite. Se canceló el formulario; **AutoML no se entrenó**. No hay métricas AutoML que comparar ni endpoint de inferencia creado.
+El usuario indicó USD50 de créditos y un máximo aproximado de USD15 para esta demostración. Se revisó AutoML sobre Pipelines (18), que requiere Dataflow y factura infraestructura adicional. No se envió ese flujo. En la opción clásica se eligió `Pago_atiempo`, división manual `data_split` (19), y se probó un presupuesto de 0,7 horas-nodo sin enviarlo. El formulario lo rechazó: exige un número entre 1 y 72 (20). Una hora-nodo a tarifa pública estándar cuesta USD21,252, fuera del límite. Se canceló el formulario; **AutoML no se entrenó en esa etapa**. En ese corte no había métricas AutoML ni endpoint. La autorización ampliada y el resultado final se documentan al final.
 
 Fuentes: [tarifas de entrenamiento](https://cloud.google.com/products/gemini-enterprise-agent-platform/pricing), [tarifas de Tabular Workflows](https://cloud.google.com/gemini-enterprise-agent-platform/tabular-workflows-pricing). El ejemplo público del workflow suma USD27,03 sin destilación; no representa una cotización de este dataset.
 
@@ -76,7 +76,7 @@ Se descargaron los resultados por lectura de Cloud Storage a `output/vertex-cust
 | Desviación F1 entre folds temporales | 0,029162 | 0,029162 |
 | Desviación F1 entre semillas | 0,011031 | 0,011031 |
 
-Matriz de confusión (filas/columnas: incumplimiento, pago a tiempo): `[[36,72],[493,2628]]`. Se detectaron 36 de 108 incumplimientos y se omitieron 72. La coincidencia acredita reproducción del protocolo en cloud, no mejora de la calidad predictiva ni validación externa. La variación entre folds/semillas procede del protocolo dentro del entrenamiento; no son tres jobs cloud independientes. No se comparan métricas AutoML porque no se ejecutó.
+Matriz de confusión (filas/columnas: incumplimiento, pago a tiempo): `[[36,72],[493,2628]]`. Se detectaron 36 de 108 incumplimientos y se omitieron 72. La coincidencia acredita reproducción del protocolo en cloud, no mejora de la calidad predictiva ni validación externa. La variación entre folds/semillas procede del protocolo dentro del entrenamiento; no son tres jobs cloud independientes. En ese corte todavía no se había ejecutado AutoML; la comparación final aparece más abajo.
 
 Comparación reproducible, sin enviar jobs:
 
@@ -112,3 +112,29 @@ El seguimiento de la consola muestra **Data preprocessing** como etapa de entren
 ### AutoML activo
 
 La consola confirmó el estado **トレーニング (Training)** y un inicio a las **2026-11-09 02:19:36 JST = 2026-11-08 17:19:36 UTC** (43). La etapa continúa en Data preprocessing. `automl-latest-observation.json` conserva el texto de la página y la fecha UTC de observación. No se ha enviado un segundo job ni aumentado el presupuesto. Las métricas de evaluación todavía no están disponibles; el trabajo gestionado continúa en GCP.
+
+## AutoML finalizado y evaluación real (9/11/2026 JST)
+
+Tras reautenticar el navegador, la consola japonesa confirmó **完了 / PIPELINE_STATE_SUCCEEDED**, fin **2026-11-08T19:55:04.833658Z = 9/11 04:55:04 JST** (44). Inicio 17:19:36.697390Z; duración de pared aproximada 2 h 35 min 28 s. Incluye preparación y postprocesamiento gestionados: no se multiplica esa duración por la tarifa de una hora-nodo. El presupuesto permanece en 1000 milli-node-hours. Solo se ejecutó un entrenamiento AutoML.
+
+Se abrió Model Registry → `credit-automl-temporal-20261109` → versión **1** → evaluación **2989617876806692894**. Modelo **3834067964554903552**. Se seleccionó la clase **0**, umbral fijo **0,5**, se revisaron curvas ROC/PR y se activaron conteos en la matriz (48, 52). No se ajustó el umbral al TEST. Los recibos `automl-native-{model,evaluation,evaluation-slices,training-pipeline,dataset}.json` se descargaron mediante GET desde el navegador ya autenticado, sin extraer tokens ni enviar jobs. `cloud/native_evaluation.py` comprueba la cadena, las 84 columnas, la división manual y los conteos de TEST.
+
+| Métrica TEST | Python local | Vertex CPU | AutoML nativo |
+|---|---:|---:|---:|
+| Accuracy | 0,825023 | 0,825023 | 0,962527 |
+| Precisión incumplimiento | 0,068053 | 0,068053 | 0,259259 |
+| Recall incumplimiento | 0,333333 | 0,333333 | 0,064815 |
+| F1 incumplimiento | 0,113030 | 0,113030 | 0,103704 |
+| ROC-AUC clase 0 | 0,657321 | 0,657321 | 0,654208 |
+| Average Precision sklearn | 0,099415 | 0,099415 | No disponible |
+| PR-AUC nativo clase 0 | No disponible | No disponible | 0,120123 |
+
+Matriz AutoML, orden real/predicho `[incumplimiento, pago a tiempo]`: `[[7,101],[20,3101]]`. Detecta 7/108 incumplimientos con 20 falsas alarmas; Python/custom detectan 36/108 con 493. Se comparan políticas diferentes: umbral AutoML 0,5 frente a ~0,08828 calibrado por validación temporal para el forest. ROC-AUC es similar; no se demuestra una superioridad general. PR-AUC nativo y AP sklearn no tienen idéntica definición y no se mezclan.
+
+La vista general informa micro ROC-AUC **0,9763931** y micro PR-AUC **0,9719521**. No describen la discriminación de la clase minoritaria 0 y se conservan separados. Las métricas de esta tabla provienen exclusivamente de la clase 0 y los conteos exactos a 0,5. Se verificaron 3.229 observaciones y 108 incumplimientos. La huella local se vincula por manifest subido, URI GCS, split manual y cadena de recursos; la evaluación agregada no expone hashes remotos fila por fila.
+
+Comparación final: `output/comparison-final/comparison.csv`, `README.md`, `comparacion-final-python-vertex-automl.png`. Informe normalizado: `output/vertex-automl-native.json`. No se compraron predicciones batch ni se crearon endpoints. Python/custom tienen desviación F1 temporal 0,029162 y entre semillas 0,011031; AutoML solo tiene una ejecución, sin varianza de reentrenamiento medida ni predicciones individuales para bootstrap o bloques temporales. Esta limitación queda documentada; no se la sustituye por ceros.
+
+### Créditos observados después del entrenamiento
+
+La página japonesa de créditos de `Billing Account for Education` mostró **USD28,01 restantes de USD50,00 (56%)** (50). Diferencia acumulada: **USD21,99** utilizados en servicios elegibles de toda la cuenta desde la concesión. No se atribuye todo ese importe al job AutoML ni se presenta como factura final; los datos tienen posible retraso. Vencimiento 6/10/2027. Fecha exacta, alcance y SHA-256 de la captura: `billing-after-automl.json`. Se mantiene el retiro de Jenkins el 13/11 a las 02:41:05 UTC y limpieza desde las 02:42:05; el proyecto de riesgo no está incluido en esa política.

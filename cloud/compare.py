@@ -116,6 +116,7 @@ def compare(paths, output, language='en'):
     output.mkdir(parents=True, exist_ok=True)
     columns = ['accuracy', 'default_f1', 'roc_auc', 'average_precision']
     rows = [{'origin': r['origin'], 'model': r['model'], **{m: r['metrics'][m] for m in columns},
+             'native_auprc': r['metrics'].get('native_auprc'),
              'temporal_f1_std': r['stability'].get('temporal_f1_std'),
              'seed_f1_std': r['stability'].get('seed_f1_std')} for r in reports]
     frame = pd.DataFrame(rows)
@@ -143,22 +144,28 @@ def compare(paths, output, language='en'):
     plt.close(fig)
     present = {r['origin'] for r in reports}
     pending = sorted({'vertex-custom', 'vertex-automl'} - present)
-    header = '| Origin | Model | Accuracy | Default F1 | ROC-AUC | PR-AUC |'
-    lines = [header, '|---|---|---:|---:|---:|---:|']
+    header = '| Origin | Model | Accuracy | Default F1 | Default ROC-AUC | sklearn AP | Native default PR-AUC |'
+    lines = [header, '|---|---|---:|---:|---:|---:|---:|']
     for row in rows:
-        lines.append('| ' + ' | '.join([row['origin'], row['model']] + [f'{row[m]:.4f}' for m in columns]) + ' |')
+        values = [f'{row[m]:.4f}' if row[m] is not None else 'N/A'
+                  for m in [*columns, 'native_auprc']]
+        lines.append('| ' + ' | '.join([row['origin'], row['model']] + values) + ' |')
     text = '# Credit model comparison\n\n' + '\n'.join(lines) + '\n\n'
     text += f'Pending dashboard runs: {", ".join(pending) if pending else "none"}.\n\n'
     text += ('The same source and frozen holdout fingerprints are required. Default is label 0. '
              'Accuracy must be read alongside default F1 and PR-AUC because defaults are rare. '
              'Bootstrap intervals condition on the observed class mix; they do not measure retraining variance. '
              'Python/custom use OOF-calibrated thresholds; AutoML uses a fixed 0.5 threshold, so F1 compares operating '
-             'policies as well as fitted models. ROC-AUC and PR-AUC compare rankings.\n\n'
+             'policies as well as fitted models. ROC-AUC uses the default-class slice for AutoML, '
+             'not its overall micro average. sklearn AP and native PR-AUC are separate columns; '
+             'their aggregation/integration definitions must not be treated as identical.\n\n'
              'Python training exposes preprocessing, calibration, temporal folds, seeds and runtime costs. '
              'AutoML reduces manual model-search work and provides managed evaluation, while offering less control '
-             'over search internals and incurring a training budget. No tool is declared superior before cloud results exist.\n\n'
+             'over search internals and incurring a training budget. The measured results do not establish '
+             'a general advantage for either training method.\n\n'
              'Stability requires temporal and seed variation. Three seeds and temporal folds are available for Python/custom; '
-             'one AutoML run only supports holdout bootstrap/time-block analysis. Repeated dashboard training with the '
+             'one AutoML run does not measure retraining variance. Native aggregate evaluation does not '
+             'provide raw predictions for holdout bootstrap/time-block analysis. Repeated dashboard training with the '
              'same split and budget is needed before claiming AutoML repeatability. The historical holdout was already '
              'examined during EDA and is not fresh external validation.\n\n![Measured comparison](comparison.png)\n')
     (output / 'README.md').write_text(text)

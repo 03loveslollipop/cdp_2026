@@ -8,8 +8,9 @@ import hudson.plugins.git.BranchSpec
 import hudson.slaves.EnvironmentVariablesNodeProperty
 import jenkins.branch.BranchSource
 import com.cloudbees.hudson.plugins.folder.computed.DefaultOrphanedItemStrategy
-import org.jenkinsci.plugins.github_branch_source.GitHubSCMSource
-import org.jenkinsci.plugins.github_branch_source.BranchDiscoveryTrait
+import jenkins.plugins.git.GitSCMSource
+import jenkins.plugins.git.traits.BranchDiscoveryTrait
+import com.cloudbees.jenkins.GitHubPushTrigger
 import org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProject
 import org.jenkinsci.plugins.workflow.multibranch.extended.RemoteJenkinsFileWorkflowBranchProjectFactory
 import org.jenkinsci.plugins.workflow.multibranch.extended.scm.ExcludeFromChangeSet
@@ -40,9 +41,9 @@ if (env == null) {
 env.envVars.put('SEMESTER_CI_REVISION', revision)
 env.envVars.put('SEMESTER_PRIMARY_BRANCH', primaryBranch)
 def project = existing ?: j.createProject(WorkflowMultiBranchProject, name)
-def source = new GitHubSCMSource('03loveslollipop', 'cdp_2026', null, false)
+def source = new GitSCMSource('https://github.com/03loveslollipop/cdp_2026.git')
 source.setId('credit-classification-all-branches')
-source.setTraits([new BranchDiscoveryTrait(3)])
+source.setTraits([new BranchDiscoveryTrait()])
 project.sourcesList.replaceBy([new BranchSource(source)])
 def shared = new GitSCM([
     new UserRemoteConfig('https://github.com/03loveslollipop/cdp_2026.git', null, null, null)],
@@ -51,11 +52,12 @@ def shared = new GitSCM([
 project.setProjectFactory(new RemoteJenkinsFileWorkflowBranchProjectFactory(
     'Jenkinsfile', '', shared, false, primaryBranch, false))
 project.setOrphanedItemStrategy(new DefaultOrphanedItemStrategy(true, '7', '20'))
-project.addTrigger(new PeriodicFolderTrigger('1h'))
+project.addTrigger(new PeriodicFolderTrigger('1m'))
 project.setDescription('All repository branches: clone and tests. Push/merge to ' + primaryBranch +
     ': tests, CPU training, quality/stability, admin approval and notification. Shared Jenkinsfile pinned to ' +
     revision + '. Existing lab cleanup deadline: 2026-11-13 02:41:05 UTC.')
 project.save()
+project.items.each { child -> child.addTrigger(new GitHubPushTrigger()); child.save() }
 if (legacy != null) {
     legacy.setDisabled(true)
     legacy.setDescription('Historical single-branch push/merge evidence. Replaced by ' + name + '; history retained.')

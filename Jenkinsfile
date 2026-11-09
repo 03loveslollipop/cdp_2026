@@ -10,8 +10,9 @@ pipeline {
     // Multibranch discovery handles every repository branch, including branches
     // without a Jenkinsfile, using this shared definition. Only the configured
     // primary branch proceeds from tests to model training and approval.
-    // GitHubSCMSource on the parent consumes push events. Its periodic index
-    // provides fallback discovery without duplicate child polling triggers.
+    // Each discovered child receives GitHub push events. The parent scans Git
+    // refs every minute for new branches and as fallback, without REST API quota.
+    triggers { githubPush() }
     environment {
         MPLBACKEND = 'Agg'
         OMP_NUM_THREADS = '2'
@@ -100,6 +101,19 @@ pipeline {
                 withEnv(["PIPELINE_RESULT=${currentBuild.currentResult}"]) {
                     // Notification errors mark the run unstable and remain visible.
                     catchError(buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+                        script {
+                            // A failed source checkout still needs a completion
+                            // receipt. Obtain only the pinned notification tools.
+                            if (env.SEMESTER_CI_REVISION &&
+                                !fileExists("${env.CI_TOOLS ?: '.'}/ci/notify.py")) {
+                                dir('.semester-ci') {
+                                    checkout(changelog: false, poll: false, scm: [
+                                        $class: 'GitSCM', branches: [[name: env.SEMESTER_CI_REVISION]],
+                                        userRemoteConfigs: [[url: 'https://github.com/03loveslollipop/cdp_2026.git']]])
+                                }
+                                env.CI_TOOLS = '.semester-ci'
+                            }
+                        }
                         sh 'python "${CI_TOOLS:-.}/ci/notify.py"'
                     }
                 }

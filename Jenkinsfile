@@ -1,3 +1,9 @@
+// Record the exact branch revision before waiting for the single executor.
+// Periodic indexing can then recognize a webhook build already queued for it.
+if (env.BRANCH_NAME) {
+    assert scm != null
+}
+
 pipeline {
     agent any
     options {

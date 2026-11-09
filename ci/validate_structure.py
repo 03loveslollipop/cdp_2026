@@ -5,9 +5,9 @@ from pathlib import Path
 
 
 def validate(root=Path('.'), *, mode='full', ci_files=True):
-    required = ['README.md', 'tests', 'mlops_pipeline/src']
+    required = ['README.md', 'tests']
     if mode == 'full':
-        required += ['database.csv', 'config.json', 'mlops_pipeline/src/ft_engineering.py',
+        required += ['mlops_pipeline/src', 'database.csv', 'config.json', 'mlops_pipeline/src/ft_engineering.py',
                      'mlops_pipeline/src/model_training_evaluation.py']
     if ci_files:
         required += ['requirements-ci.txt', 'Jenkinsfile', 'ci/training.json', 'ci/quality-gates.json']

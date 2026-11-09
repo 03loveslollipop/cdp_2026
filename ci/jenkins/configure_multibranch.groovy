@@ -21,6 +21,12 @@ def primaryBranch = __PRIMARY_BRANCH_JSON__
 assert revision ==~ /[a-f0-9]{40}/
 assert primaryBranch in ['main', 'master']
 def j = Jenkins.get()
+def environmentMessage = 'Jenkins on GCP VM semester-jenkins (nb-core-dev-99d0). Browser access uses a private IAP tunnel.'
+j.setSystemMessage(environmentMessage)
+def environmentInit = new File(j.rootDir, 'init.groovy.d/90-gcp-environment.groovy')
+environmentInit.parentFile.mkdirs()
+environmentInit.text = 'jenkins.model.Jenkins.get().setSystemMessage(' +
+    JsonOutput.toJson(environmentMessage) + '); jenkins.model.Jenkins.get().save()\n'
 def name = 'credit-classification-branches'
 def existing = j.getItem(name)
 assert existing == null || existing instanceof WorkflowMultiBranchProject

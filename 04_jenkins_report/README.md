@@ -14,3 +14,5 @@ pdftoppm -scale-to 1100 -png output/pdf/Informe_unificado_Jenkins_GCP_ES.pdf tmp
 ```
 
 Crear `tmp/pdfs/` antes del último comando y revisar las páginas renderizadas. El PDF es autocontenido y el ZIP puede enviarse sin contraseñas ni estado del navegador. No se envió el informe a terceros.
+
+Actualización de ramas: tests en todas las ramas y pipeline completo en master; incluye configuración multibranch, push real de una rama sin Jenkinsfile y explicación de localhost como túnel IAP al controlador GCP. Los resultados de las validaciones anteriores permanecen identificados como históricos.

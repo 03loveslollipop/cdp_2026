@@ -1,8 +1,51 @@
-# GitHub → Jenkins: integración y evidencia
+# GitHub → Jenkins: todas las ramas y pipeline completo en master
+
+## Configuración actual (9 de noviembre de 2026 JST)
+
+El usuario confirmó utilizar **`master`**, la rama principal existente. El webhook **708866067** permanece activo para el evento `push`, con HTTPS, verificación TLS y firma HMAC SHA-256. GitHub ya envía los pushes de todo el repositorio; el filtro anterior estaba en el relay y en el job. Ahora el relay acepta cualquier referencia válida `refs/heads/*` de `03loveslollipop/cdp_2026`, sin aceptar tags ni borrados.
+
+| Caso | Comportamiento actual |
+|---|---|
+| Push a una rama existente distinta de master | Clonar esa revisión, validar estructura de pruebas, ejecutar pytest, publicar JUnit y notificar; sin búsqueda completa de modelos ni aprobación. |
+| Push o merge a master | Pruebas, entrenamiento CPU, controles de calidad/estabilidad, aprobación admin, artefactos y notificación. |
+| Rama nueva sin Jenkinsfile | El proyecto multibranch la descubre mediante Git y utiliza la definición compartida; el escaneo periódico es de un minuto. |
+| PR de una rama del repositorio | Su push ejecuta tests de esa rama. GitHub Actions sigue proporcionando sus checks de PR por separado. |
+| Tag, borrado o repositorio ajeno | Se ignora o rechaza; no ejecuta modelos. |
+| Reentrega idéntica | Se deduplica; no solicita otro build para el mismo evento. |
+
+Proyecto Jenkins **`credit-classification-branches`**. `Git SCMSource` descubre todas las ramas del origen y Remote Jenkinsfile Provider carga un Jenkinsfile compartido, fijado a un SHA completo de la rama de implementación. Así no se exige copiar un Jenkinsfile a cada rama. La variable `SEMESTER_PRIMARY_BRANCH=master` controla las etapas completas; `SEMESTER_CI_REVISION` fija herramientas y definición. El job histórico `credit-classification-github` está deshabilitado y conserva builds y artefactos.
+
+Cada hijo registra `githubPush()`. La revisión del código se fija antes de esperar al ejecutor. El webhook y el escaneo de respaldo pueden encolar builds de la misma revisión durante una transición; los recibos distinguen las causas. La deduplicación de entregas del relay solo se refiere al mismo ID de evento GitHub. El escaneo de Git cada minuto cubre ramas nuevas y funciona como respaldo, sin consumir la cuota REST anónima de GitHub. Se conservan 79 plugins compatibles en el controlador. En la validación inicial se detectaron y corrigieron dos problemas: el chequeo de features exigía el layout moderno a ramas antiguas `src/`, y el origen GitHub SCM agotaba su cuota anónima. El origen actual usa Git directamente y el chequeo de features admite ambos layouts; la validación completa de master sigue siendo estricta.
+
+La configuración reproducible está en `ci/jenkins/configure_multibranch.groovy` y su cliente:
+
+```bash
+# Revisar primero el script renderizado, con el SHA real publicado.
+python3 ci/configure_multibranch.py --ci-revision <SHA_COMPLETO> --primary-branch master
+python3 ci/configure_multibranch.py --ci-revision <SHA_COMPLETO> --primary-branch master --apply
+```
+
+El cliente usa el túnel privado y credenciales locales que no se incluyen en el informe. La actualización Terraform del relay modificó solo su imagen y `BRANCHES=*`: 0 recursos añadidos, 1 actualizado, 0 destruidos. Se conserva el vencimiento **13/11/2026 02:41:05 UTC**. No se repitió AutoML ni se creó infraestructura de entrenamiento.
+
+## Por qué el acceso web dice localhost
+
+Jenkins se ejecuta en la VM **`semester-jenkins`**, proyecto GCP **`nb-core-dev-99d0`**, zona **`us-central1-a`**. El navegador abre `http://127.0.0.1:18083`, extremo local de un túnel autenticado IAP hacia **`10.81.0.3:8080`** dentro de GCP. El puerto local solo funciona mientras el túnel esté abierto en esa computadora. La URL no implica que el controlador esté ejecutándose en Docker local. El entorno Docker local histórico usa el puerto 18081.
+
+```bash
+gcloud compute start-iap-tunnel semester-jenkins 8080 \
+  --project=nb-core-dev-99d0 --zone=us-central1-a \
+  --local-host-port=127.0.0.1:18083
+```
+
+GitHub utiliza el receptor público **`https://semester-jenkins-webhook-tcwenm7hba-uc.a.run.app/github-webhook/`**. Cloud Run valida la firma y reenvía el evento por VPC privada al mismo Jenkins GCP. La consola administrativa permanece detrás de IAP. Las capturas GCP 53–54 muestran la VM real en la consola japonesa; el mensaje del controlador se corrigió para indicar explícitamente GCP y persiste tras un reinicio.
+
+Los recibos actuales y la causa de los builds están en `output/github-webhook/all-branches/verification.json`. La siguiente sección conserva la configuración inicial y los builds #2/#3 como evidencia histórica; no define el alcance actual.
+
+---
 
 La cuenta propietaria `03loveslollipop` está activa y tiene ADMIN en `03loveslollipop/cdp_2026`. Se publicó la implementación en **`ci/jenkins-lab-20261108`** y se instaló el webhook **708866067**, activo, para `push`, con TLS verificado y secreto HMAC SHA-256. La rama `master` no se modificó.
 
-## Configuración desplegada
+## Configuración inicial en la rama de laboratorio (histórica)
 
 | Elemento | Valor |
 |---|---|
@@ -20,7 +63,7 @@ Cloud Run termina TLS. El receptor solo reenvía solicitudes `POST /github-webho
 
 Se mantiene una instancia pequeña caliente porque Direct VPC puede tardar más que el plazo de respuesta de GitHub al arrancar desde cero. Su costo orientativo de inactividad es USD 0,27/día antes de créditos/franquicias, más solicitudes activas, almacenamiento y secretos. No es una lectura de la factura. Fuente: [precios Cloud Run](https://cloud.google.com/run/pricing).
 
-## Ejecución reproducible
+## Procedimiento inicial de instalación del hook
 
 1. Aplicar la base Terraform de `cloud/webhook` sin el servicio (`deploy_receiver=false`). Crea API Run, cuenta de servicio, contenedor Secret Manager, binding de lectura, subred y firewall privado.
 2. Ejecutar `python3 cloud/webhook/publish.py`: genera un secreto local con permisos 600, crea su versión fuera del estado Terraform, construye la imagen fijada a una base por digest y la publica en el Artifact Registry existente. Las credenciales Docker son temporales.
@@ -38,7 +81,7 @@ python3 ci/github_webhook.py --url https://semester-jenkins-webhook-tcwenm7hba-u
 
 El instalador confirma identidad ADMIN, dirección HTTPS pública, evento push, TLS habilitado y lectura posterior; no modifica hooks de otros receptores ni imprime secretos. No se entregó al controlador ningún token GitHub del propietario.
 
-## Verificación de push y merge
+## Verificación histórica de push y merge
 
 Para aislar la causa, se dejó temporalmente vacío el cron SCM antes de cada evento observado. Los builds arrancados por el webhook registran **Started by GitHub push by 03loveslollipop**. El Jenkinsfile restablece el polling de respaldo al comenzar cada ejecución.
 
@@ -49,7 +92,7 @@ Para aislar la causa, se dejó temporalmente vacío el cron SCM antes de cada ev
 
 Los resultados completos, SHA de checkout, JUnit, aprobación y notificación se registran en `output/github-webhook/verification.json` y los recibos de cada build. Un HTTP 200 o un ping por sí solos no acreditan éxito de las pruebas. Las capturas de Jenkins son de navegador; los recibos de GitHub se obtienen de su API real, sin simular una sesión autenticada del dashboard de GitHub.
 
-## Alcance de eventos
+## Alcance inicial de eventos (histórico)
 
 | Caso | Comportamiento |
 |---|---|
@@ -62,7 +105,7 @@ Los resultados completos, SHA de checkout, JUnit, aprobación y notificación se
 | Firma inválida o repositorio distinto | Rechazo sin ejecución de Jenkins |
 | Tras vencimiento | El receptor rechaza con 410; la parada y limpieza retiran el servicio y su conectividad |
 
-El receptor permite también la referencia `master` para una futura configuración, pero **el job actual vigila solo la rama de laboratorio**. La presencia de un hook no activa tests de todas las ramas ni protección de merges. Cambiar la rama del job requiere que esa rama contenga la implementación y una decisión explícita sobre los despliegues ya asociados a `master`.
+El receptor permite también la referencia `master` para una futura configuración, pero **el job inicial vigilaba solo la rama de laboratorio**. La presencia de un hook no activa tests de todas las ramas ni protección de merges. Cambiar la rama del job requiere que esa rama contenga la implementación y una decisión explícita sobre los despliegues ya asociados a `master`.
 
 ## Limpieza
 

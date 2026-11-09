@@ -1,5 +1,5 @@
 // Record the exact branch revision before waiting for the single executor.
-// Periodic indexing can then recognize a webhook build already queued for it.
+// This freezes the commit even if another push arrives during the queue wait.
 if (env.BRANCH_NAME) {
     assert scm != null
 }

@@ -161,6 +161,11 @@ def build():
         for path in sorted((ROOT / 'output/github-webhook').glob('*')):
             if path.is_file():
                 archive.write(path, 'anexos/output/github-webhook/' + path.name)
+        branch_evidence = ROOT / 'output/github-webhook/all-branches'
+        for path in sorted(branch_evidence.glob('*')):
+            if path.is_file() and (path.name in {'verification.json', 'push-probe.json'} or
+                                  path.name.startswith(('master-', 'ci__webhook-all-branches-20261109-'))):
+                archive.write(path, 'anexos/' + str(path.relative_to(ROOT)))
         for path in sorted((ROOT / 'output/gcp-receipts').glob('*.json')):
             archive.write(path, 'anexos/output/gcp-receipts/' + path.name)
         for path in ['output/comparison-gcp/comparison.csv', 'output/comparison-gcp/README.md',
@@ -168,6 +173,11 @@ def build():
                      'output/vertex-automl-native.json', 'output/comparison-final/comparison.csv',
                      'output/comparison-final/README.md', 'cloud/native_evaluation.py',
                      'cloud/compare.py', 'output/cloud-data-gcp/manifest.json']:
+            archive.write(ROOT / path, 'anexos/' + path)
+        for path in ['Jenkinsfile', 'ci/configure_multibranch.py', 'ci/validate_structure.py',
+                     'ci/jenkins/configure_multibranch.groovy', 'ci/jenkins/plugins.txt',
+                     'ci/jenkins/plugins.lock.json', 'cloud/webhook/receiver.py',
+                     'cloud/webhook/main.tf', 'tests/test_branch_ci.py', 'tests/test_webhook_receiver.py']:
             archive.write(ROOT / path, 'anexos/' + path)
     print(f'PDF: {pdf}\nMarkdown: {markdown}\nBundle: {bundle}\nOriginal images: {len(manifest)}')
 

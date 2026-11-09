@@ -93,6 +93,30 @@
       "caption": "Figura 15. Receptor privado: SUCCESS y SHA exacto de los builds #1, #2 y #3 del nuevo job."
     },
     {
+      "file": "assets/51-native-git-all-branches-configuration.png",
+      "source": "output/playwright/51-native-git-all-branches-configuration.png",
+      "sha256": "d877963fdb668ba592f727d4a15614694f60b8b028fe4c3ffb558f9ee2723ad1",
+      "caption": "Origen Git del repositorio, Discover branches sin filtro de nombres y proveedor de Jenkinsfile remoto."
+    },
+    {
+      "file": "assets/48-feature-tests-only-success.png",
+      "source": "output/playwright/48-feature-tests-only-success.png",
+      "sha256": "3e40af56edde92ae90c1ce81f9911375453f639ed2319378268c5cee13b056da",
+      "caption": "Rama de verificación: tests completados; entrenamiento, calidad de modelos y aprobación omitidos por política de rama."
+    },
+    {
+      "file": "assets/61-master-completed-dashboard.png",
+      "source": "output/playwright/61-master-completed-dashboard.png",
+      "sha256": "b6d47392601247e78d991e838d2232810b6cf04c1f205a34fa38c0653602bb6b",
+      "caption": "Master: todas las etapas completadas y recibos disponibles. La causa de esta validación fue indexación, no un push nuevo a master."
+    },
+    {
+      "file": "assets/54-jenkins-gcp-vm-running-details-ja.png",
+      "source": "output/playwright/gcp/54-jenkins-gcp-vm-running-details-ja.png",
+      "sha256": "291b2c12c27b442259eaa1e66c2a5b3ee3d58da7918f5f6431cb0af9455484e7",
+      "caption": "Consola GCP japonesa: VM semester-jenkins en ejecución y zona us-central1-a. Evidencia del alojamiento cloud del controlador."
+    },
+    {
       "file": "assets/11-data-files-uploaded-ja.png",
       "source": "output/playwright/gcp/11-data-files-uploaded-ja.png",
       "sha256": "729ecc3f3e3cc4a383afcbc28a6368c7df6d3a57e34c1cb4736b239dc1f6692b",

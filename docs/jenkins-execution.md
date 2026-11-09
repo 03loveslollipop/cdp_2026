@@ -86,3 +86,13 @@ The final local #5 and cloud #1 builds both use snapshot `242e2edf71981a4ea10dd8
 ![Cloud completion receipt](../output/playwright/25-cloud-notification-delivered.png)
 
 Machine-readable [summary](../output/jenkins-receipts/summary.json) and [screenshot index with UTC times, page URLs and SHA-256 checksums](../output/playwright/index.json). Both controller environments and the cloud IAP tunnels remain available for review. No Vertex AI or AutoML run was launched during these historical Jenkins checks. The later custom Vertex success and authorized AutoML submission are documented separately in [gcp-execution.md](gcp-execution.md).
+
+## Actualización: todas las ramas y master (9/11/2026 JST)
+
+Proyecto `credit-classification-branches`, origen Git sin filtro de ramas y Jenkinsfile compartido fijado en `045a2300caf63506fdc0dd4092d7a771a43a1aee`. Cada hijo usa githubPush(); escaneo del padre cada minuto. El usuario eligió master. El relay tiene BRANCHES=*; se mantiene el hook 708866067, TLS y HMAC. La configuración no modifica master ni su despliegue Heroku.
+
+Push real a `ci/webhook-all-branches-20261109`, SHA `7cdc8211ad9974afa01d7e1e6d49273b13a4da77`, entrega `3852983580569370624` HTTP 200: build#5 SUCCESS, 160  tests, 0 fallos, causa GitHubPushCause. Las etapas completas de modelos fueron omitidas. Master#2 terminó SUCCESS con 160 tests, entrenamiento/gates, aprobación y notificación; su causa fue la indexación inicial. No se presenta como push a master. Administración del hook/API con `03loveslollipop`; el push de verificación registra `02loveslollipop` como emisor en GitHubPushCause.
+
+Se corrigieron el chequeo de layouts antiguos y el uso de la cuota API; se conservan intentos fallidos/cancelados y se detuvo el backfill migratorio para limitar carga. Los recibos actuales están en output/github-webhook/all-branches/verification.json. No se afirma que todos los commits históricos pasaron tests. No se repitió AutoML ni se modificó el vencimiento del 13/11.
+
+Jenkins corre en GCP VM `semester-jenkins`, `nb-core-dev-99d0`, zona `us-central1-a`. `localhost:18083` es el extremo del túnel IAP a `10.81.0.3:8080`; GitHub utiliza la URL HTTPS de Cloud Run. Capturas raíz51,57,48,56 y GCP54; índice con fechas y SHA-256.

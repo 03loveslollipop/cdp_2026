@@ -61,7 +61,7 @@ The notification receiver is an authenticated private local HTTP service. It acc
 
 ## 3. Verify automatic triggering
 
-The live GitHub job `credit-classification-github` now uses `githubPush()` and the signed Cloud Run receiver. The [GitHub webhook runbook](github-webhook.md) records actual push/merge verification on `ci/jenkins-lab-20261108`; master remains unchanged. The original `credit-classification` job and the historical execution evidence below remain SCM-polling evidence.
+The active multibranch project `credit-classification-branches` tests every origin branch, including branches without a Jenkinsfile, using a pinned shared definition. Pushes/merges to the existing `master` branch add CPU training, quality/stability gates and admin approval. Each child uses `githubPush()`; native Git indexing every minute provides discovery/fallback without GitHub REST quota. The former `credit-classification-github` job is disabled with history retained. See the [current webhook runbook](github-webhook.md). The original execution evidence below remains historical SCM-polling evidence.
 
 `pollSCM('H/2 * * * *')` polls the configured branch every two minutes at Jenkins' hashed minute offset. It is not a periodic unconditional build. The initial manual build registers the Jenkinsfile trigger; subsequent SCM changes should start a build with cause **Started by an SCM change**. Capture the polling log and the automatically started build, then review/approve it as above.
 
@@ -121,3 +121,5 @@ To pause VM compute cost after documentation, stop only `semester-jenkins` in th
 In this minimal module, changing `metadata_startup_script` (including its pinned image) replaces the VM and boot disk. Back up Jenkins state before such updates once it contains evidence you need. During initial setup the empty controller was refreshed before its first pipeline run to include the complete review snapshot. Normal container/VM restarts preserve its named volume.
 
 References: [Jenkins Docker image](https://github.com/jenkinsci/docker), [Pipeline syntax, post actions and polling](https://www.jenkins.io/doc/book/pipeline/syntax/), [Jenkins input step](https://www.jenkins.io/doc/pipeline/steps/pipeline-input-step/).
+
+The GCP controller runs on VM `semester-jenkins` in `nb-core-dev-99d0`, us-central1-a. `http://127.0.0.1:18083` is the local IAP tunnel endpoint forwarding to `10.81.0.3:8080`; the public signed GitHub receiver runs separately on Cloud Run. See the runbook for the tunnel command and Japanese-console VM screenshots.

@@ -24,7 +24,7 @@
             ],
             [
               "Activación automática",
-              "Webhook GitHub activo. Push y merge reales en la rama de laboratorio; ver sección 9."
+              "Webhook activo: tests en todas las ramas; master añade entrenamiento, calidad, aprobación y notificación. Ver 9.5–9.8."
             ],
             [
               "Comparación de modelos Python",
@@ -45,7 +45,7 @@
           ]
         },
         {
-          "text": "Los entrenamientos personalizados de Jenkins y Vertex reprodujeron las métricas de Python. AutoML clásico finalizó el 9/11/2026 a las 04:55:04 JST, con presupuesto autorizado de 1 hora-nodo. ROC-AUC de incumplimiento: Python/Vertex CPU 0,6573 y AutoML 0,6542. La detección sigue siendo limitada; no se demuestra superioridad general. Cloud Run recibe el webhook de GitHub."
+          "text": "Los entrenamientos personalizados de Jenkins y Vertex reprodujeron las métricas de Python. AutoML clásico finalizó el 9/11/2026 a las 04:55:04 JST, con presupuesto autorizado de 1 hora-nodo. ROC-AUC de incumplimiento: Python/Vertex CPU 0,6573 y AutoML 0,6542. La detección sigue siendo limitada; no se demuestra superioridad general. Cloud Run recibe el webhook de GitHub. La actualización del 9/11 amplía Jenkins a todas las ramas; master es la rama principal elegida por el usuario."
         },
         {
           "text": "El PDF incorpora las imágenes. El paquete ZIP añade originales PNG, fuente editable, índices y anexos de operación. No incluye contraseñas, tokens, estado de Terraform ni registros individuales del conjunto de datos."
@@ -79,11 +79,11 @@
             ],
             [
               "Controlador",
-              "Jenkins 2.580.2, Java 21, Python 3.13 CPU. Builds históricos con 71 plugins; integración GitHub con 76 plugins compatibles."
+              "Jenkins 2.580.2, Java 21, Python 3.13 CPU. Controlador actual: 79 plugins compatibles; capturas históricas: 71/76."
             ],
             [
               "Acceso",
-              "Local: 127.0.0.1:18081. GCP: túnel IAP en 127.0.0.1:18083. Sin ingreso público a la consola."
+              "Docker local histórico: 127.0.0.1:18081. Jenkins GCP: 127.0.0.1:18083 por IAP hacia 10.81.0.3:8080. Ver 9.8."
             ],
             [
               "Proyecto de entrenamiento",
@@ -439,8 +439,11 @@
       ]
     },
     {
-      "title": "9. GitHub: webhook desplegado",
+      "title": "9. GitHub: verificación inicial en laboratorio",
       "blocks": [
+        {
+          "text": "Evidencia histórica de la configuración inicial del 8/11 UTC. Las secciones 9.5–9.8 documentan la configuración actual ampliada a todas las ramas; el job inicial conserva sus resultados deshabilitado."
+        },
         {
           "text": "La cuenta propietaria 03loveslollipop quedó autenticada con ADMIN. Se publicó la implementación en ci/jenkins-lab-20261108 y se creó el webhook 708866067, activo, para el evento push. No se modificó master ni se activaron sus despliegues Heroku."
         },
@@ -630,6 +633,129 @@
         },
         {
           "text": "Fuentes de evidencia: github-verification.json, cleanup-verification.json y anexos de output/github-webhook/. Los JSON publicados contienen métricas agregadas y metadatos de ejecución; no incluyen tokens, contraseñas ni predicciones individuales."
+        }
+      ]
+    },
+    {
+      "title": "9.5. Configuración actual: todas las ramas",
+      "blocks": [
+        {
+          "text": "El usuario confirmó master como rama principal existente. credit-classification-branches descubre las 14 ramas iniciales y la nueva rama de verificación (15). El relay conserva el mismo hook GitHub de push y ahora permite refs/heads/* del repositorio; ignora tags y borrados. Cada rama usa una definición compartida, incluso cuando no tiene Jenkinsfile propio."
+        },
+        {
+          "image": "output/playwright/51-native-git-all-branches-configuration.png",
+          "caption": "Origen Git del repositorio, Discover branches sin filtro de nombres y proveedor de Jenkinsfile remoto.",
+          "max_height": 320
+        },
+        {
+          "text": "CI desplegado: 045a2300caf63506fdc0dd4092d7a771a43a1aee. Cada hijo usa githubPush(); el padre escanea Git cada minuto para descubrir ramas nuevas y como respaldo. La captura del pin se incluye en los PNG originales del anexo (60). Se utiliza Git directamente, sin un token GitHub en Jenkins y sin cuota REST anónima para descubrir ramas. El job inicial se deshabilitó y conserva su historial."
+        }
+      ]
+    },
+    {
+      "title": "9.6. Push real: tests sin entrenamiento completo",
+      "blocks": [
+        {
+          "text": "Se creó ci/webhook-all-branches-20261109 a partir de master, sin Jenkinsfile. Después del descubrimiento se envió un nuevo commit de verificación. Se desactivó temporalmente el escaneo periódico durante la prueba para aislar el webhook y se restauró a un minuto al finalizar."
+        },
+        {
+          "table": [
+            [
+              "Evidencia",
+              "Resultado"
+            ],
+            [
+              "Entrega GitHub",
+              "3852983580569370624; HTTP 200"
+            ],
+            [
+              "Commit de checkout",
+              "7cdc8211ad9974afa01d7e1e6d49273b13a4da77"
+            ],
+            [
+              "Jenkins",
+              "Build #5; GitHubPushCause; SUCCESS"
+            ],
+            [
+              "Tests",
+              "160 aprobados, 0 fallos, 0 omitidos"
+            ]
+          ],
+          "widths": [
+            1,
+            2.8
+          ]
+        },
+        {
+          "image": "output/playwright/48-feature-tests-only-success.png",
+          "caption": "Rama de verificación: tests completados; entrenamiento, calidad de modelos y aprobación omitidos por política de rama.",
+          "max_height": 300
+        },
+        {
+          "text": "El escaneo de respaldo también generó un build para la misma revisión; la tabla identifica específicamente el build causado por el webhook. Las pruebas pertenecen a esa revisión de la rama, no al Jenkinsfile compartido. Se conservaron la causa, SHA, JUnit y notificación del build. La prueba no cambia master ni ejecuta AutoML. Los PR de ramas del repositorio generan sus tests por el push de la rama; GitHub Actions mantiene sus checks de PR por separado."
+        }
+      ]
+    },
+    {
+      "title": "9.7. Master: pipeline completo en GCP",
+      "blocks": [
+        {
+          "text": "Build #2 de credit-classification-branches/master: SUCCESS, 160 pruebas aprobadas y cero fallos. Ejecutó entrenamiento CPU, puertas de calidad/estabilidad, aprobación de admin y notificación. El escaneo inicial validó el flujo completo; la configuración githubPush() hace que los próximos pushes o merges a master repitan este flujo."
+        },
+        {
+          "image": "output/playwright/61-master-completed-dashboard.png",
+          "caption": "Master: todas las etapas completadas y recibos disponibles. La causa de esta validación fue indexación, no un push nuevo a master.",
+          "max_height": 310
+        },
+        {
+          "text": "No se creó un commit en master para la verificación, por lo que tampoco se activó el despliegue Heroku asociado a sus pushes. El código CI se fija por SHA y la rama de código se clona por separado; las revisiones efectivas se registran en checkout_revisions del recibo."
+        },
+        {
+          "text": "La migración detectó layouts antiguos src/ y una espera por cuota API. Se corrigió el chequeo de features, se cambió a Git nativo y se fija la revisión antes de esperar al ejecutor. El escaneo de respaldo puede añadir otro build durante un cambio de revisión; el caso webhook y el de respaldo se identifican por separado. Los errores iniciales y las cancelaciones del backfill se conservan; el informe no afirma que todos los commits históricos hayan pasado sus pruebas. El escaneo automático y los webhooks continúan vigilando todas las ramas."
+        }
+      ]
+    },
+    {
+      "title": "9.8. Jenkins está en GCP: acceso mediante IAP",
+      "blocks": [
+        {
+          "text": "Jenkins se ejecuta en la VM semester-jenkins del proyecto nb-core-dev-99d0, zona us-central1-a. localhost:18083 es el extremo del túnel IAP en la computadora que abre el navegador; reenvía tráfico autenticado a 10.81.0.3:8080 dentro de GCP. Para usar esa dirección, la persona que revisa necesita permisos GCP y abrir su propio túnel."
+        },
+        {
+          "image": "output/playwright/gcp/54-jenkins-gcp-vm-running-details-ja.png",
+          "caption": "Consola GCP japonesa: VM semester-jenkins en ejecución y zona us-central1-a. Evidencia del alojamiento cloud del controlador.",
+          "max_height": 310
+        },
+        {
+          "table": [
+            [
+              "Punto de acceso",
+              "Función"
+            ],
+            [
+              "127.0.0.1:18083",
+              "Entrada local del túnel IAP hacia Jenkins GCP."
+            ],
+            [
+              "10.81.0.3:8080",
+              "Controlador en la red privada del proyecto de core."
+            ],
+            [
+              "Cloud Run /github-webhook/",
+              "Receptor HTTPS público que valida y reenvía eventos GitHub."
+            ],
+            [
+              "127.0.0.1:18081",
+              "Contenedor Docker local de la demostración histórica."
+            ]
+          ],
+          "widths": [
+            1.25,
+            2.5
+          ]
+        },
+        {
+          "text": "El mensaje antiguo local Jenkins se corrigió en el controlador y persiste tras reinicio. La consola permanece privada; GitHub usa el relay público. El comando reproducible para abrir IAP está en docs/github-webhook.md. Se mantiene sin cambios la parada del 13/11/2026 a las 02:41:05 UTC y limpieza desde las 02:42:05."
         }
       ]
     },
@@ -1143,7 +1269,7 @@
           "text": "Artefactos de soporte: output/jenkins-receipts/summary.json; output/playwright/index.json; docs/jenkins-execution.md; docs/model-results.md; docs/expiry-policy.md; docs/github-webhook.md; docs/gcp-training.md y el inventario de cuentas de la raíz. evidencias.json identifica cada imagen incorporada con su SHA-256. La evidencia nueva del webhook y las notificaciones se encuentra en output/github-webhook/ y en las fuentes JSON de este informe. La fase GCP añade docs/gcp-execution.md, output/playwright/gcp/index.json y output/training-runtime.json."
         },
         {
-          "text": "Implementaciones y documentación del ejercicio completadas: Jenkins, webhook push/merge, entrenamiento CPU y AutoML, métricas, tablas/gráficas y análisis de estabilidad con sus límites. La revisión/integración del PR y la comprobación futura del retiro Jenkins permanecen como pasos operativos. El job vigila la rama de laboratorio; master no fue modificado."
+          "text": "Implementaciones y documentación del ejercicio completadas: Jenkins, webhook push/merge, entrenamiento CPU y AutoML, métricas, tablas/gráficas y análisis de estabilidad con sus límites. La revisión/integración del PR y la comprobación futura del retiro Jenkins permanecen como pasos operativos. El proyecto multibranch vigila todas las ramas; master ejecuta el flujo completo. La verificación utilizó una rama dedicada y el escaneo inicial; no se modificó master."
         },
         {
           "text": "El laboratorio acredita el flujo completo con evidencias reales. Vertex CPU reproduce Python; AutoML finalizó y se compara con el mismo TEST mediante la cadena de procedencia documentada. Un único run AutoML no mide estabilidad entre reentrenamientos. La calidad crediticia continúa limitada; los resultados no acreditan preparación para producción ni validación externa."
@@ -1199,6 +1325,10 @@
     {
       "label": "Divisiones manuales de datos tabulares: TRAIN, VALIDATE y TEST",
       "url": "https://docs.cloud.google.com/gemini-enterprise-agent-platform/machine-learning/tabular-data/data-splits"
+    },
+    {
+      "label": "Jenkins: proveedor remoto de Jenkinsfile para proyectos multibranch",
+      "url": "https://plugins.jenkins.io/remote-file/"
     }
   ]
 }

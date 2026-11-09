@@ -4,4 +4,4 @@ locale.setSystemLocale('ja')
 locale.setIgnoreAcceptLanguage(true)
 locale.setAllowUserPreferences(false)
 locale.save()
-hudson.plugins.locale.PluginImpl.init()
+// The plugin registers its locale provider and filter during initialization.

@@ -6,3 +6,4 @@ timestamper
 pipeline-stage-view
 github-branch-source
 remote-file
+locale

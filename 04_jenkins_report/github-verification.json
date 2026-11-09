@@ -147,7 +147,7 @@
     "image": "us-central1-docker.pkg.dev/nb-core-dev-99d0/semester-jenkins/webhook@sha256:a6822f8a23d0feb797fa2916a10e788f4136815de9eee2497e1f284b1584a890"
   },
   "all_branch_update": {
-    "verified_at_utc": "2026-11-09T00:57:12.365372+00:00",
+    "verified_at_utc": "2026-11-09T04:17:14.786501+00:00",
     "project": "nb-core-dev-99d0",
     "vm": "semester-jenkins",
     "parent_job": "credit-classification-branches",
@@ -172,7 +172,7 @@
           },
           {
             "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
-            "shortDescription": "Aborted by admin"
+            "shortDescription": "adminによる中断"
           }
         ],
         "checkout_revisions": [
@@ -190,7 +190,7 @@
             },
             {
               "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
-              "shortDescription": "Aborted by admin"
+              "shortDescription": "adminによる中断"
             }
           ]
         }
@@ -209,7 +209,7 @@
           },
           {
             "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
-            "shortDescription": "Aborted by admin"
+            "shortDescription": "adminによる中断"
           }
         ],
         "checkout_revisions": [
@@ -227,7 +227,7 @@
             },
             {
               "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
-              "shortDescription": "Aborted by admin"
+              "shortDescription": "adminによる中断"
             }
           ]
         }
@@ -246,7 +246,7 @@
           },
           {
             "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
-            "shortDescription": "Aborted by admin"
+            "shortDescription": "adminによる中断"
           }
         ],
         "checkout_revisions": [
@@ -264,7 +264,7 @@
             },
             {
               "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
-              "shortDescription": "Aborted by admin"
+              "shortDescription": "adminによる中断"
             }
           ]
         }
@@ -306,22 +306,19 @@
       {
         "branch": "ci/jenkins-results-es-20261108",
         "job_path": "job/ci%252Fjenkins-results-es-20261108/",
-        "build": 3,
+        "build": 5,
         "result": "SUCCESS",
         "building": false,
-        "description": "ci/jenkins-results-es-20261108 045a2300caf6 (tests)",
+        "description": "ci/jenkins-results-es-20261108 ee3011d11d3b (tests)",
         "causes": [
-          {
-            "_class": "com.cloudbees.jenkins.GitHubPushCause",
-            "shortDescription": "Started by GitHub push by 02loveslollipop"
-          },
           {
             "_class": "jenkins.branch.BranchIndexingCause",
             "shortDescription": "Branch indexing"
           }
         ],
         "checkout_revisions": [
-          "045a2300caf63506fdc0dd4092d7a771a43a1aee"
+          "045a2300caf63506fdc0dd4092d7a771a43a1aee",
+          "ee3011d11d3bde1b96609a6fab3a2375084aa4c7"
         ],
         "stages": [],
         "test_counts": {
@@ -330,13 +327,9 @@
           "skipCount": 0
         },
         "branch_latest_build": {
-          "number": 3,
+          "number": 5,
           "result": "SUCCESS",
           "causes": [
-            {
-              "_class": "com.cloudbees.jenkins.GitHubPushCause",
-              "shortDescription": "Started by GitHub push by 02loveslollipop"
-            },
             {
               "_class": "jenkins.branch.BranchIndexingCause",
               "shortDescription": "Branch indexing"
@@ -347,10 +340,10 @@
       {
         "branch": "ci/webhook-all-branches-20261109",
         "job_path": "job/ci%252Fwebhook-all-branches-20261109/",
-        "build": 5,
+        "build": 7,
         "result": "SUCCESS",
         "building": false,
-        "description": "ci/webhook-all-branches-20261109 7cdc8211ad99 (tests)",
+        "description": "ci/webhook-all-branches-20261109 776753337e94 (tests)",
         "causes": [
           {
             "_class": "com.cloudbees.jenkins.GitHubPushCause",
@@ -359,7 +352,7 @@
         ],
         "checkout_revisions": [
           "045a2300caf63506fdc0dd4092d7a771a43a1aee",
-          "7cdc8211ad9974afa01d7e1e6d49273b13a4da77"
+          "776753337e9464bb71a0769b85abae9ae3ad40d0"
         ],
         "stages": [
           {
@@ -405,9 +398,13 @@
           "skipCount": 0
         },
         "branch_latest_build": {
-          "number": 6,
+          "number": 9,
           "result": "SUCCESS",
           "causes": [
+            {
+              "_class": "com.cloudbees.jenkins.GitHubPushCause",
+              "shortDescription": "Started by GitHub push by 03loveslollipop"
+            },
             {
               "_class": "jenkins.branch.BranchIndexingCause",
               "shortDescription": "Branch indexing"
@@ -429,7 +426,7 @@
           },
           {
             "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
-            "shortDescription": "Aborted by admin"
+            "shortDescription": "adminによる中断"
           }
         ],
         "checkout_revisions": [
@@ -447,7 +444,45 @@
             },
             {
               "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
-              "shortDescription": "Aborted by admin"
+              "shortDescription": "adminによる中断"
+            }
+          ]
+        }
+      },
+      {
+        "branch": "ci/webhook-merge-ja-20261109",
+        "job_path": "job/ci%252Fwebhook-merge-ja-20261109/",
+        "build": 3,
+        "result": null,
+        "building": true,
+        "description": "ci/webhook-merge-ja-20261109 ba22dcb11f23 (tests)",
+        "causes": [
+          {
+            "_class": "jenkins.branch.BranchIndexingCause",
+            "shortDescription": "Branch indexing"
+          },
+          {
+            "_class": "com.cloudbees.jenkins.GitHubPushCause",
+            "shortDescription": "Started by GitHub push by 03loveslollipop"
+          }
+        ],
+        "checkout_revisions": [
+          "045a2300caf63506fdc0dd4092d7a771a43a1aee",
+          "ba22dcb11f237a07c17981710c87f73da919a064"
+        ],
+        "stages": [],
+        "test_counts": null,
+        "branch_latest_build": {
+          "number": 3,
+          "result": null,
+          "causes": [
+            {
+              "_class": "jenkins.branch.BranchIndexingCause",
+              "shortDescription": "Branch indexing"
+            },
+            {
+              "_class": "com.cloudbees.jenkins.GitHubPushCause",
+              "shortDescription": "Started by GitHub push by 03loveslollipop"
             }
           ]
         }
@@ -466,7 +501,7 @@
           },
           {
             "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
-            "shortDescription": "Aborted by admin"
+            "shortDescription": "adminによる中断"
           }
         ],
         "checkout_revisions": [
@@ -484,7 +519,7 @@
             },
             {
               "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
-              "shortDescription": "Aborted by admin"
+              "shortDescription": "adminによる中断"
             }
           ]
         }
@@ -503,7 +538,7 @@
           },
           {
             "_class": "hudson.model.Cause$UserIdCause",
-            "shortDescription": "Started by user admin"
+            "shortDescription": "ユーザーadminが実行"
           }
         ],
         "checkout_revisions": [
@@ -526,7 +561,7 @@
             },
             {
               "_class": "hudson.model.Cause$UserIdCause",
-              "shortDescription": "Started by user admin"
+              "shortDescription": "ユーザーadminが実行"
             }
           ]
         }
@@ -613,7 +648,7 @@
           },
           {
             "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
-            "shortDescription": "Aborted by admin"
+            "shortDescription": "adminによる中断"
           }
         ],
         "checkout_revisions": [
@@ -631,7 +666,7 @@
             },
             {
               "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
-              "shortDescription": "Aborted by admin"
+              "shortDescription": "adminによる中断"
             }
           ]
         }
@@ -684,7 +719,7 @@
           },
           {
             "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
-            "shortDescription": "Aborted by admin"
+            "shortDescription": "adminによる中断"
           }
         ],
         "checkout_revisions": [
@@ -702,7 +737,7 @@
             },
             {
               "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
-              "shortDescription": "Aborted by admin"
+              "shortDescription": "adminによる中断"
             }
           ]
         }
@@ -710,18 +745,18 @@
       {
         "branch": "master",
         "job_path": "job/master/",
-        "build": 2,
+        "build": 3,
         "result": "SUCCESS",
         "building": false,
         "description": "master 32f526dddace (full)",
         "causes": [
           {
-            "_class": "jenkins.branch.BranchIndexingCause",
-            "shortDescription": "Branch indexing"
+            "_class": "hudson.model.Cause$UserIdCause",
+            "shortDescription": "ユーザーadminが実行"
           }
         ],
         "checkout_revisions": [
-          "ea05858d339995b202f0040d095a57562a2312e1",
+          "045a2300caf63506fdc0dd4092d7a771a43a1aee",
           "32f526dddaceb6223575e8bbc10edf2724593323"
         ],
         "stages": [
@@ -768,12 +803,12 @@
           "skipCount": 0
         },
         "branch_latest_build": {
-          "number": 2,
+          "number": 3,
           "result": "SUCCESS",
           "causes": [
             {
-              "_class": "jenkins.branch.BranchIndexingCause",
-              "shortDescription": "Branch indexing"
+              "_class": "hudson.model.Cause$UserIdCause",
+              "shortDescription": "ユーザーadminが実行"
             }
           ]
         }
@@ -781,54 +816,54 @@
     ],
     "deliveries": [
       {
-        "id": "3852983580569370624",
+        "id": "3853009689465847808",
         "event": "push",
-        "guid": "3e421032-dbd7-11f1-9f85-695c1317f5d1",
-        "delivered_at": "2026-11-09T00:48:14.118Z",
+        "guid": "8cc9fa32-dbf3-11f1-9afa-afb0b8e06c58",
+        "delivered_at": "2026-11-09T04:10:52.003Z",
         "status_code": 200,
         "ref": "refs/heads/ci/webhook-all-branches-20261109",
-        "sha": "7cdc8211ad9974afa01d7e1e6d49273b13a4da77",
-        "response": "{\"accepted\": true, \"delivery\": \"3e421032-dbd7-11f1-9f85-695c1317f5d1\"}"
+        "sha": "58b30ec97bcc0c09e650c072c0cc4380d0599345",
+        "response": "{\"accepted\": true, \"delivery\": \"8cc9fa32-dbf3-11f1-9afa-afb0b8e06c58\"}"
       },
       {
-        "id": "3852983333227085824",
+        "id": "3853009111021002752",
         "event": "push",
-        "guid": "f99b0024-dbd6-11f1-8f06-7461e3284627",
-        "delivered_at": "2026-11-09T00:46:18.999Z",
+        "guid": "ec2bf0c6-dbf2-11f1-9c9f-c443cce7ae8f",
+        "delivered_at": "2026-11-09T04:06:22.691Z",
         "status_code": 200,
-        "ref": "refs/heads/ci/jenkins-results-es-20261108",
-        "sha": "045a2300caf63506fdc0dd4092d7a771a43a1aee",
-        "response": "{\"accepted\": true, \"delivery\": \"f99b0024-dbd6-11f1-8f06-7461e3284627\"}"
+        "ref": "refs/heads/ci/webhook-merge-ja-20261109",
+        "sha": "ba22dcb11f237a07c17981710c87f73da919a064",
+        "response": "{\"accepted\": true, \"delivery\": \"ec2bf0c6-dbf2-11f1-9c9f-c443cce7ae8f\"}"
       },
       {
-        "id": "3852981646632435712",
+        "id": "3853008691273932800",
         "event": "push",
-        "guid": "256a2a60-dbd5-11f1-92f7-ed094821fc72",
-        "delivered_at": "2026-11-09T00:33:13.588Z",
+        "guid": "77dc1566-dbf2-11f1-8335-44f336f3f74d",
+        "delivered_at": "2026-11-09T04:03:07.198Z",
+        "status_code": 200,
+        "ref": "refs/heads/ci/webhook-merge-ja-20261109",
+        "sha": "e5c6ede5ee3dbffcb023b262181b6e587c335119",
+        "response": "{\"accepted\": true, \"delivery\": \"77dc1566-dbf2-11f1-8335-44f336f3f74d\"}"
+      },
+      {
+        "id": "3853008546314600448",
+        "event": "push",
+        "guid": "4fab52be-dbf2-11f1-9116-910467652493",
+        "delivered_at": "2026-11-09T04:01:59.707Z",
         "status_code": 200,
         "ref": "refs/heads/ci/webhook-all-branches-20261109",
-        "sha": "8e7fb66ab988b8d44484cc8c3caf8e4dcf585c61",
-        "response": "{\"accepted\": true, \"delivery\": \"256a2a60-dbd5-11f1-92f7-ed094821fc72\"}"
+        "sha": "776753337e9464bb71a0769b85abae9ae3ad40d0",
+        "response": "{\"accepted\": true, \"delivery\": \"4fab52be-dbf2-11f1-9116-910467652493\"}"
       },
       {
-        "id": "3852978825558237184",
+        "id": "3852985812278870016",
         "event": "push",
-        "guid": "16806288-dbd2-11f1-9cb4-ee71a2175389",
-        "delivered_at": "2026-11-09T00:11:19.947Z",
+        "guid": "a9b45576-dbd9-11f1-9163-563d51337a67",
+        "delivered_at": "2026-11-09T01:05:33.349Z",
         "status_code": 200,
         "ref": "refs/heads/ci/jenkins-results-es-20261108",
-        "sha": "ea05858d339995b202f0040d095a57562a2312e1",
-        "response": "{\"accepted\": true, \"delivery\": \"16806288-dbd2-11f1-9cb4-ee71a2175389\"}"
-      },
-      {
-        "id": "3852978126747353088",
-        "event": "push",
-        "guid": "549ea2ba-dbd1-11f1-957e-d486a9dd5f17",
-        "delivered_at": "2026-11-09T00:05:54.507Z",
-        "status_code": 200,
-        "ref": "refs/heads/ci/jenkins-results-es-20261108",
-        "sha": "37332ae6afb3662e9044ac664b150fd8d2edd985",
-        "response": "{\"accepted\": true, \"delivery\": \"549ea2ba-dbd1-11f1-957e-d486a9dd5f17\"}"
+        "sha": "ee3011d11d3bde1b96609a6fab3a2375084aa4c7",
+        "response": "{\"accepted\": true, \"delivery\": \"a9b45576-dbd9-11f1-9163-563d51337a67\"}"
       }
     ],
     "cleanup_deadline_utc": "2026-11-13T02:41:05Z",
@@ -836,9 +871,9 @@
   },
   "all_branch_push_probe": {
     "branch": "ci/webhook-all-branches-20261109",
-    "sha": "7cdc8211ad9974afa01d7e1e6d49273b13a4da77",
-    "previous_build": 4,
-    "build": 5,
+    "sha": "776753337e9464bb71a0769b85abae9ae3ad40d0",
+    "previous_build": 6,
+    "build": 7,
     "causes": [
       {
         "_class": "com.cloudbees.jenkins.GitHubPushCause",
@@ -864,5 +899,15 @@
       },
       "inQueue": false
     }
+  },
+  "japanese_ui_validation": {
+    "push_probe": "output/github-webhook/all-branches/push-probe.json",
+    "receipts": "output/github-webhook/japanese-validation/verification.json",
+    "settings_screenshot": "output/playwright/70-github-webhook-settings-user.png",
+    "settings_screenshot_provenance": "Provided by user, unchanged",
+    "locale": "ja",
+    "merge_pr": 18,
+    "full_master_build": 3,
+    "full_master_cause": "UserIdCause"
   }
 }

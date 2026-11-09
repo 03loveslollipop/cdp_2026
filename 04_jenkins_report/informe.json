@@ -248,8 +248,8 @@
       "title": "5. Evidencia: pruebas y cierre del proceso",
       "blocks": [
         {
-          "image": "output/playwright/23-cloud-165-tests.png",
-          "caption": "Figura 4. Reporte JUnit cloud: 165 pruebas aprobadas, cero fallidas y cero omitidas.",
+          "image": "output/playwright/84-ja-historical-cloud-165-tests.png",
+          "caption": "Figura 4. Reporte JUnit cloud: 165 pruebas aprobadas, cero fallidas y cero omitidas. Recaptura de la misma ejecución con interfaz japonesa.",
           "max_height": 220
         },
         {
@@ -294,8 +294,8 @@
       "title": "6. Evidencia: resultado final y automatización",
       "blocks": [
         {
-          "image": "output/playwright/24-cloud-completed-stages.png",
-          "caption": "Figura 6. Todas las etapas del build cloud #1 terminaron correctamente.",
+          "image": "output/playwright/83-ja-historical-cloud-stages.png",
+          "caption": "Figura 6. Todas las etapas del build cloud #1 terminaron correctamente. Recaptura de la misma ejecución con interfaz japonesa.",
           "max_height": 225
         },
         {
@@ -524,8 +524,8 @@
       "title": "9.2. Merge real y casos de entrega",
       "blocks": [
         {
-          "image": "output/playwright/31-github-pr-16-merged.png",
-          "caption": "Figura 12. GitHub público: PR #16 integrado en ci/jenkins-lab-20261108; master no fue modificado.",
+          "image": "output/playwright/78-github-pr16-clean-description.png",
+          "caption": "Figura 12. PR #16 integrado en ci/jenkins-lab-20261108; captura renovada tras limpiar la descripción. Master no fue modificado.",
           "max_height": 300
         },
         {
@@ -603,13 +603,13 @@
           ]
         },
         {
-          "image": "output/playwright/39-github-push-merge-completed-stages.png",
-          "caption": "Figura 13. Las tres ejecuciones GitHub completaron todas sus etapas. El bootstrap no se atribuye al webhook.",
+          "image": "output/playwright/81-ja-historical-github-stages.png",
+          "caption": "Figura 13. Las tres ejecuciones GitHub completaron todas sus etapas. El bootstrap no se atribuye al webhook. Recaptura de la misma ejecución con interfaz japonesa.",
           "max_height": 220
         },
         {
-          "image": "output/playwright/38-github-merge-186-tests.png",
-          "caption": "Figura 14. JUnit del build de merge: 186 aprobadas, cero fallos y cero omisiones.",
+          "image": "output/playwright/82-ja-historical-merge-186-tests.png",
+          "caption": "Figura 14. JUnit del build de merge: 186 aprobadas, cero fallos y cero omisiones. Recaptura de la misma ejecución con interfaz japonesa.",
           "max_height": 220
         },
         {
@@ -640,11 +640,11 @@
       "title": "9.5. Configuración actual: todas las ramas",
       "blocks": [
         {
-          "text": "El usuario confirmó master como rama principal existente. credit-classification-branches descubre las 14 ramas iniciales y la nueva rama de verificación (15). El relay conserva el mismo hook GitHub de push y ahora permite refs/heads/* del repositorio; ignora tags y borrados. Cada rama usa una definición compartida, incluso cuando no tiene Jenkinsfile propio."
+          "text": "El usuario confirmó master como rama principal existente. credit-classification-branches descubre todas las ramas del repositorio; la nueva prueba de merge elevó el total observado a 16. El relay permite refs/heads/* y omite tags y borrados. Cada rama usa una definición CI compartida, incluso sin Jenkinsfile propio."
         },
         {
-          "image": "output/playwright/51-native-git-all-branches-configuration.png",
-          "caption": "Origen Git del repositorio, Discover branches sin filtro de nombres y proveedor de Jenkinsfile remoto.",
+          "image": "output/playwright/69-ja-all-branches-config.png",
+          "caption": "Configuración actual de descubrimiento Git y proveedor remoto, capturada con interfaz japonesa.",
           "max_height": 320
         },
         {
@@ -656,7 +656,7 @@
       "title": "9.6. Push real: tests sin entrenamiento completo",
       "blocks": [
         {
-          "text": "Se creó ci/webhook-all-branches-20261109 a partir de master, sin Jenkinsfile. Después del descubrimiento se envió un nuevo commit de verificación. Se desactivó temporalmente el escaneo periódico durante la prueba para aislar el webhook y se restauró a un minuto al finalizar."
+          "text": "La rama ci/webhook-all-branches-20261109 nació de master sin Jenkinsfile. Se repitió el push real después de activar japonés. Durante la recepción se pausó el escaneo periódico para aislar la causa GitHubPushCause y se restauró a un minuto. Master permaneció en #2 SUCCESS, sin nueva ejecución en cola durante esta comprobación."
         },
         {
           "table": [
@@ -666,15 +666,15 @@
             ],
             [
               "Entrega GitHub",
-              "3852983580569370624; HTTP 200"
+              "3853008546314600448; HTTP 200"
             ],
             [
               "Commit de checkout",
-              "7cdc8211ad9974afa01d7e1e6d49273b13a4da77"
+              "776753337e9464bb71a0769b85abae9ae3ad40d0"
             ],
             [
               "Jenkins",
-              "Build #5; GitHubPushCause; SUCCESS"
+              "Build #7; GitHubPushCause; SUCCESS"
             ],
             [
               "Tests",
@@ -687,8 +687,8 @@
           ]
         },
         {
-          "image": "output/playwright/48-feature-tests-only-success.png",
-          "caption": "Rama de verificación: tests completados; entrenamiento, calidad de modelos y aprobación omitidos por política de rama.",
+          "image": "output/playwright/72-ja-feature-success-stages.png",
+          "caption": "Nueva prueba #7 en japonés: tests correctos y etapas de modelo omitidas. #8 seguía en curso en esta captura; después se canceló por repetir una revisión aprobada.",
           "max_height": 300
         },
         {
@@ -700,11 +700,11 @@
       "title": "9.7. Master: pipeline completo en GCP",
       "blocks": [
         {
-          "text": "Build #2 de credit-classification-branches/master: SUCCESS, 160 pruebas aprobadas y cero fallos. Ejecutó entrenamiento CPU, puertas de calidad/estabilidad, aprobación de admin y notificación. El escaneo inicial validó el flujo completo; la configuración githubPush() hace que los próximos pushes o merges a master repitan este flujo."
+          "text": "Se repitió el flujo completo en master #3 por solicitud manual de admin: SUCCESS, 160 pruebas aprobadas, entrenamiento CPU, puertas de calidad/estabilidad, aprobación humana y notificación. La prueba verifica las etapas; no representa un push nuevo a master. La configuración githubPush() conserva la activación de este mismo flujo para futuros pushes o merges a master."
         },
         {
-          "image": "output/playwright/61-master-completed-dashboard.png",
-          "caption": "Master: todas las etapas completadas y recibos disponibles. La causa de esta validación fue indexación, no un push nuevo a master.",
+          "image": "output/playwright/76-ja-master-completed-stages.png",
+          "caption": "Master #3 completado desde la interfaz japonesa. Causa: usuario admin; el código de master permanece sin cambios.",
           "max_height": 310
         },
         {
@@ -756,6 +756,98 @@
         },
         {
           "text": "El mensaje antiguo local Jenkins se corrigió en el controlador y persiste tras reinicio. La consola permanece privada; GitHub usa el relay público. El comando reproducible para abrir IAP está en docs/github-webhook.md. Se mantiene sin cambios la parada del 13/11/2026 a las 02:41:05 UTC y limpieza desde las 02:42:05."
+        }
+      ]
+    },
+    {
+      "title": "9.9. Jenkins en japonés: configuración y pruebas",
+      "blocks": [
+        {
+          "text": "Se instaló Locale 641.v84f22d75fd8b_, compatible con Jenkins 2.580.2. En Manage Jenkins > Appearance se guardó ja como idioma predeterminado, se forzó frente a la preferencia del navegador y se desactivaron excepciones por usuario. La configuración y el pin del plugin están versionados para reproducir el entorno."
+        },
+        {
+          "image": "output/playwright/63-ja-locale-settings.png",
+          "caption": "Idioma seleccionado: japonés (ja). La preferencia global queda guardada.",
+          "max_height": 280
+        },
+        {
+          "text": "La navegación principal y el reporte JUnit se muestran en japonés. Algunos plugins y nombres personalizados de etapas siguen en inglés; no se alteraron logs ni se tradujeron artificialmente las capturas. Las imágenes históricas conservan su idioma original y sus revisiones. El anexo incluye la nueva ejecución en curso (62, 66, 77) y JUnit de 160 pruebas (68)."
+        }
+      ]
+    },
+    {
+      "title": "9.10. GitHub: configuración visual del webhook",
+      "blocks": [
+        {
+          "text": "Captura aportada por el usuario el 9/11/2026 a las 13:04:22 JST desde la sesión GitHub autorizada. Se incorporó el PNG original sin modificaciones; su procedencia y SHA-256 están registrados en el índice de evidencias."
+        },
+        {
+          "image": "output/playwright/70-github-webhook-settings-user.png",
+          "caption": "Webhook activo: relay HTTPS de Cloud Run, JSON, secreto configurado y oculto, SSL habilitado y evento push seleccionado.",
+          "max_height": 400
+        },
+        {
+          "text": "La imagen acredita la configuración visible, no una entrega concreta. Los recibos API de GitHub acreditan los HTTP 200 y relacionan cada SHA con su build. Un merge genera un push en la rama destino; el webhook de push cubre ese caso."
+        }
+      ]
+    },
+    {
+      "title": "9.11. Nueva prueba de merge en rama aislada",
+      "blocks": [
+        {
+          "text": "El PR #18 integra ci/webhook-merge-ja-20261109 en ci/webhook-all-branches-20261109. Su título y descripción se centran en la verificación de CI. Se limpiaron también las menciones al informe en los PR #16 y #17, sin alterar sus ramas destino."
+        },
+        {
+          "image": "output/playwright/73-github-pr18-merged.png",
+          "caption": "PR #18 integrado en la rama de verificación; master no fue modificado.",
+          "max_height": 330
+        },
+        {
+          "table": [
+            [
+              "Comprobación",
+              "Resultado"
+            ],
+            [
+              "Merge y checkout",
+              "58b30ec97bcc0c09e650c072c0cc4380d0599345"
+            ],
+            [
+              "Jenkins #9",
+              "SUCCESS; GitHubPushCause e indexación coexistentes"
+            ],
+            [
+              "Entrega GitHub",
+              "HTTP 200; 3853009689465847808"
+            ],
+            [
+              "Tests y etapas",
+              "160 correctos; etapas de modelo omitidas"
+            ]
+          ],
+          "widths": [
+            1,
+            2.7
+          ]
+        },
+        {
+          "text": "La primera comprobación GitHub Actions detectó un import pytest sin uso heredado de master (F401). Se eliminó en la rama de prueba y se repitieron los checks. La corrección permanece limitada a estas ramas. JUnit japonés del merge está en el PNG 80 del anexo. En #9 el hook y la indexación quedaron registrados conjuntamente; no se atribuye una causa exclusiva al merge. El push #7 sí se aisló con el escaneo pausado."
+        }
+      ]
+    },
+    {
+      "title": "9.12. Aprobación y cierre desde Jenkins japonés",
+      "blocks": [
+        {
+          "text": "Después de tests, entrenamiento CPU y puertas de calidad, master #3 se detuvo para recibir la aprobación de admin. La aprobación se realizó desde el navegador y quedó registrada en approval.txt; la notificación y el estado final se conservan como artefactos verificables."
+        },
+        {
+          "image": "output/playwright/75-ja-master-approval-ready.png",
+          "caption": "Master #3: formulario real de aprobación antes de continuar.",
+          "max_height": 290
+        },
+        {
+          "text": "El nuevo merge dejó el checkout y su SHA correlacionados con la entrega push, pruebas y notificación. Los recibos distinguen GitHubPushCause, solicitud manual e indexación. No se afirma ejecución exactamente una vez: el escaneo de respaldo puede generar otro build. El respaldo #8, de una revisión ya aprobada, se canceló para evitar trabajo redundante; el historial se conserva."
         }
       ]
     },
@@ -1329,6 +1421,10 @@
     {
       "label": "Jenkins: proveedor remoto de Jenkinsfile para proyectos multibranch",
       "url": "https://plugins.jenkins.io/remote-file/"
+    },
+    {
+      "label": "Jenkins: Locale plugin y configuración del idioma",
+      "url": "https://plugins.jenkins.io/locale/"
     }
   ]
 }

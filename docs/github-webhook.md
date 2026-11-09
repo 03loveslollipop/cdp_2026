@@ -114,3 +114,11 @@ El worker incorpora servicio Run, firewall y subred del receptor, su secreto e i
 El Cloud Build de solo lectura `1b7b638c-d558-44e3-8670-19416c132f3d` verificó los 29 permisos del worker. La política no elimina proyectos compartidos ni el entorno de entrenamiento. El hook de GitHub es configuración externa sin costo de cómputo: tras retirar el receptor, su URL deja de servir; eliminar ese registro desde GitHub cuando finalice el ejercicio evita entregas futuras a una URL retirada.
 
 Referencias: [crear webhooks](https://docs.github.com/en/webhooks/using-webhooks/creating-webhooks), [validar firmas](https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries), [plugin GitHub de Jenkins](https://plugins.jenkins.io/github/), [Direct VPC egress](https://docs.cloud.google.com/run/docs/configuring/vpc-direct-vpc).
+
+## Japanese UI validation, 9 November 2026
+
+A fresh feature push produced Jenkins `ci/webhook-all-branches-20261109` build #7 with `GitHubPushCause`, 160 passing tests and model stages skipped. The probe paused periodic indexing while observing the webhook and verified that master remained at successful build #2 with no queued build. A separate manual master build #3 exercises the complete workflow. PR #18 is the isolated merge verification; PR titles and descriptions focus on CI.
+
+The original GitHub settings screenshot supplied by the user is `output/playwright/70-github-webhook-settings-user.png`. It shows the relay URL, JSON, configured concealed secret, SSL, push selection and Active setting. It does not show delivery results; those are verified through API receipts. Japanese Jenkins captures retain untranslated custom stage names.
+
+Final verification: PR #18 merged as `58b30ec97bcc0c09e650c072c0cc4380d0599345`; Jenkins build #9 SUCCESS, 160 passed tests, no failures/skips and model stages omitted. Both push and indexing causes appear on #9. Master #3 SUCCESS completed all stages, including browser approval and notification. Complete sanitized receipts are in `output/github-webhook/japanese-validation/verification.json`.

@@ -21,10 +21,10 @@
       "caption": "Figura 3. Solicitud real de aprobación de admin después de superar las puertas de calidad."
     },
     {
-      "file": "assets/23-cloud-165-tests.png",
-      "source": "output/playwright/23-cloud-165-tests.png",
-      "sha256": "6deb751669597c4e380b6ac925f5cf164b3f1208f4e9fdada239b0fcf9ffeda0",
-      "caption": "Figura 4. Reporte JUnit cloud: 165 pruebas aprobadas, cero fallidas y cero omitidas."
+      "file": "assets/84-ja-historical-cloud-165-tests.png",
+      "source": "output/playwright/84-ja-historical-cloud-165-tests.png",
+      "sha256": "e4cd89b30916bdf33cc91da4c8f48c4e3430e0611c1e9c1ee82cce83ff887438",
+      "caption": "Figura 4. Reporte JUnit cloud: 165 pruebas aprobadas, cero fallidas y cero omitidas. Recaptura de la misma ejecución con interfaz japonesa."
     },
     {
       "file": "assets/25-cloud-notification-delivered.png",
@@ -33,10 +33,10 @@
       "caption": "Figura 5. El receptor privado aceptó la notificación SUCCESS de finalización del build cloud."
     },
     {
-      "file": "assets/24-cloud-completed-stages.png",
-      "source": "output/playwright/24-cloud-completed-stages.png",
-      "sha256": "dfae204b67e74e2d98c20187062d1b53ee2cd5f1aaddb0bfe35b0d77050bf095",
-      "caption": "Figura 6. Todas las etapas del build cloud #1 terminaron correctamente."
+      "file": "assets/83-ja-historical-cloud-stages.png",
+      "source": "output/playwright/83-ja-historical-cloud-stages.png",
+      "sha256": "07a48ac8da0ab861de735db9f64b46de601240a51beaec4c75adcdb1f386143b",
+      "caption": "Figura 6. Todas las etapas del build cloud #1 terminaron correctamente. Recaptura de la misma ejecución con interfaz japonesa."
     },
     {
       "file": "assets/08-local-scm-triggered.png",
@@ -69,22 +69,22 @@
       "caption": "Figura 11. Consola en ejecución del build #3: Started by GitHub push y checkout del commit de merge 501952de…"
     },
     {
-      "file": "assets/31-github-pr-16-merged.png",
-      "source": "output/playwright/31-github-pr-16-merged.png",
-      "sha256": "4b594d47dbcf5459dabfc5f3435f81432a2461aa60c3b678df070b321055623e",
-      "caption": "Figura 12. GitHub público: PR #16 integrado en ci/jenkins-lab-20261108; master no fue modificado."
+      "file": "assets/78-github-pr16-clean-description.png",
+      "source": "output/playwright/78-github-pr16-clean-description.png",
+      "sha256": "1a1f7fee6b1f41607080b49cdf950fa12d903d8065a1f9935692a16eee2c9943",
+      "caption": "Figura 12. PR #16 integrado en ci/jenkins-lab-20261108; captura renovada tras limpiar la descripción. Master no fue modificado."
     },
     {
-      "file": "assets/39-github-push-merge-completed-stages.png",
-      "source": "output/playwright/39-github-push-merge-completed-stages.png",
-      "sha256": "e28a8b31a9d06cd2eb3b8b28cf07c860fecce84fc8ed1ccbd3abac159d4e5572",
-      "caption": "Figura 13. Las tres ejecuciones GitHub completaron todas sus etapas. El bootstrap no se atribuye al webhook."
+      "file": "assets/81-ja-historical-github-stages.png",
+      "source": "output/playwright/81-ja-historical-github-stages.png",
+      "sha256": "5bf8e6777f5aed33892054cda36594a946c5dbd7643f0d0cf97e372e75dedd84",
+      "caption": "Figura 13. Las tres ejecuciones GitHub completaron todas sus etapas. El bootstrap no se atribuye al webhook. Recaptura de la misma ejecución con interfaz japonesa."
     },
     {
-      "file": "assets/38-github-merge-186-tests.png",
-      "source": "output/playwright/38-github-merge-186-tests.png",
-      "sha256": "f74b02a7a32afb6ac338a1e2b916a9bc8050ccd2a19ffbbb1cfc863e9aaef077",
-      "caption": "Figura 14. JUnit del build de merge: 186 aprobadas, cero fallos y cero omisiones."
+      "file": "assets/82-ja-historical-merge-186-tests.png",
+      "source": "output/playwright/82-ja-historical-merge-186-tests.png",
+      "sha256": "4626f1894756c1c16dced548d8151cbb1950017d2457149187552ee992aef196",
+      "caption": "Figura 14. JUnit del build de merge: 186 aprobadas, cero fallos y cero omisiones. Recaptura de la misma ejecución con interfaz japonesa."
     },
     {
       "file": "assets/40-github-completion-notifications.png",
@@ -93,28 +93,52 @@
       "caption": "Figura 15. Receptor privado: SUCCESS y SHA exacto de los builds #1, #2 y #3 del nuevo job."
     },
     {
-      "file": "assets/51-native-git-all-branches-configuration.png",
-      "source": "output/playwright/51-native-git-all-branches-configuration.png",
-      "sha256": "d877963fdb668ba592f727d4a15614694f60b8b028fe4c3ffb558f9ee2723ad1",
-      "caption": "Origen Git del repositorio, Discover branches sin filtro de nombres y proveedor de Jenkinsfile remoto."
+      "file": "assets/69-ja-all-branches-config.png",
+      "source": "output/playwright/69-ja-all-branches-config.png",
+      "sha256": "055e5893e5206bc25b0141a90d3a34db1774104d44795cef68b407bc54d4df3a",
+      "caption": "Configuración actual de descubrimiento Git y proveedor remoto, capturada con interfaz japonesa."
     },
     {
-      "file": "assets/48-feature-tests-only-success.png",
-      "source": "output/playwright/48-feature-tests-only-success.png",
-      "sha256": "3e40af56edde92ae90c1ce81f9911375453f639ed2319378268c5cee13b056da",
-      "caption": "Rama de verificación: tests completados; entrenamiento, calidad de modelos y aprobación omitidos por política de rama."
+      "file": "assets/72-ja-feature-success-stages.png",
+      "source": "output/playwright/72-ja-feature-success-stages.png",
+      "sha256": "db08235e86332031a41e3eda05b22fcf0ea90a0b693969e6ade5b158514ddd24",
+      "caption": "Nueva prueba #7 en japonés: tests correctos y etapas de modelo omitidas. #8 seguía en curso en esta captura; después se canceló por repetir una revisión aprobada."
     },
     {
-      "file": "assets/61-master-completed-dashboard.png",
-      "source": "output/playwright/61-master-completed-dashboard.png",
-      "sha256": "b6d47392601247e78d991e838d2232810b6cf04c1f205a34fa38c0653602bb6b",
-      "caption": "Master: todas las etapas completadas y recibos disponibles. La causa de esta validación fue indexación, no un push nuevo a master."
+      "file": "assets/76-ja-master-completed-stages.png",
+      "source": "output/playwright/76-ja-master-completed-stages.png",
+      "sha256": "8867f4270822b226e1e4b0a4e4360f2c15a9b6000440d0be9356e980b538b04b",
+      "caption": "Master #3 completado desde la interfaz japonesa. Causa: usuario admin; el código de master permanece sin cambios."
     },
     {
       "file": "assets/54-jenkins-gcp-vm-running-details-ja.png",
       "source": "output/playwright/gcp/54-jenkins-gcp-vm-running-details-ja.png",
       "sha256": "291b2c12c27b442259eaa1e66c2a5b3ee3d58da7918f5f6431cb0af9455484e7",
       "caption": "Consola GCP japonesa: VM semester-jenkins en ejecución y zona us-central1-a. Evidencia del alojamiento cloud del controlador."
+    },
+    {
+      "file": "assets/63-ja-locale-settings.png",
+      "source": "output/playwright/63-ja-locale-settings.png",
+      "sha256": "89166050543d3e8821b9c7269f4b75532b820c428a9bed29e580ee9c045bfc71",
+      "caption": "Idioma seleccionado: japonés (ja). La preferencia global queda guardada."
+    },
+    {
+      "file": "assets/70-github-webhook-settings-user.png",
+      "source": "output/playwright/70-github-webhook-settings-user.png",
+      "sha256": "9352b1116880e9eb0a78fcea586b81c6dd83e795d96a76488780854d1c76a04b",
+      "caption": "Webhook activo: relay HTTPS de Cloud Run, JSON, secreto configurado y oculto, SSL habilitado y evento push seleccionado."
+    },
+    {
+      "file": "assets/73-github-pr18-merged.png",
+      "source": "output/playwright/73-github-pr18-merged.png",
+      "sha256": "2d186339f140d154dc0c400ac99f17bfd6a6137c21b0ac098f79dc7436e7d45b",
+      "caption": "PR #18 integrado en la rama de verificación; master no fue modificado."
+    },
+    {
+      "file": "assets/75-ja-master-approval-ready.png",
+      "source": "output/playwright/75-ja-master-approval-ready.png",
+      "sha256": "cc9eb0c0006bf62ff2d37df3984ad303b1b45a7ee8167dd945a27417f56f86c4",
+      "caption": "Master #3: formulario real de aprobación antes de continuar."
     },
     {
       "file": "assets/11-data-files-uploaded-ja.png",

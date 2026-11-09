@@ -123,3 +123,7 @@ In this minimal module, changing `metadata_startup_script` (including its pinned
 References: [Jenkins Docker image](https://github.com/jenkinsci/docker), [Pipeline syntax, post actions and polling](https://www.jenkins.io/doc/book/pipeline/syntax/), [Jenkins input step](https://www.jenkins.io/doc/pipeline/steps/pipeline-input-step/).
 
 The GCP controller runs on VM `semester-jenkins` in `nb-core-dev-99d0`, us-central1-a. `http://127.0.0.1:18083` is the local IAP tunnel endpoint forwarding to `10.81.0.3:8080`; the public signed GitHub receiver runs separately on Cloud Run. See the runbook for the tunnel command and Japanese-console VM screenshots.
+
+## Japanese interface
+
+The controller uses the Locale plugin (`locale:641.v84f22d75fd8b_`) with default language `ja`, browser preference overridden, and per-user overrides disabled. The setting is saved in Jenkins and reproduced by `ci/jenkins/init.groovy.d/20-locale.groovy`. Core navigation is Japanese; untranslated plugin labels and custom pipeline stage names remain in English. Official configuration: https://plugins.jenkins.io/locale/.

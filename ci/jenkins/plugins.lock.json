@@ -233,6 +233,12 @@
     "url": "https://repo.jenkins-ci.org/public/org/jenkins-ci/plugins/junit/1458.v38661c0638e2/junit-1458.v38661c0638e2.hpi",
     "required_core": "2.555.3"
   },
+  "locale": {
+    "version": "641.v84f22d75fd8b_",
+    "sha256": "vEYOlfrUrgl4PxUeRIAEmDfqAt4ZDkgxpp+2pAouCGU=",
+    "url": "https://repo.jenkins-ci.org/public/io/jenkins/plugins/locale/641.v84f22d75fd8b_/locale-641.v84f22d75fd8b_.hpi",
+    "required_core": "2.528.3"
+  },
   "mailer": {
     "version": "534.v1b_36f5864073",
     "sha256": "VCamaj+HnSX8tLr/Z4ooQir7q/8izW5PD5mPxno9w/o=",

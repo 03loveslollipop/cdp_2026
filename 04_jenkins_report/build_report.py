@@ -166,6 +166,9 @@ def build():
             if path.is_file() and (path.name in {'verification.json', 'push-probe.json'} or
                                   path.name.startswith(('master-', 'ci__webhook-all-branches-20261109-'))):
                 archive.write(path, 'anexos/' + str(path.relative_to(ROOT)))
+        for path in sorted((ROOT / 'output/github-webhook/japanese-validation').glob('*')):
+            if path.is_file() and path.suffix in {'.json', '.txt'}:
+                archive.write(path, 'anexos/' + str(path.relative_to(ROOT)))
         for path in sorted((ROOT / 'output/gcp-receipts').glob('*.json')):
             archive.write(path, 'anexos/output/gcp-receipts/' + path.name)
         for path in ['output/comparison-gcp/comparison.csv', 'output/comparison-gcp/README.md',
@@ -176,7 +179,8 @@ def build():
             archive.write(ROOT / path, 'anexos/' + path)
         for path in ['Jenkinsfile', 'ci/configure_multibranch.py', 'ci/validate_structure.py',
                      'ci/jenkins/configure_multibranch.groovy', 'ci/jenkins/plugins.txt',
-                     'ci/jenkins/plugins.lock.json', 'cloud/webhook/receiver.py',
+                     'ci/jenkins/plugins.lock.json', 'ci/jenkins/init.groovy.d/20-locale.groovy',
+                     'cloud/webhook/receiver.py',
                      'cloud/webhook/main.tf', 'tests/test_branch_ci.py', 'tests/test_webhook_receiver.py']:
             archive.write(ROOT / path, 'anexos/' + path)
     print(f'PDF: {pdf}\nMarkdown: {markdown}\nBundle: {bundle}\nOriginal images: {len(manifest)}')

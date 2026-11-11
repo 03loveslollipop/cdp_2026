@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <title>Historia Git de CDP 2026</title>
+    <script src="https://cdn.jsdelivr.net/npm/@gitgraph/js@1.4.0"></script>
+    <style>
+      body { margin: 0; background: white; font-family: Arial, sans-serif; }
+      #capture { box-sizing: border-box; width: 1600px; min-height: 630px; padding: 18px 28px; }
+      #graph { width: 1544px; height: 510px; }
+      .legend { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 12px; }
+      .legend-item { border-left: 5px solid #164a75; padding: 8px 10px; background: #f4f7fa; color: #263746; font-size: 17px; line-height: 1.25; }
+      .legend-item strong { color: #164a75; }
+      .legend-item.branch { border-color: #d27923; }
+    </style>
+  </head>
+  <body>
+    <div id="capture">
+      <div id="graph"></div>
+      <div class="legend" aria-label="Hitos principales">
+        <div class="legend-item"><strong>PR #2</strong><br>Feature engineering</div>
+        <div class="legend-item branch"><strong>PR #3 y #5</strong><br>Baseline y entrenamiento</div>
+        <div class="legend-item"><strong>PR #6-8</strong><br>Calidad, servicios y monitoreo</div>
+        <div class="legend-item"><strong>PR #9-13</strong><br>TPE, showcase, estructura y reporte</div>
+        <div class="legend-item branch"><strong>PR #14</strong><br>Corrección de presentación</div>
+      </div>
+    </div>
+    <script>
+      const graph = GitgraphJS.createGitgraph(document.getElementById("graph"), {
+        orientation: GitgraphJS.Orientation.Horizontal,
+        mode: GitgraphJS.Mode.Compact,
+        template: GitgraphJS.templateExtend(GitgraphJS.TemplateName.Metro, {
+          branch: { lineWidth: 3, spacing: 30, label: { display: false } },
+          commit: {
+            spacing: 22,
+            dot: { size: 5, strokeWidth: 2, font: "normal 10pt Arial" },
+            message: { display: false, displayAuthor: false, displayHash: false, font: "normal 10pt Arial" }
+          }
+        })
+      });
+      fetch("git_history.json")
+        .then((response) => response.json())
+        .then((history) => graph.import(history));
+    </script>
+  </body>
+</html>

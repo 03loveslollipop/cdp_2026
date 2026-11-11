@@ -1,0 +1,1229 @@
+[
+  {
+    "refs": [
+      "HEAD ",
+      "review/presentation-pr5",
+      "origin/fix/presentation-pr5",
+      "fix/presentation-pr5"
+    ],
+    "hash": "589867206eead1307e58267c2c87de3d61331c1f",
+    "parents": [
+      "42dc53327fc33253ec504833f3bdb9f514ff9842"
+    ],
+    "subject": "Correct presentation review PR number",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789546042000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789546042000
+    }
+  },
+  {
+    "refs": [
+      "origin/master",
+      "origin/HEAD",
+      "master"
+    ],
+    "hash": "42dc53327fc33253ec504833f3bdb9f514ff9842",
+    "parents": [
+      "3ab31468162544704d3e2a12adfea24bad5bece6",
+      "1fcf22ed7ab8a19c787ba978ee737fa21139f25b"
+    ],
+    "subject": "Merge pull request #13 from 03loveslollipop/fix/presentation-runtime-safety",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789545560000
+    },
+    "committer": {
+      "name": "GitHub",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789545560000
+    }
+  },
+  {
+    "refs": [
+      "origin/fix/presentation-runtime-safety",
+      "fix/presentation-runtime-safety"
+    ],
+    "hash": "1fcf22ed7ab8a19c787ba978ee737fa21139f25b",
+    "parents": [
+      "f302f5aba27f0d786f8678a88813c3a3cfbb3b5c"
+    ],
+    "subject": "Lowercase EDA report directory",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789545494000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789545494000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "f302f5aba27f0d786f8678a88813c3a3cfbb3b5c",
+    "parents": [
+      "0ef4d5b01b5e3f64540bb2432606b02b42dce46f"
+    ],
+    "subject": "Group EDA report assets",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789545093000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789545093000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "3ab31468162544704d3e2a12adfea24bad5bece6",
+    "parents": [
+      "5a3c003cab6999b5e3bc5ef6667a74df5fcffb9b",
+      "0ef4d5b01b5e3f64540bb2432606b02b42dce46f"
+    ],
+    "subject": "Merge pull request #12 from 03loveslollipop/fix/presentation-runtime-safety",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789544989000
+    },
+    "committer": {
+      "name": "GitHub",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789544989000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "0ef4d5b01b5e3f64540bb2432606b02b42dce46f",
+    "parents": [
+      "4a0c91a1735b64495550e2fdebff6f31b11ca6e2"
+    ],
+    "subject": "Consolidate local training dependencies",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789543191000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789544224000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "4a0c91a1735b64495550e2fdebff6f31b11ca6e2",
+    "parents": [
+      "5a3c003cab6999b5e3bc5ef6667a74df5fcffb9b"
+    ],
+    "subject": "Add project presentation and harden runtime config",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789543097000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789544224000
+    }
+  },
+  {
+    "refs": [
+      "refs/stash"
+    ],
+    "hash": "9d0b6f8e7936a349fb266f9f95f8ecfbf56c4637",
+    "parents": [
+      "1ead0d4ded77c21233118ad0ccd03ee46824d8b2",
+      "f53d94851e34e7c0d40c3123822a939dc21df270"
+    ],
+    "subject": "On feat/model-training-notebook: preserve-user-TODO-before-master-update",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789544216000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789544216000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "f53d94851e34e7c0d40c3123822a939dc21df270",
+    "parents": [
+      "1ead0d4ded77c21233118ad0ccd03ee46824d8b2"
+    ],
+    "subject": "index on feat/model-training-notebook: 1ead0d4 Add model training notebook",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789544216000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789544216000
+    }
+  },
+  {
+    "refs": [
+      "origin/feat/repository-layout",
+      "feat/repository-layout"
+    ],
+    "hash": "d828cf4a0aadb087896eeb95476d35336aba3d92",
+    "parents": [
+      "32638a83fe49c8c46f0bd6a94aaeb36414bc8bc9"
+    ],
+    "subject": "Consolidate local training dependencies",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789543191000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789543191000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "32638a83fe49c8c46f0bd6a94aaeb36414bc8bc9",
+    "parents": [
+      "d4cb06843ce16da7547484d6ee1072b298f49863"
+    ],
+    "subject": "Add project presentation and harden runtime config",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789543097000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789543097000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "5a3c003cab6999b5e3bc5ef6667a74df5fcffb9b",
+    "parents": [
+      "ca5ced112b84ab4d6f651cdbe0617f6a4c4c66c9",
+      "d4cb06843ce16da7547484d6ee1072b298f49863"
+    ],
+    "subject": "Merge pull request #11 from 03loveslollipop/feat/repository-layout",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789542450000
+    },
+    "committer": {
+      "name": "GitHub",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789542450000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "d4cb06843ce16da7547484d6ee1072b298f49863",
+    "parents": [
+      "ca5ced112b84ab4d6f651cdbe0617f6a4c4c66c9"
+    ],
+    "subject": "Reorganize pipeline and deployment layout",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789542026000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789542026000
+    }
+  },
+  {
+    "refs": [
+      "feat/cpu-xgboost-selection"
+    ],
+    "hash": "ca5ced112b84ab4d6f651cdbe0617f6a4c4c66c9",
+    "parents": [
+      "9abaaca7e9ad42bf7c06f750a14c3b6ad5e8528a",
+      "3b4a794811bb572cd6ba7080366f9421ecac6d16"
+    ],
+    "subject": "Merge pull request #10 from 03loveslollipop/chore/showcase-monitoring-handoff",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789537109000
+    },
+    "committer": {
+      "name": "GitHub",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789537109000
+    }
+  },
+  {
+    "refs": [
+      "origin/chore/showcase-monitoring-handoff",
+      "chore/showcase-monitoring-handoff"
+    ],
+    "hash": "3b4a794811bb572cd6ba7080366f9421ecac6d16",
+    "parents": [
+      "7b77da036cb000dcaccaa8438f8c610c5e39b9e1"
+    ],
+    "subject": "Add comprehensive project handoff",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789536663000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789536663000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "7b77da036cb000dcaccaa8438f8c610c5e39b9e1",
+    "parents": [
+      "f213a6eb3102c0c3ff05b050191279e9ccf4c357"
+    ],
+    "subject": "Deploy Heroku services only from master",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789526181000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789526181000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "f213a6eb3102c0c3ff05b050191279e9ccf4c357",
+    "parents": [
+      "9abaaca7e9ad42bf7c06f750a14c3b6ad5e8528a"
+    ],
+    "subject": "Document monitoring showcase and enforce CPU deploys",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789524893000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789524893000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "9abaaca7e9ad42bf7c06f750a14c3b6ad5e8528a",
+    "parents": [
+      "77368c51f50c8a1e66ab1ea5ad611f6c051fbf45",
+      "a9205c7e30ee54e6ec7739c85b6cca2f63646fa4"
+    ],
+    "subject": "Merge pull request #9 from 03loveslollipop/feat/adaptive-training-search",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789361328000
+    },
+    "committer": {
+      "name": "GitHub",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789361328000
+    }
+  },
+  {
+    "refs": [
+      "origin/feat/adaptive-training-search"
+    ],
+    "hash": "a9205c7e30ee54e6ec7739c85b6cca2f63646fa4",
+    "parents": [
+      "b17d3930fc3ccb59ddb69899010e606bb02d3550",
+      "77368c51f50c8a1e66ab1ea5ad611f6c051fbf45"
+    ],
+    "subject": "Merge origin/master into feat/adaptive-training-search",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789361322000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789361322000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "77368c51f50c8a1e66ab1ea5ad611f6c051fbf45",
+    "parents": [
+      "610545792b75a3c4fd9ad97e4bc1bc8aa50386da",
+      "96dd7e8e8bbd1d405420558fd216e8b09531da5e"
+    ],
+    "subject": "Merge pull request #8 from 03loveslollipop/feat/model-serving-monitoring",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789361284000
+    },
+    "committer": {
+      "name": "GitHub",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789361284000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "610545792b75a3c4fd9ad97e4bc1bc8aa50386da",
+    "parents": [
+      "d5a464990b98f5bdbe4d2c12d37dd4d5caca0f1a",
+      "a68a973d2d99edeb6ef6bd6711ece7e52ebab9a6"
+    ],
+    "subject": "Run CPU tests and publish SonarCloud coverage (#7)",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789361274000
+    },
+    "committer": {
+      "name": "GitHub",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789361274000
+    }
+  },
+  {
+    "refs": [
+      "feat/adaptive-training-search-clean"
+    ],
+    "hash": "b17d3930fc3ccb59ddb69899010e606bb02d3550",
+    "parents": [
+      "5d91a869ffa23750c3559cf1fab4ef14b3ff247c"
+    ],
+    "subject": "Keep tracked training CPU only",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789355461000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789355461000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "5d91a869ffa23750c3559cf1fab4ef14b3ff247c",
+    "parents": [
+      "d5a464990b98f5bdbe4d2c12d37dd4d5caca0f1a"
+    ],
+    "subject": "Add CPU-tested adaptive model search",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789354864000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789354864000
+    }
+  },
+  {
+    "refs": [
+      "feat/adaptive-training-search"
+    ],
+    "hash": "7c30f1f50cbc8324d0e70695d2df10e6b926f18c",
+    "parents": [
+      "c264ad87b862dc939a55634df6cab5e9dbdcc6d1"
+    ],
+    "subject": "Clarify seeded sampling assertion",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789354785000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789354785000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "c264ad87b862dc939a55634df6cab5e9dbdcc6d1",
+    "parents": [
+      "9189c9b7add58f6281c812bd6e389a72dad8cdee"
+    ],
+    "subject": "Keep CUDA experiments local only",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789354696000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789354696000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "9189c9b7add58f6281c812bd6e389a72dad8cdee",
+    "parents": [
+      "fbc4c8d0d9e8a9be77fca984fe10ca30965ce805"
+    ],
+    "subject": "Record adaptive integration results",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789354188000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789354188000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "fbc4c8d0d9e8a9be77fca984fe10ca30965ce805",
+    "parents": [
+      "7e8bd1d1aa958df5cdb47ab6ef81edb43a98a209"
+    ],
+    "subject": "Close Optuna study connections",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789353970000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789353970000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "7e8bd1d1aa958df5cdb47ab6ef81edb43a98a209",
+    "parents": [
+      "b57767222d8323bac73aa3a4591f0f3d658026ac",
+      "a68a973d2d99edeb6ef6bd6711ece7e52ebab9a6"
+    ],
+    "subject": "Merge remote-tracking branch 'origin/chore/python-quality-gates' into feat/adaptive-training-search",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789353683000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789353683000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "b57767222d8323bac73aa3a4591f0f3d658026ac",
+    "parents": [
+      "d5a464990b98f5bdbe4d2c12d37dd4d5caca0f1a"
+    ],
+    "subject": "Add budgeted TPE model search",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789353673000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789353673000
+    }
+  },
+  {
+    "refs": [
+      "origin/feat/model-serving-monitoring",
+      "feat/model-serving-monitoring"
+    ],
+    "hash": "96dd7e8e8bbd1d405420558fd216e8b09531da5e",
+    "parents": [
+      "db056ee0940c3121977d61dfda98ab45e0df0342"
+    ],
+    "subject": "Cover serving boundaries and migration paths",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789339390000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789339390000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "db056ee0940c3121977d61dfda98ab45e0df0342",
+    "parents": [
+      "dee9cb4a9d6ef23db70230d04a0bcf3965379ab3",
+      "a68a973d2d99edeb6ef6bd6711ece7e52ebab9a6"
+    ],
+    "subject": "Merge remote-tracking branch 'origin/chore/python-quality-gates' into feat/model-serving-monitoring",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789338105000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789338105000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "dee9cb4a9d6ef23db70230d04a0bcf3965379ab3",
+    "parents": [
+      "1004481cac8b401a2cae02c2aab7b58f45da49f8"
+    ],
+    "subject": "Harden service binds and artifact paths",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789338105000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789338105000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "1004481cac8b401a2cae02c2aab7b58f45da49f8",
+    "parents": [
+      "4cf87f9ad7d5033dd96540b4e696229d86b2014d"
+    ],
+    "subject": "Refresh serving checklist and remove duplicate image",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789337783000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789337783000
+    }
+  },
+  {
+    "refs": [
+      "origin/chore/python-quality-gates",
+      "chore/python-quality-gates"
+    ],
+    "hash": "a68a973d2d99edeb6ef6bd6711ece7e52ebab9a6",
+    "parents": [
+      "5920bf7c92df952f5b06c9fe4bebc915e2028348"
+    ],
+    "subject": "Install serving dependencies when present",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789337763000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789337763000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "5920bf7c92df952f5b06c9fe4bebc915e2028348",
+    "parents": [
+      "8324dc09e5bf4aa397729b9e09a8b5313f4e0073"
+    ],
+    "subject": "Pin Ruff to validated version",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789337732000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789337732000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "4cf87f9ad7d5033dd96540b4e696229d86b2014d",
+    "parents": [
+      "4763513a5f06db9c42956cc68fb7ac2aeae60785",
+      "d5a464990b98f5bdbe4d2c12d37dd4d5caca0f1a"
+    ],
+    "subject": "Merge remote-tracking branch 'origin/master' into feat/model-serving-monitoring",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789337624000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789337624000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "8324dc09e5bf4aa397729b9e09a8b5313f4e0073",
+    "parents": [
+      "d5a464990b98f5bdbe4d2c12d37dd4d5caca0f1a"
+    ],
+    "subject": "Add CPU tests and coverage to SonarCloud",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789337604000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789337604000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "d5a464990b98f5bdbe4d2c12d37dd4d5caca0f1a",
+    "parents": [
+      "1c2c1ee85d19384baf3e1504f37d41e624001372",
+      "567cab2d0ff4f61fe805cb825f3536d55d97e427"
+    ],
+    "subject": "Merge pull request #6 from 03loveslollipop/chore/sonarcloud-actions",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789337377000
+    },
+    "committer": {
+      "name": "GitHub",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789337377000
+    }
+  },
+  {
+    "refs": [
+      "origin/chore/sonarcloud-actions",
+      "chore/sonarcloud-actions"
+    ],
+    "hash": "567cab2d0ff4f61fe805cb825f3536d55d97e427",
+    "parents": [
+      "1c2c1ee85d19384baf3e1504f37d41e624001372"
+    ],
+    "subject": "Add SonarCloud analysis workflow",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789335797000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789335797000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "4763513a5f06db9c42956cc68fb7ac2aeae60785",
+    "parents": [
+      "ad472ca02282637a936c855cd6a3e6e4dfdb1ce4"
+    ],
+    "subject": "Split serving into independent services",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789174051000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789174051000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "1c2c1ee85d19384baf3e1504f37d41e624001372",
+    "parents": [
+      "5e8593d10095310b840c8765f6ff0bfcd846d251",
+      "bc41ac1d5dbe5bd35ace9611b2e0c6635a2fcd0d"
+    ],
+    "subject": "Merge pull request #5 from 03loveslollipop/feat/model_training_evaluation",
+    "author": {
+      "name": "Stefany Morelos Morelo",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789147046000
+    },
+    "committer": {
+      "name": "GitHub",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789147046000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "ad472ca02282637a936c855cd6a3e6e4dfdb1ce4",
+    "parents": [
+      "858866abacc01883efbfb7d356375fb27285a70b"
+    ],
+    "subject": "Record database auth deployment",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789146624000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789146624000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "858866abacc01883efbfb7d356375fb27285a70b",
+    "parents": [
+      "cf5e879336fba5a3b964500faa6b41536a6e01ea"
+    ],
+    "subject": "Persist authentication users in PostgreSQL",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789146170000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789146170000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "cf5e879336fba5a3b964500faa6b41536a6e01ea",
+    "parents": [
+      "c07b6595927546051e2327ea961d7da9840802b4"
+    ],
+    "subject": "Add JWT roles and visual inference",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789108311000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789108311000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "c07b6595927546051e2327ea961d7da9840802b4",
+    "parents": [
+      "b60eea1ebd8cf5bf2b54ea8b053c26ea7a2f6abd"
+    ],
+    "subject": "Configure daily Heroku monitoring",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789105967000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789105967000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "b60eea1ebd8cf5bf2b54ea8b053c26ea7a2f6abd",
+    "parents": [
+      "9c308064a1cad906405feab493f78c5ba97db71d"
+    ],
+    "subject": "Preserve model identity across rollouts",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789105183000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789105183000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "9c308064a1cad906405feab493f78c5ba97db71d",
+    "parents": [
+      "03feb2ab31d9e0d6571a4cea39ba01c593b5ceec"
+    ],
+    "subject": "Update GitHub Actions runtimes",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789104649000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789104649000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "03feb2ab31d9e0d6571a4cea39ba01c593b5ceec",
+    "parents": [
+      "bc41ac1d5dbe5bd35ace9611b2e0c6635a2fcd0d"
+    ],
+    "subject": "Deploy model serving and monitoring",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789104431000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789104431000
+    }
+  },
+  {
+    "refs": [
+      "origin/feat/model-training-notebook",
+      "feat/model-training-notebook"
+    ],
+    "hash": "1ead0d4ded77c21233118ad0ccd03ee46824d8b2",
+    "parents": [
+      "bc41ac1d5dbe5bd35ace9611b2e0c6635a2fcd0d"
+    ],
+    "subject": "Add model training notebook",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789031212000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1789031212000
+    }
+  },
+  {
+    "refs": [
+      "feat/model_training_evaluation"
+    ],
+    "hash": "bc41ac1d5dbe5bd35ace9611b2e0c6635a2fcd0d",
+    "parents": [
+      "6500274d52c07cf0f9deaf259d294484cf661889"
+    ],
+    "subject": "Add model training pipeline and optimization handoff",
+    "author": {
+      "name": "ZeroTwo",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1788986929000
+    },
+    "committer": {
+      "name": "ZeroTwo",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1788986929000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "5e8593d10095310b840c8765f6ff0bfcd846d251",
+    "parents": [
+      "fbbf6aff3e67a1eaf347b6bb3122c2ae637730f6",
+      "2a1d94eea3e43e31fa8bba11f2cba7f31a86c523"
+    ],
+    "subject": "Merge pull request #2 from 03loveslollipop/feat/feat_engineering_pipeline",
+    "author": {
+      "name": "Stefany Morelos Morelo",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1788971864000
+    },
+    "committer": {
+      "name": "GitHub",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1788971864000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "6500274d52c07cf0f9deaf259d294484cf661889",
+    "parents": [
+      "2a1d94eea3e43e31fa8bba11f2cba7f31a86c523"
+    ],
+    "subject": "Add EDA-based heuristic classifier",
+    "author": {
+      "name": "ZeroTwo",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1788969578000
+    },
+    "committer": {
+      "name": "ZeroTwo",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1788969578000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "2a1d94eea3e43e31fa8bba11f2cba7f31a86c523",
+    "parents": [
+      "45f0d7037c9711d7e16b0991de08a0b8873f7bb7"
+    ],
+    "subject": "Add chronological train test split",
+    "author": {
+      "name": "ZeroTwo",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1788968362000
+    },
+    "committer": {
+      "name": "ZeroTwo",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1788968362000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "45f0d7037c9711d7e16b0991de08a0b8873f7bb7",
+    "parents": [
+      "f0cfadc715244eaff27f0e65a5856a472b5eba7d"
+    ],
+    "subject": "Harden predictive data preparation",
+    "author": {
+      "name": "ZeroTwo",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1788940440000
+    },
+    "committer": {
+      "name": "ZeroTwo",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1788940440000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "f0cfadc715244eaff27f0e65a5856a472b5eba7d",
+    "parents": [
+      "e66dd74440b84247ace279b348ae19dfbf330d5e"
+    ],
+    "subject": "Add contribution guidelines",
+    "author": {
+      "name": "ZeroTwo",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1788938275000
+    },
+    "committer": {
+      "name": "ZeroTwo",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1788938275000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "e66dd74440b84247ace279b348ae19dfbf330d5e",
+    "parents": [
+      "fbbf6aff3e67a1eaf347b6bb3122c2ae637730f6"
+    ],
+    "subject": "Add credit feature engineering pipeline",
+    "author": {
+      "name": "ZeroTwo",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1788934799000
+    },
+    "committer": {
+      "name": "ZeroTwo",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1788934799000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "fbbf6aff3e67a1eaf347b6bb3122c2ae637730f6",
+    "parents": [
+      "515cc625381ac7e5d41567a995c0c0f6d4434322"
+    ],
+    "subject": "Remove ResultsPresentation.pptx and update ResultsReport.pdf",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1787199038000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1787199038000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "515cc625381ac7e5d41567a995c0c0f6d4434322",
+    "parents": [
+      "526cdfb2dc7006c5ccc7b2a7552e98c3853955c4"
+    ],
+    "subject": "Update README, report, figures, and EDA notebook",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1787198936000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1787198951000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "526cdfb2dc7006c5ccc7b2a7552e98c3853955c4",
+    "parents": [
+      "dc08417abd742d63e4de697af6c0ba24785edbe0"
+    ],
+    "subject": "Rewrite README as a summary of the findings, with figures",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1787138408000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1787138408000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "dc08417abd742d63e4de697af6c0ba24785edbe0",
+    "parents": [
+      "1183653ebd7702472350a8c1d0de7c31057e3316"
+    ],
+    "subject": "Version the source dataset alongside the code",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1787137935000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1787137935000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "1183653ebd7702472350a8c1d0de7c31057e3316",
+    "parents": [
+      "17e67972491b4367c518e3d3bc66f0c5128dc43c"
+    ],
+    "subject": "Add results report and presentation, document the pipeline decisions",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1787137749000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1787137749000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "17e67972491b4367c518e3d3bc66f0c5128dc43c",
+    "parents": [
+      "3f60ec92f7adddbdf2af7a23776caa10e3b279b8"
+    ],
+    "subject": "Remove .gitkeep and add eda.ipynb for exploratory data analysis",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1786311659000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1786311659000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "3f60ec92f7adddbdf2af7a23776caa10e3b279b8",
+    "parents": [
+      "13da222f149cfc2257fff538ecbbd59835dc0aeb"
+    ],
+    "subject": "Add .gitkeep to etl_scripts/src/development directory",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1786311484000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1786311484000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "13da222f149cfc2257fff538ecbbd59835dc0aeb",
+    "parents": [
+      "5be06b36cba633d629b43cf3795a70c68ac6e0aa"
+    ],
+    "subject": "Add initial content to README.md",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1786311466000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1786311466000
+    }
+  },
+  {
+    "refs": [],
+    "hash": "5be06b36cba633d629b43cf3795a70c68ac6e0aa",
+    "parents": [
+      ""
+    ],
+    "subject": "first commit",
+    "author": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1786311346000
+    },
+    "committer": {
+      "name": "02loveslollipop",
+      "email": "noreply@cdp2026.local",
+      "timestamp": 1786311346000
+    }
+  }
+]

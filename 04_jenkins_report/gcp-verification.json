@@ -1,0 +1,572 @@
+{
+  "vertex_custom_verification": {
+    "pipeline_run": "credit-cpu-demo-20261108-r3",
+    "custom_job_id": "1394998308224630784",
+    "pipeline_state": "PIPELINE_STATE_SUCCEEDED",
+    "worker_state": "JOB_STATE_SUCCEEDED",
+    "training_started_utc": "2026-11-08T09:58:45Z",
+    "training_ended_utc": "2026-11-08T10:02:17Z",
+    "worker_wall_seconds": 212,
+    "dataset_and_holdout_match": true,
+    "key_metric_max_abs_difference": 4.163336342344337e-17,
+    "metrics": {
+      "accuracy": 0.8250232270052648,
+      "default_precision": 0.06805293005671077,
+      "default_recall": 0.3333333333333333,
+      "default_f1": 0.1130298273155416,
+      "average_precision": 0.09941451599346664,
+      "roc_auc": 0.6573213713553349,
+      "recall_at_review_budget": 0.3888888888888889,
+      "review_budget_rows": 646,
+      "predicted_default_fraction": 0.16382781046763703,
+      "default_prevalence": 0.03344688758129452,
+      "rows": 3229,
+      "confusion_matrix": [
+        [
+          36,
+          72
+        ],
+        [
+          493,
+          2628
+        ]
+      ]
+    },
+    "stability": {
+      "mean_f1": 0.18711652287985245,
+      "temporal_f1_std": 0.029161504564101968,
+      "seed_f1_std": 0.011031073281552922
+    }
+  },
+  "automl": {
+    "submission": {
+      "http_status": 200,
+      "name": "projects/727006212991/locations/us-central1/trainingPipelines/7023547864391352320",
+      "displayName": "credit-automl-temporal-20261109",
+      "state": "PIPELINE_STATE_PENDING",
+      "createTime": "2026-11-08T17:17:19.666474Z",
+      "inputDataConfig": {
+        "datasetId": "2799060011056103424",
+        "predefinedSplit": {
+          "key": "data_split"
+        }
+      },
+      "trainingTaskInputs": {
+        "predictionType": "classification",
+        "targetColumn": "Pago_atiempo",
+        "transformations": [
+          {
+            "categorical": {
+              "columnName": "tipo_credito"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "capital_prestado"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "plazo_meses"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "edad_cliente"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "tipo_laboral"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "salario_cliente"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "total_otros_prestamos"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "cuota_pactada"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "puntaje_datacredito"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "cant_creditosvigentes"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "huella_consulta"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "saldo_mora"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "saldo_total"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "creditos_sectorFinanciero"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "creditos_sectorCooperativo"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "creditos_sectorReal"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "promedio_ingresos_datacredito"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "tendencia_ingresos"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "calc_ratio_cuota_salario"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "calc_ratio_pagos_otros_salario"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "calc_ratio_capital_salario"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "calc_carga_financiera_total"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "calc_cuota_sobre_capital"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "calc_cobertura_cuotas"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "calc_log_capital"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "calc_intensidad_consulta"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "calc_creditos_por_anio_adulto"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "calc_share_sector_financiero"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "calc_share_sector_real"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "calc_share_sector_cooperativo"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "calc_sectores_distintos"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "calc_creditos_no_reportados"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "calc_tiene_mora"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "calc_ratio_mora_saldo"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "calc_interes_devengado"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "calc_saldo_por_credito"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "calc_ratio_saldo_capital"
+            }
+          },
+          {
+            "numeric": {
+              "columnName": "calc_desfase_ingresos"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "calc_ingreso_declarado_mayor"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "calc_sin_info_ingresos_bureau"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "calc_sin_score_bureau"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "calc_n_reglas_violadas"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__tipo_credito"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__capital_prestado"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__plazo_meses"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__edad_cliente"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__tipo_laboral"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__salario_cliente"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__total_otros_prestamos"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__cuota_pactada"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__puntaje_datacredito"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__cant_creditosvigentes"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__huella_consulta"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__saldo_mora"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__saldo_total"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__creditos_sectorFinanciero"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__creditos_sectorCooperativo"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__creditos_sectorReal"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__promedio_ingresos_datacredito"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__tendencia_ingresos"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_ratio_cuota_salario"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_ratio_pagos_otros_salario"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_ratio_capital_salario"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_carga_financiera_total"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_cuota_sobre_capital"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_cobertura_cuotas"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_log_capital"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_intensidad_consulta"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_creditos_por_anio_adulto"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_share_sector_financiero"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_share_sector_real"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_share_sector_cooperativo"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_sectores_distintos"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_creditos_no_reportados"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_tiene_mora"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_ratio_mora_saldo"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_interes_devengado"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_saldo_por_credito"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_ratio_saldo_capital"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_desfase_ingresos"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_ingreso_declarado_mayor"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_sin_info_ingresos_bureau"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_sin_score_bureau"
+            }
+          },
+          {
+            "categorical": {
+              "columnName": "missing__calc_n_reglas_violadas"
+            }
+          }
+        ],
+        "optimizationObjective": "maximize-au-prc",
+        "trainBudgetMilliNodeHours": "1000"
+      },
+      "modelToUpload": {
+        "displayName": "credit-automl-temporal-20261109"
+      },
+      "observed_at_utc": "2026-11-08T17:17:37.104779+00:00",
+      "launch_mechanism": "Start training button in Japanese GCP dashboard",
+      "early_stopping_observed_in_ui": true
+    },
+    "final_metrics_available": true,
+    "status_note": "SUCCEEDED; native class-0 evaluation verified. One run; repeat-training stability unmeasured.",
+    "final_state": "PIPELINE_STATE_SUCCEEDED",
+    "start_time_utc": "2026-11-08T17:19:36.697390Z",
+    "end_time_utc": "2026-11-08T19:55:04.833658Z",
+    "normalized_evaluation": {
+      "origin": "vertex-automl",
+      "model": "credit-automl-temporal-20261109",
+      "dataset_sha256": "48e34610b823055a5f4e7a107142e25b08ba40920848eab1a68ff6396eb26927",
+      "holdout_sha256": "f0f8ec775541328cfcaf07fa5a8455a089b2f3832549c583de35804f5216329a",
+      "threshold": 0.5,
+      "threshold_policy": "Fixed default-class confidence 0.5 from native evaluation; no TEST tuning",
+      "metrics": {
+        "accuracy": 0.9625270981728089,
+        "default_precision": 0.25925925925925924,
+        "default_recall": 0.06481481481481481,
+        "default_f1": 0.1037037037037037,
+        "roc_auc": 0.65420777,
+        "average_precision": null,
+        "native_auprc": 0.120123096,
+        "rows": 3229,
+        "default_prevalence": 0.03344688758129452,
+        "confusion_matrix": [
+          [
+            7,
+            101
+          ],
+          [
+            20,
+            3101
+          ]
+        ]
+      },
+      "overall_native_metrics": {
+        "auRoc": 0.9763931,
+        "auPrc": 0.9719521,
+        "logLoss": 0.20412816
+      },
+      "stability": {
+        "temporal_f1_std": null,
+        "seed_f1_std": null,
+        "note": "One AutoML run; retraining variance unmeasured. Native aggregates do not supply individual predictions for bootstrap or chronological block analysis."
+      },
+      "provenance": {
+        "pipeline": "projects/727006212991/locations/us-central1/trainingPipelines/7023547864391352320",
+        "model": "projects/727006212991/locations/us-central1/models/3834067964554903552",
+        "version": "1",
+        "evaluation": "projects/727006212991/locations/us-central1/models/3834067964554903552@1/evaluations/2989617876806692894",
+        "default_slice": "projects/727006212991/locations/us-central1/models/3834067964554903552/evaluations/2989617876806692894/slices/4980003796688635533",
+        "dataset": "projects/727006212991/locations/us-central1/datasets/2799060011056103424",
+        "input_uri": "gs://nb-risk-ml-dev-99d0-credit-lab-20261108/automl.csv",
+        "manual_split_verified": true,
+        "test_class_counts_verified": true,
+        "prediction_features_verified": true,
+        "fingerprint_basis": "Local uploaded-export manifest linked to native dataset URI, successful training pipeline and matching TEST class counts",
+        "paid_predictions_submitted": false
+      }
+    },
+    "billing_after_training": {
+      "observed_at_utc": "2026-11-08T22:53:44.264239+00:00",
+      "source": "Japanese GCP billing credits dashboard, authenticated browser",
+      "billing_account": "01ADCB-D56D56-B45DCC",
+      "billing_account_name": "Billing Account for Education",
+      "currency": "USD",
+      "promotion": "Ciencia de datos en producción",
+      "initial_credit": 50.0,
+      "reported_remaining_credit": 28.01,
+      "derived_consumed_credit": 21.99,
+      "remaining_percent": 56,
+      "scope": "Eligible services across the billing account, since credit grant; not one job or project",
+      "expires_on": "2027-10-06",
+      "limitations": "Billing updates may lag; credit consumption is not an itemized final AutoML invoice",
+      "screenshot": "output/playwright/gcp/50-billing-credits-after-training-ja.png",
+      "screenshot_sha256": "f56b2d15e088a52a169095b356fc3217310b62172651f60f6a5d90df36509821"
+    },
+    "historical_training_observation": {
+      "url": "https://console.cloud.google.com/agent-platform/locations/us-central1/training/7023547864391352320?hl=ja&project=nb-risk-ml-dev-99d0",
+      "status_row": "ステータス\t\nトレーニング",
+      "dashboard_text": "credit-automl-temporal-20261109\nトレーニング データセットを表示\nトレーニングは 2026/11/09 2:19:36 に開始され、まだ進行中です。\nステータス\t\nトレーニング\n\nトレーニング パイプライン ID\t\n7023547864391352320\n\n作成日\t\n2026/11/09 2:17:19\n\n開始時刻\t\n2026/11/09 2:19:36\n\n予算（当初の）\t\n1 node hours\n\n経過時間\t\n4 分 53 秒\n\nリージョン\t\nus-central1\n\n暗号化のタイプ\t\nGoogle が管理\n\nデータセット\t\ncredit-classification-temporal-20261108\n\nターゲット列\t\nPago_atiempo\n\nデータ分割\t\n手動で割り当て\n\n列のメタデータ\t\nView details\n\nアルゴリズム\t\nAutoML\n\n目的\t\n表形式分類\n\n最適な用途\t\nAUC PRC\n\nトレーニング ステージ\t\nData preprocessing\nトレーニング パフォーマンス\n0.0\n0.1\n0.2\n0.3\n0.4\n0.5\n0.6\n0.7\n0.8\n0.9\n1.0\n0.25\n0.25\n0.50\n0.50\n0.75\n0.75\n1.00\n1.00\nトレーニングの予算 - ノード時間\nmaximize-au-prc\nx\ty",
+      "observed_at_utc": "2026-11-08T17:24:34.366915+00:00",
+      "source": "Japanese dashboard DOM"
+    }
+  }
+}

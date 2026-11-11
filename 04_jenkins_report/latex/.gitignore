@@ -1,0 +1,10 @@
+!*.md
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.pdf
+*.toc
+*.synctex.gz
+__pycache__/

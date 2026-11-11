@@ -1,0 +1,3 @@
+kfp==2.18.0
+google-cloud-aiplatform==1.165.1
+google-cloud-storage==3.17.1

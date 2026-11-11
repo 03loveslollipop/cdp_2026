@@ -1,0 +1,6 @@
+{
+  "minimum_validation_f1": 0.10,
+  "minimum_validation_roc_auc": 0.50,
+  "maximum_temporal_f1_std": 0.15,
+  "maximum_seed_f1_std": 0.05
+}

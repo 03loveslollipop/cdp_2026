@@ -1,0 +1,913 @@
+{
+  "verified_at_utc": "2026-11-08T05:16:29.346986+00:00",
+  "repository": "03loveslollipop/cdp_2026",
+  "branch": "ci/jenkins-lab-20261108",
+  "job": "credit-classification-github",
+  "hook": {
+    "id": 708866067,
+    "active": true,
+    "events": [
+      "push"
+    ],
+    "url": "https://semester-jenkins-webhook-tcwenm7hba-uc.a.run.app/github-webhook/",
+    "tls_verification": true
+  },
+  "deliveries": [
+    {
+      "id": "3852831638387949568",
+      "guid": "1974c9b6-db32-11f1-8784-7b98d1cbc951",
+      "event": "push",
+      "status_code": 200,
+      "redelivery": true,
+      "delivered_at": "2026-11-08T05:09:00.545Z",
+      "ref": "refs/heads/ci/jenkins-lab-20261108",
+      "sha": "7775c84526afb3836b272f6595ee30cddbfb3207",
+      "response": "{\"duplicate\": true}"
+    },
+    {
+      "id": "3852831512477057024",
+      "guid": "5ececcd2-db32-11f1-8c7b-2b6e408a7765",
+      "event": "push",
+      "status_code": 200,
+      "redelivery": false,
+      "delivered_at": "2026-11-08T05:08:01.94Z",
+      "ref": "refs/heads/ci/jenkins-lab-20261108",
+      "sha": "501952de01570ea5e29b04cf230c7f886dad387b",
+      "response": "{\"accepted\": true, \"delivery\": \"5ececcd2-db32-11f1-8c7b-2b6e408a7765\"}"
+    },
+    {
+      "id": "3852831372433424384",
+      "guid": "381729e0-db32-11f1-94a9-b35ccb1eb5fb",
+      "event": "push",
+      "status_code": 202,
+      "redelivery": false,
+      "delivered_at": "2026-11-08T05:06:56.712Z",
+      "ref": "refs/heads/ci/webhook-merge-check-20261108",
+      "sha": "f071d6d570e09dccc403e79d03b94bea521242c2",
+      "response": "{\"ignored\": \"event or ref outside configured branches\"}"
+    },
+    {
+      "id": "3852831263249399808",
+      "guid": "1974c9b6-db32-11f1-8784-7b98d1cbc951",
+      "event": "push",
+      "status_code": 200,
+      "redelivery": false,
+      "delivered_at": "2026-11-08T05:06:05.882Z",
+      "ref": "refs/heads/ci/jenkins-lab-20261108",
+      "sha": "7775c84526afb3836b272f6595ee30cddbfb3207",
+      "response": "{\"accepted\": true, \"delivery\": \"1974c9b6-db32-11f1-8784-7b98d1cbc951\"}"
+    },
+    {
+      "id": "3852831071089459200",
+      "guid": "7a1d6df0-db31-11f1-94e1-50158d9876d7",
+      "event": "ping",
+      "status_code": 200,
+      "redelivery": true,
+      "delivered_at": "2026-11-08T05:04:36.364Z",
+      "ref": null,
+      "sha": null,
+      "response": "{\"accepted\": \"ping\"}"
+    },
+    {
+      "id": "3852830688329859072",
+      "guid": "7a1d6df0-db31-11f1-94e1-50158d9876d7",
+      "event": "ping",
+      "status_code": 403,
+      "redelivery": false,
+      "delivered_at": "2026-11-08T05:01:38.042Z",
+      "ref": null,
+      "sha": null,
+      "response": "{\"error\": \"invalid signature\"}"
+    }
+  ],
+  "builds": [
+    {
+      "number": 3,
+      "result": "SUCCESS",
+      "building": false,
+      "started_utc": "2026-11-08T05:10:58.388000+00:00",
+      "duration_seconds": 246.332,
+      "causes": [
+        {
+          "_class": "com.cloudbees.jenkins.GitHubPushCause",
+          "shortDescription": "Started by GitHub push by 03loveslollipop"
+        }
+      ],
+      "commit": "501952de01570ea5e29b04cf230c7f886dad387b",
+      "passed": 186,
+      "failed": 0,
+      "skipped": 0,
+      "approval": "Approved by admin; build http://127.0.0.1:18083/job/credit-classification-github/3/; commit 501952de01570ea5e29b04cf230c7f886dad387b"
+    },
+    {
+      "number": 2,
+      "result": "SUCCESS",
+      "building": false,
+      "started_utc": "2026-11-08T05:07:08.549000+00:00",
+      "duration_seconds": 229.811,
+      "causes": [
+        {
+          "_class": "com.cloudbees.jenkins.GitHubPushCause",
+          "shortDescription": "Started by GitHub push by 03loveslollipop"
+        }
+      ],
+      "commit": "7775c84526afb3836b272f6595ee30cddbfb3207",
+      "passed": 186,
+      "failed": 0,
+      "skipped": 0,
+      "approval": "Approved by admin; build http://127.0.0.1:18083/job/credit-classification-github/2/; commit 7775c84526afb3836b272f6595ee30cddbfb3207"
+    },
+    {
+      "number": 1,
+      "result": "SUCCESS",
+      "building": false,
+      "started_utc": "2026-11-08T05:02:03.480000+00:00",
+      "duration_seconds": 305.031,
+      "causes": [
+        {
+          "_class": "hudson.triggers.SCMTrigger$SCMTriggerCause",
+          "shortDescription": "Started by an SCM change"
+        },
+        {
+          "_class": "hudson.model.Cause$UserIdCause",
+          "shortDescription": "Started by user admin",
+          "userId": "admin",
+          "userName": "admin"
+        }
+      ],
+      "commit": "3d2a1950e17d26af86e3a4e0f77785779c4f7fb5",
+      "passed": 185,
+      "failed": 0,
+      "skipped": 0,
+      "approval": "Approved by admin; build http://127.0.0.1:18083/job/credit-classification-github/1/; commit 3d2a1950e17d26af86e3a4e0f77785779c4f7fb5"
+    }
+  ],
+  "expires_at": "2026-11-13T02:41:05Z",
+  "receiver": {
+    "image": "us-central1-docker.pkg.dev/nb-core-dev-99d0/semester-jenkins/webhook@sha256:a6822f8a23d0feb797fa2916a10e788f4136815de9eee2497e1f284b1584a890"
+  },
+  "all_branch_update": {
+    "verified_at_utc": "2026-11-09T04:17:14.786501+00:00",
+    "project": "nb-core-dev-99d0",
+    "vm": "semester-jenkins",
+    "parent_job": "credit-classification-branches",
+    "all_origin_branches": true,
+    "branches_without_jenkinsfile_included": true,
+    "primary_branch": "master",
+    "current_ci_revision": "045a2300caf63506fdc0dd4092d7a771a43a1aee",
+    "legacy_job_disabled": true,
+    "relay_branches": "*",
+    "builds": [
+      {
+        "branch": "chore/python-quality-gates",
+        "job_path": "job/chore%252Fpython-quality-gates/",
+        "build": 3,
+        "result": "ABORTED",
+        "building": false,
+        "description": null,
+        "causes": [
+          {
+            "_class": "jenkins.branch.BranchIndexingCause",
+            "shortDescription": "Branch indexing"
+          },
+          {
+            "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
+            "shortDescription": "adminによる中断"
+          }
+        ],
+        "checkout_revisions": [
+          "ea05858d339995b202f0040d095a57562a2312e1"
+        ],
+        "stages": [],
+        "test_counts": null,
+        "branch_latest_build": {
+          "number": 3,
+          "result": "ABORTED",
+          "causes": [
+            {
+              "_class": "jenkins.branch.BranchIndexingCause",
+              "shortDescription": "Branch indexing"
+            },
+            {
+              "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
+              "shortDescription": "adminによる中断"
+            }
+          ]
+        }
+      },
+      {
+        "branch": "chore/showcase-monitoring-handoff",
+        "job_path": "job/chore%252Fshowcase-monitoring-handoff/",
+        "build": 3,
+        "result": "ABORTED",
+        "building": false,
+        "description": null,
+        "causes": [
+          {
+            "_class": "jenkins.branch.BranchIndexingCause",
+            "shortDescription": "Branch indexing"
+          },
+          {
+            "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
+            "shortDescription": "adminによる中断"
+          }
+        ],
+        "checkout_revisions": [
+          "ea05858d339995b202f0040d095a57562a2312e1"
+        ],
+        "stages": [],
+        "test_counts": null,
+        "branch_latest_build": {
+          "number": 3,
+          "result": "ABORTED",
+          "causes": [
+            {
+              "_class": "jenkins.branch.BranchIndexingCause",
+              "shortDescription": "Branch indexing"
+            },
+            {
+              "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
+              "shortDescription": "adminによる中断"
+            }
+          ]
+        }
+      },
+      {
+        "branch": "chore/sonarcloud-actions",
+        "job_path": "job/chore%252Fsonarcloud-actions/",
+        "build": 3,
+        "result": "ABORTED",
+        "building": false,
+        "description": null,
+        "causes": [
+          {
+            "_class": "jenkins.branch.BranchIndexingCause",
+            "shortDescription": "Branch indexing"
+          },
+          {
+            "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
+            "shortDescription": "adminによる中断"
+          }
+        ],
+        "checkout_revisions": [
+          "ea05858d339995b202f0040d095a57562a2312e1"
+        ],
+        "stages": [],
+        "test_counts": null,
+        "branch_latest_build": {
+          "number": 3,
+          "result": "ABORTED",
+          "causes": [
+            {
+              "_class": "jenkins.branch.BranchIndexingCause",
+              "shortDescription": "Branch indexing"
+            },
+            {
+              "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
+              "shortDescription": "adminによる中断"
+            }
+          ]
+        }
+      },
+      {
+        "branch": "ci/jenkins-lab-20261108",
+        "job_path": "job/ci%252Fjenkins-lab-20261108/",
+        "build": 3,
+        "result": "SUCCESS",
+        "building": false,
+        "description": "ci/jenkins-lab-20261108 501952de0157 (tests)",
+        "causes": [
+          {
+            "_class": "com.cloudbees.jenkins.GitHubPushCause",
+            "shortDescription": "Started by GitHub push by 02loveslollipop"
+          }
+        ],
+        "checkout_revisions": [
+          "ea05858d339995b202f0040d095a57562a2312e1",
+          "501952de01570ea5e29b04cf230c7f886dad387b"
+        ],
+        "stages": [],
+        "test_counts": {
+          "passCount": 186,
+          "failCount": 0,
+          "skipCount": 0
+        },
+        "branch_latest_build": {
+          "number": 3,
+          "result": "SUCCESS",
+          "causes": [
+            {
+              "_class": "com.cloudbees.jenkins.GitHubPushCause",
+              "shortDescription": "Started by GitHub push by 02loveslollipop"
+            }
+          ]
+        }
+      },
+      {
+        "branch": "ci/jenkins-results-es-20261108",
+        "job_path": "job/ci%252Fjenkins-results-es-20261108/",
+        "build": 5,
+        "result": "SUCCESS",
+        "building": false,
+        "description": "ci/jenkins-results-es-20261108 ee3011d11d3b (tests)",
+        "causes": [
+          {
+            "_class": "jenkins.branch.BranchIndexingCause",
+            "shortDescription": "Branch indexing"
+          }
+        ],
+        "checkout_revisions": [
+          "045a2300caf63506fdc0dd4092d7a771a43a1aee",
+          "ee3011d11d3bde1b96609a6fab3a2375084aa4c7"
+        ],
+        "stages": [],
+        "test_counts": {
+          "passCount": 206,
+          "failCount": 0,
+          "skipCount": 0
+        },
+        "branch_latest_build": {
+          "number": 5,
+          "result": "SUCCESS",
+          "causes": [
+            {
+              "_class": "jenkins.branch.BranchIndexingCause",
+              "shortDescription": "Branch indexing"
+            }
+          ]
+        }
+      },
+      {
+        "branch": "ci/webhook-all-branches-20261109",
+        "job_path": "job/ci%252Fwebhook-all-branches-20261109/",
+        "build": 7,
+        "result": "SUCCESS",
+        "building": false,
+        "description": "ci/webhook-all-branches-20261109 776753337e94 (tests)",
+        "causes": [
+          {
+            "_class": "com.cloudbees.jenkins.GitHubPushCause",
+            "shortDescription": "Started by GitHub push by 02loveslollipop"
+          }
+        ],
+        "checkout_revisions": [
+          "045a2300caf63506fdc0dd4092d7a771a43a1aee",
+          "776753337e9464bb71a0769b85abae9ae3ad40d0"
+        ],
+        "stages": [
+          {
+            "name": "Clone repository",
+            "status": "SUCCESS"
+          },
+          {
+            "name": "Load shared CI tools",
+            "status": "SUCCESS"
+          },
+          {
+            "name": "Validate structure",
+            "status": "SUCCESS"
+          },
+          {
+            "name": "Repository tests",
+            "status": "SUCCESS"
+          },
+          {
+            "name": "Train and evaluate",
+            "status": "NOT_EXECUTED"
+          },
+          {
+            "name": "Quality and stability",
+            "status": "NOT_EXECUTED"
+          },
+          {
+            "name": "Approve model",
+            "status": "NOT_EXECUTED"
+          },
+          {
+            "name": "Record approval",
+            "status": "NOT_EXECUTED"
+          },
+          {
+            "name": "Declarative: Post Actions",
+            "status": "SUCCESS"
+          }
+        ],
+        "test_counts": {
+          "passCount": 160,
+          "failCount": 0,
+          "skipCount": 0
+        },
+        "branch_latest_build": {
+          "number": 9,
+          "result": "SUCCESS",
+          "causes": [
+            {
+              "_class": "com.cloudbees.jenkins.GitHubPushCause",
+              "shortDescription": "Started by GitHub push by 03loveslollipop"
+            },
+            {
+              "_class": "jenkins.branch.BranchIndexingCause",
+              "shortDescription": "Branch indexing"
+            }
+          ]
+        }
+      },
+      {
+        "branch": "ci/webhook-merge-check-20261108",
+        "job_path": "job/ci%252Fwebhook-merge-check-20261108/",
+        "build": 2,
+        "result": "ABORTED",
+        "building": false,
+        "description": null,
+        "causes": [
+          {
+            "_class": "jenkins.branch.BranchIndexingCause",
+            "shortDescription": "Branch indexing"
+          },
+          {
+            "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
+            "shortDescription": "adminによる中断"
+          }
+        ],
+        "checkout_revisions": [
+          "ea05858d339995b202f0040d095a57562a2312e1"
+        ],
+        "stages": [],
+        "test_counts": null,
+        "branch_latest_build": {
+          "number": 2,
+          "result": "ABORTED",
+          "causes": [
+            {
+              "_class": "jenkins.branch.BranchIndexingCause",
+              "shortDescription": "Branch indexing"
+            },
+            {
+              "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
+              "shortDescription": "adminによる中断"
+            }
+          ]
+        }
+      },
+      {
+        "branch": "ci/webhook-merge-ja-20261109",
+        "job_path": "job/ci%252Fwebhook-merge-ja-20261109/",
+        "build": 3,
+        "result": null,
+        "building": true,
+        "description": "ci/webhook-merge-ja-20261109 ba22dcb11f23 (tests)",
+        "causes": [
+          {
+            "_class": "jenkins.branch.BranchIndexingCause",
+            "shortDescription": "Branch indexing"
+          },
+          {
+            "_class": "com.cloudbees.jenkins.GitHubPushCause",
+            "shortDescription": "Started by GitHub push by 03loveslollipop"
+          }
+        ],
+        "checkout_revisions": [
+          "045a2300caf63506fdc0dd4092d7a771a43a1aee",
+          "ba22dcb11f237a07c17981710c87f73da919a064"
+        ],
+        "stages": [],
+        "test_counts": null,
+        "branch_latest_build": {
+          "number": 3,
+          "result": null,
+          "causes": [
+            {
+              "_class": "jenkins.branch.BranchIndexingCause",
+              "shortDescription": "Branch indexing"
+            },
+            {
+              "_class": "com.cloudbees.jenkins.GitHubPushCause",
+              "shortDescription": "Started by GitHub push by 03loveslollipop"
+            }
+          ]
+        }
+      },
+      {
+        "branch": "feat/adaptive-training-search",
+        "job_path": "job/feat%252Fadaptive-training-search/",
+        "build": 2,
+        "result": "ABORTED",
+        "building": false,
+        "description": null,
+        "causes": [
+          {
+            "_class": "jenkins.branch.BranchIndexingCause",
+            "shortDescription": "Branch indexing"
+          },
+          {
+            "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
+            "shortDescription": "adminによる中断"
+          }
+        ],
+        "checkout_revisions": [
+          "ea05858d339995b202f0040d095a57562a2312e1"
+        ],
+        "stages": [],
+        "test_counts": null,
+        "branch_latest_build": {
+          "number": 2,
+          "result": "ABORTED",
+          "causes": [
+            {
+              "_class": "jenkins.branch.BranchIndexingCause",
+              "shortDescription": "Branch indexing"
+            },
+            {
+              "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
+              "shortDescription": "adminによる中断"
+            }
+          ]
+        }
+      },
+      {
+        "branch": "feat/bigquery-ingestion-pipeline",
+        "job_path": "job/feat%252Fbigquery-ingestion-pipeline/",
+        "build": 2,
+        "result": "SUCCESS",
+        "building": false,
+        "description": "feat/bigquery-ingestion-pipeline b5c51c7b92c9 (tests)",
+        "causes": [
+          {
+            "_class": "jenkins.branch.BranchIndexingCause",
+            "shortDescription": "Branch indexing"
+          },
+          {
+            "_class": "hudson.model.Cause$UserIdCause",
+            "shortDescription": "ユーザーadminが実行"
+          }
+        ],
+        "checkout_revisions": [
+          "ea05858d339995b202f0040d095a57562a2312e1",
+          "b5c51c7b92c99364cab1857ea1a972a5b838e79f"
+        ],
+        "stages": [],
+        "test_counts": {
+          "passCount": 160,
+          "failCount": 0,
+          "skipCount": 0
+        },
+        "branch_latest_build": {
+          "number": 2,
+          "result": "SUCCESS",
+          "causes": [
+            {
+              "_class": "jenkins.branch.BranchIndexingCause",
+              "shortDescription": "Branch indexing"
+            },
+            {
+              "_class": "hudson.model.Cause$UserIdCause",
+              "shortDescription": "ユーザーadminが実行"
+            }
+          ]
+        }
+      },
+      {
+        "branch": "feat/model-serving-monitoring",
+        "job_path": "job/feat%252Fmodel-serving-monitoring/",
+        "build": 3,
+        "result": "SUCCESS",
+        "building": false,
+        "description": "feat/model-serving-monitoring 96dd7e8e8bbd (tests)",
+        "causes": [
+          {
+            "_class": "com.cloudbees.jenkins.GitHubPushCause",
+            "shortDescription": "Started by GitHub push by 02loveslollipop"
+          }
+        ],
+        "checkout_revisions": [
+          "ea05858d339995b202f0040d095a57562a2312e1",
+          "96dd7e8e8bbd1d405420558fd216e8b09531da5e"
+        ],
+        "stages": [],
+        "test_counts": {
+          "passCount": 145,
+          "failCount": 0,
+          "skipCount": 1
+        },
+        "branch_latest_build": {
+          "number": 3,
+          "result": "SUCCESS",
+          "causes": [
+            {
+              "_class": "com.cloudbees.jenkins.GitHubPushCause",
+              "shortDescription": "Started by GitHub push by 02loveslollipop"
+            }
+          ]
+        }
+      },
+      {
+        "branch": "feat/model-training-notebook",
+        "job_path": "job/feat%252Fmodel-training-notebook/",
+        "build": 2,
+        "result": "SUCCESS",
+        "building": false,
+        "description": "feat/model-training-notebook 1ead0d4ded77 (tests)",
+        "causes": [
+          {
+            "_class": "jenkins.branch.BranchIndexingCause",
+            "shortDescription": "Branch indexing"
+          }
+        ],
+        "checkout_revisions": [
+          "ea05858d339995b202f0040d095a57562a2312e1",
+          "1ead0d4ded77c21233118ad0ccd03ee46824d8b2"
+        ],
+        "stages": [],
+        "test_counts": {
+          "passCount": 52,
+          "failCount": 0,
+          "skipCount": 1
+        },
+        "branch_latest_build": {
+          "number": 2,
+          "result": "SUCCESS",
+          "causes": [
+            {
+              "_class": "jenkins.branch.BranchIndexingCause",
+              "shortDescription": "Branch indexing"
+            }
+          ]
+        }
+      },
+      {
+        "branch": "feat/repository-layout",
+        "job_path": "job/feat%252Frepository-layout/",
+        "build": 2,
+        "result": "ABORTED",
+        "building": false,
+        "description": null,
+        "causes": [
+          {
+            "_class": "jenkins.branch.BranchIndexingCause",
+            "shortDescription": "Branch indexing"
+          },
+          {
+            "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
+            "shortDescription": "adminによる中断"
+          }
+        ],
+        "checkout_revisions": [
+          "ea05858d339995b202f0040d095a57562a2312e1"
+        ],
+        "stages": [],
+        "test_counts": null,
+        "branch_latest_build": {
+          "number": 2,
+          "result": "ABORTED",
+          "causes": [
+            {
+              "_class": "jenkins.branch.BranchIndexingCause",
+              "shortDescription": "Branch indexing"
+            },
+            {
+              "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
+              "shortDescription": "adminによる中断"
+            }
+          ]
+        }
+      },
+      {
+        "branch": "fix/presentation-pr5",
+        "job_path": "job/fix%252Fpresentation-pr5/",
+        "build": 3,
+        "result": "SUCCESS",
+        "building": false,
+        "description": "fix/presentation-pr5 589867206eea (tests)",
+        "causes": [
+          {
+            "_class": "com.cloudbees.jenkins.GitHubPushCause",
+            "shortDescription": "Started by GitHub push by 02loveslollipop"
+          }
+        ],
+        "checkout_revisions": [
+          "ea05858d339995b202f0040d095a57562a2312e1",
+          "589867206eead1307e58267c2c87de3d61331c1f"
+        ],
+        "stages": [],
+        "test_counts": {
+          "passCount": 153,
+          "failCount": 0,
+          "skipCount": 0
+        },
+        "branch_latest_build": {
+          "number": 3,
+          "result": "SUCCESS",
+          "causes": [
+            {
+              "_class": "com.cloudbees.jenkins.GitHubPushCause",
+              "shortDescription": "Started by GitHub push by 02loveslollipop"
+            }
+          ]
+        }
+      },
+      {
+        "branch": "fix/presentation-runtime-safety",
+        "job_path": "job/fix%252Fpresentation-runtime-safety/",
+        "build": 2,
+        "result": "ABORTED",
+        "building": false,
+        "description": null,
+        "causes": [
+          {
+            "_class": "jenkins.branch.BranchIndexingCause",
+            "shortDescription": "Branch indexing"
+          },
+          {
+            "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
+            "shortDescription": "adminによる中断"
+          }
+        ],
+        "checkout_revisions": [
+          "ea05858d339995b202f0040d095a57562a2312e1"
+        ],
+        "stages": [],
+        "test_counts": null,
+        "branch_latest_build": {
+          "number": 2,
+          "result": "ABORTED",
+          "causes": [
+            {
+              "_class": "jenkins.branch.BranchIndexingCause",
+              "shortDescription": "Branch indexing"
+            },
+            {
+              "_class": "jenkins.model.CauseOfInterruption$UserInterruption",
+              "shortDescription": "adminによる中断"
+            }
+          ]
+        }
+      },
+      {
+        "branch": "master",
+        "job_path": "job/master/",
+        "build": 3,
+        "result": "SUCCESS",
+        "building": false,
+        "description": "master 32f526dddace (full)",
+        "causes": [
+          {
+            "_class": "hudson.model.Cause$UserIdCause",
+            "shortDescription": "ユーザーadminが実行"
+          }
+        ],
+        "checkout_revisions": [
+          "045a2300caf63506fdc0dd4092d7a771a43a1aee",
+          "32f526dddaceb6223575e8bbc10edf2724593323"
+        ],
+        "stages": [
+          {
+            "name": "Clone repository",
+            "status": "SUCCESS"
+          },
+          {
+            "name": "Load shared CI tools",
+            "status": "SUCCESS"
+          },
+          {
+            "name": "Validate structure",
+            "status": "SUCCESS"
+          },
+          {
+            "name": "Repository tests",
+            "status": "SUCCESS"
+          },
+          {
+            "name": "Train and evaluate",
+            "status": "SUCCESS"
+          },
+          {
+            "name": "Quality and stability",
+            "status": "SUCCESS"
+          },
+          {
+            "name": "Approve model",
+            "status": "SUCCESS"
+          },
+          {
+            "name": "Record approval",
+            "status": "SUCCESS"
+          },
+          {
+            "name": "Declarative: Post Actions",
+            "status": "SUCCESS"
+          }
+        ],
+        "test_counts": {
+          "passCount": 160,
+          "failCount": 0,
+          "skipCount": 0
+        },
+        "branch_latest_build": {
+          "number": 3,
+          "result": "SUCCESS",
+          "causes": [
+            {
+              "_class": "hudson.model.Cause$UserIdCause",
+              "shortDescription": "ユーザーadminが実行"
+            }
+          ]
+        }
+      }
+    ],
+    "deliveries": [
+      {
+        "id": "3853009689465847808",
+        "event": "push",
+        "guid": "8cc9fa32-dbf3-11f1-9afa-afb0b8e06c58",
+        "delivered_at": "2026-11-09T04:10:52.003Z",
+        "status_code": 200,
+        "ref": "refs/heads/ci/webhook-all-branches-20261109",
+        "sha": "58b30ec97bcc0c09e650c072c0cc4380d0599345",
+        "response": "{\"accepted\": true, \"delivery\": \"8cc9fa32-dbf3-11f1-9afa-afb0b8e06c58\"}"
+      },
+      {
+        "id": "3853009111021002752",
+        "event": "push",
+        "guid": "ec2bf0c6-dbf2-11f1-9c9f-c443cce7ae8f",
+        "delivered_at": "2026-11-09T04:06:22.691Z",
+        "status_code": 200,
+        "ref": "refs/heads/ci/webhook-merge-ja-20261109",
+        "sha": "ba22dcb11f237a07c17981710c87f73da919a064",
+        "response": "{\"accepted\": true, \"delivery\": \"ec2bf0c6-dbf2-11f1-9c9f-c443cce7ae8f\"}"
+      },
+      {
+        "id": "3853008691273932800",
+        "event": "push",
+        "guid": "77dc1566-dbf2-11f1-8335-44f336f3f74d",
+        "delivered_at": "2026-11-09T04:03:07.198Z",
+        "status_code": 200,
+        "ref": "refs/heads/ci/webhook-merge-ja-20261109",
+        "sha": "e5c6ede5ee3dbffcb023b262181b6e587c335119",
+        "response": "{\"accepted\": true, \"delivery\": \"77dc1566-dbf2-11f1-8335-44f336f3f74d\"}"
+      },
+      {
+        "id": "3853008546314600448",
+        "event": "push",
+        "guid": "4fab52be-dbf2-11f1-9116-910467652493",
+        "delivered_at": "2026-11-09T04:01:59.707Z",
+        "status_code": 200,
+        "ref": "refs/heads/ci/webhook-all-branches-20261109",
+        "sha": "776753337e9464bb71a0769b85abae9ae3ad40d0",
+        "response": "{\"accepted\": true, \"delivery\": \"4fab52be-dbf2-11f1-9116-910467652493\"}"
+      },
+      {
+        "id": "3852985812278870016",
+        "event": "push",
+        "guid": "a9b45576-dbd9-11f1-9163-563d51337a67",
+        "delivered_at": "2026-11-09T01:05:33.349Z",
+        "status_code": 200,
+        "ref": "refs/heads/ci/jenkins-results-es-20261108",
+        "sha": "ee3011d11d3bde1b96609a6fab3a2375084aa4c7",
+        "response": "{\"accepted\": true, \"delivery\": \"a9b45576-dbd9-11f1-9163-563d51337a67\"}"
+      }
+    ],
+    "cleanup_deadline_utc": "2026-11-13T02:41:05Z",
+    "master_modified_for_verification": false
+  },
+  "all_branch_push_probe": {
+    "branch": "ci/webhook-all-branches-20261109",
+    "sha": "776753337e9464bb71a0769b85abae9ae3ad40d0",
+    "previous_build": 6,
+    "build": 7,
+    "causes": [
+      {
+        "_class": "com.cloudbees.jenkins.GitHubPushCause",
+        "shortDescription": "Started by GitHub push by 02loveslollipop"
+      }
+    ],
+    "periodic_index_paused_for_cause_isolation": true,
+    "master_before": {
+      "_class": "org.jenkinsci.plugins.workflow.job.WorkflowJob",
+      "lastBuild": {
+        "_class": "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+        "number": 2,
+        "result": "SUCCESS"
+      },
+      "inQueue": false
+    },
+    "master_after": {
+      "_class": "org.jenkinsci.plugins.workflow.job.WorkflowJob",
+      "lastBuild": {
+        "_class": "org.jenkinsci.plugins.workflow.job.WorkflowRun",
+        "number": 2,
+        "result": "SUCCESS"
+      },
+      "inQueue": false
+    }
+  },
+  "japanese_ui_validation": {
+    "push_probe": "output/github-webhook/all-branches/push-probe.json",
+    "receipts": "output/github-webhook/japanese-validation/verification.json",
+    "settings_screenshot": "output/playwright/70-github-webhook-settings-user.png",
+    "settings_screenshot_provenance": "Provided by user, unchanged",
+    "locale": "ja",
+    "merge_pr": 18,
+    "full_master_build": 3,
+    "full_master_cause": "UserIdCause"
+  }
+}

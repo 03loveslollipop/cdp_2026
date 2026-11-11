@@ -1,0 +1,12 @@
+{
+  "engine": "pdfLaTeX",
+  "template": "tufte-handout",
+  "reference": "/home/zerotwo/vis/report",
+  "upstream_commit": "efb8c8e836890bad71fb5834acdd316ebde6db12",
+  "original_images": 33,
+  "template_sha256": {
+    "tufte-handout.cls": "6399968984d0d449aa76fa877c2373de606a87ab15df79b68f6fa5d660395cc0",
+    "tufte-common.def": "c4ec61412dc5e7bf1d5c86d8209e3a9e784038c18306af00a952ba98c0d17856"
+  },
+  "pdf_sha256": "a6583d7117a900f8fc22fe5596b4588aa399e24ec4be9981a84d7ed85325bd05"
+}

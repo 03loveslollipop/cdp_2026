@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 import pandas as pd
-import pytest
 
 from mlops_pipeline.src.ft_engineering import (
     read_raw_data,

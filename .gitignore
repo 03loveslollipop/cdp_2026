@@ -141,3 +141,20 @@ Thumbs.db
 03_slides/output/pdf/*
 !03_slides/output/pdf/*.pdf
 .playwright-cli/
+
+# Semester Jenkins / Vertex AI exercise
+!docs/
+!docs/*.md
+!04_jenkins_report/*.md
+!cloud/*.md
+.jenkins/
+/tmp/
+output/
+cloud/pipeline.json
+cloud/config.local.json
+**/.terraform/
+**/terraform.tfstate*
+**/.terraform.tfstate.lock.info
+**/*.tfplan
+**/terraform.tfvars
+ci/jenkins/plugins-cache/

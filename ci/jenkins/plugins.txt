@@ -1,0 +1,9 @@
+workflow-aggregator
+git
+github
+junit
+timestamper
+pipeline-stage-view
+github-branch-source
+remote-file
+locale

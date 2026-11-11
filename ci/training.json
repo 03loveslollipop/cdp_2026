@@ -1,0 +1,20 @@
+{
+  "seeds": [42, 43, 44],
+  "temporal_blocks": 5,
+  "inner_train_fraction": 0.8,
+  "f1_tolerance": 0.01,
+  "review_fraction": 0.2,
+  "threads": 2,
+  "benchmark_batch_size": 256,
+  "benchmark_repeats": 3,
+  "device": "cpu",
+  "lightgbm_device": "cpu",
+  "search": {"method": "grid"},
+  "models": {
+    "logistic_regression": {"C": [0.1, 1.0], "class_weight": ["balanced"]},
+    "decision_tree": {"max_depth": [3, 6], "min_samples_leaf": [30], "class_weight": ["balanced"]},
+    "random_forest": {"n_estimators": [50], "max_depth": [6], "min_samples_leaf": [10], "class_weight": ["balanced"]},
+    "heuristic": {},
+    "dummy": {}
+  }
+}

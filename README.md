@@ -34,7 +34,7 @@ production services. CUDA is intentionally not part of tracked code or deploymen
 └── .github/workflows/                   tests, SonarCloud, and master-only deployment
 ```
 
-All Markdown other than this README is ignored. Generated artifacts, local runs,
+Exercise runbooks in `docs/` are versioned alongside this README. Generated artifacts, local runs,
 credentials, record-level predictions, and CUDA experiments are also ignored.
 
 ## Local development
@@ -73,3 +73,34 @@ pipeline train and package a different validated winner without application code
 GitHub Actions always runs CPU tests and SonarCloud; only pushes to `master` build and
 release the Heroku images. The release uses explicit `cdp_2026` schema qualification and
 does not modify unrelated PostgreSQL schemas.
+
+## Jenkins and Vertex AI semester exercise
+
+The [Jenkins runbook](docs/jenkins.md) covers the approval pipeline, persistent local
+container, automatic SCM polling, completion receipts and Terraform deployment in
+the verified core IT GCP project. Start locally with:
+
+```bash
+python3 ci/prepare_local.py
+python3 ci/jenkins/fetch_plugins.py
+docker compose up -d --build
+```
+
+Open Jenkins at <http://127.0.0.1:18081>. The administrator credential is generated
+under the ignored `.jenkins/secrets/` directory.
+
+The [GCP training runbook](docs/gcp-training.md) covers AutoML and the custom Vertex
+AI Pipeline, launched through the web dashboard after user approval and login.
+`cloud/` provides offline data export, a KFP compiler, the training container and
+comparison tools. The [GCP execution log](docs/gcp-execution.md) records the successful
+CPU dashboard run and matching local/cloud metrics. After the user authorized approximately USD21.25, one classic AutoML run was
+submitted through the Japanese dashboard with a one-node-hour budget and early stopping.
+AutoML completed successfully on 2026-11-09 at 04:55:04 JST. Native default-class ROC-AUC is 0.6542 and F1 is 0.1037 at threshold 0.5; Python/custom ROC-AUC is 0.6573. See the [measured comparison](docs/model-results.md) and Spanish report. The prior USD15 decision is preserved as history.
+The workspace-root `CLOUD_DEPLOYMENT_INVENTORY.md` records identities, project IDs,
+resources, configurations and verified deployment state.
+
+The [five-day expiry policy](docs/expiry-policy.md) schedules the Jenkins VM to stop
+on **2026-11-13 at 02:41:05 UTC**, followed by teardown of its dedicated cloud resources.
+# Informe unificado y webhook GitHub
+
+El [informe de resultados en español](04_jenkins_report/INFORME_RESULTADOS_ES.md) reúne las ejecuciones reales, capturas de Jenkins, métricas, costos y política de eliminación. El PDF autocontenido y el ZIP para compartir se generan con `04_jenkins_report/build_report.py` en `output/pdf/`. El [procedimiento del webhook](docs/github-webhook.md) distingue implementación preparada, instalación y verificación efectiva de push/merge. El webhook remoto está activo: `credit-classification-branches` descubre todas las ramas y ejecuta sus tests, incluso sin Jenkinsfile propio. Los pushes y merges a `master` ejecutan además entrenamiento, calidad/estabilidad, aprobación y notificación. La definición compartida está fijada por SHA; el job inicial conserva su historia deshabilitado. Jenkins está en GCP: `localhost:18083` es el extremo local del túnel IAP hacia la VM, y el webhook público usa Cloud Run. Los builds históricos de la primera ejecución acreditan polling SCM.

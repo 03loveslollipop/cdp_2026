@@ -1,0 +1,55 @@
+% Extensions only: vendored Tufte class and common definition are unchanged.
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-nodecimaldot,es-tabla]{babel}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{xurl}
+\usepackage{seqsplit}
+\usepackage{capt-of}
+\usepackage{needspace}
+\definecolor{PlayerBlue}{HTML}{4E79A7}
+\definecolor{CriticOrange}{HTML}{F28E2B}
+\definecolor{DraftGray}{gray}{0.36}
+\graphicspath{{../assets/}}
+\hypersetup{colorlinks=true,linkcolor=PlayerBlue,urlcolor=PlayerBlue,
+  pdftitle={Comparación de proveedores de nube: AWS, Google Cloud y Azure},
+  pdfauthor={Mateo Monsalve Valencia},
+  pdfsubject={Comparación de entrenamiento y servicios de aprendizaje automático}}
+\setlength{\emergencystretch}{1.5em}
+\clubpenalty=10000
+\widowpenalty=10000
+\displaywidowpenalty=10000
+% Full-width evidence, with the caption in the right annotation column below.
+% Reserve its true height so the next image/table cannot cover the caption.
+\newcommand{\wideevidence}[3]{%
+  \par\medskip\begin{fullwidth}\noindent
+  \begin{minipage}{\linewidth}\centering
+    \includegraphics[width=\linewidth,height=.49\textheight,keepaspectratio]{#1}\par
+    \smallskip\noindent\hfill
+    \begin{minipage}{\marginparwidth}
+      \captionof{figure}{\strut}\label{#3}
+    \end{minipage}
+  \end{minipage}\end{fullwidth}\par\medskip}
+% Same text-column figure/margin-caption convention as vis/report/main.tex.
+\newcommand{\reportfigure}[3]{%
+  \begin{figure}[!htbp]\centering
+    \includegraphics[width=\linewidth]{#1}
+    \caption[]{\strut}\label{#3}
+  \end{figure}}
+
+% Number-only figure captions. Keep native counters and references; suppress
+% descriptive text and the colon. The second macro argument stays empty.
+\makeatletter
+\let\report@original@caption\@caption
+\long\def\@caption#1[#2]#3{%
+  \ifthenelse{\equal{#1}{figure}}{%
+    \par\begingroup\@parboxrestore
+    \@tufte@caption@font\@tufte@caption@justification
+    \noindent\figurename~\thefigure\par
+    \endgroup
+  }{\report@original@caption{#1}[#2]{#3}}%
+}
+\makeatother

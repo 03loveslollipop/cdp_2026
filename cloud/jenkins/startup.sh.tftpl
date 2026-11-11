@@ -1,0 +1,41 @@
+#!/bin/bash
+set -euo pipefail
+apt-get update
+apt-get install -y docker.io curl python3
+systemctl enable --now docker
+install -d -m 700 /etc/semester-jenkins
+install -d -m 755 /var/lib/semester-jenkins/receipts
+META=http://metadata.google.internal/computeMetadata/v1
+ACCESS_TOKEN=$(curl -fsS -H 'Metadata-Flavor: Google' "$META/instance/service-accounts/default/token" | python3 -c 'import json,sys;print(json.load(sys.stdin)["access_token"])')
+for entry in 'semester-jenkins-admin admin-password' 'semester-jenkins-notify notify-token'; do
+  read -r secret filename <<< "$entry"
+  curl -fsS -H "Authorization: Bearer $ACCESS_TOKEN" \
+    "https://secretmanager.googleapis.com/v1/projects/${project}/secrets/$secret/versions/latest:access" \
+    | python3 -c 'import sys,json,base64;sys.stdout.buffer.write(base64.b64decode(json.load(sys.stdin)["payload"]["data"]))' \
+    > "/etc/semester-jenkins/$filename"
+  chmod 444 "/etc/semester-jenkins/$filename"
+done
+echo '${receiver}' | base64 -d > /etc/semester-jenkins/notification_server.py
+printf '%s' "$ACCESS_TOKEN" | docker login -u oauth2accesstoken --password-stdin https://${region}-docker.pkg.dev
+docker pull '${image}'
+docker logout https://${region}-docker.pkg.dev
+unset ACCESS_TOKEN
+docker network inspect credit-ci >/dev/null 2>&1 || docker network create credit-ci
+docker volume create semester_jenkins_home
+docker rm -f semester-jenkins semester-notifications 2>/dev/null || true
+docker run -d --name semester-notifications --restart unless-stopped --network credit-ci \
+  -p 8081:8081 \
+  -v /etc/semester-jenkins/notification_server.py:/app/notification_server.py:ro \
+  -v /etc/semester-jenkins/notify-token:/run/secrets/notify_token:ro \
+  -v /var/lib/semester-jenkins/receipts:/receipts \
+  python:3.12-slim python /app/notification_server.py
+docker run -d --name semester-jenkins --restart unless-stopped --network credit-ci \
+  --memory=3g --cpus=2 -p 8080:8080 \
+  -e JAVA_OPTS='-Djenkins.install.runSetupWizard=false -Dhudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT=true -Xms256m -Xmx1024m' \
+  -e NOTIFY_URL=http://semester-notifications:8081/notify \
+  -e JENKINS_LAB_URL=http://127.0.0.1:18083/ \
+  -e NOTIFY_TOKEN_FILE=/run/secrets/notify_token \
+  -v semester_jenkins_home:/var/jenkins_home \
+  -v /etc/semester-jenkins/admin-password:/run/secrets/jenkins_admin_password:ro \
+  -v /etc/semester-jenkins/notify-token:/run/secrets/notify_token:ro \
+  '${image}'

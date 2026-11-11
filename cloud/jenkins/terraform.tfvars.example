@@ -1,0 +1,7 @@
+# Verified project under 02labs.me. This module never creates a new project.
+project_id = "nb-core-dev-99d0"
+region     = "us-central1"
+zone       = "us-central1-a"
+# Enable after the image has been pushed and both Secret Manager versions exist.
+deploy_controller = false
+# image = "us-central1-docker.pkg.dev/nb-core-dev-99d0/semester-jenkins/controller@sha256:..."

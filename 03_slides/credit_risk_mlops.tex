@@ -12,184 +12,189 @@
 \definecolor{creditgreen}{RGB}{37,132,92}
 \definecolor{creditorange}{RGB}{210,121,35}
 \setbeamercolor{structure}{fg=creditblue}
-\setbeamercolor{title}{fg=creditblue}
+\setbeamercolor{title}{fg=white}
 \setbeamertemplate{navigation symbols}{}
 \setbeamertemplate{footline}{\hfill\insertframenumber{} / \inserttotalframenumber\hspace{0.4cm}\vspace{0.15cm}}
 \graphicspath{{assets/}}
 
-\title{Credit-risk MLOps pipeline}
-\subtitle{From leakage-safe EDA to monitored production inference}
-\author{CDP 2026}
-\date{September 2026}
-
-\newcommand{\placeholder}[2]{%
-  \fbox{\parbox[c][#2][c]{0.88\linewidth}{\centering\color{gray}\Large #1\\[0.4cm]\normalsize Replace with GitHub PR and review screenshot}}%
-}
+\title{Feature Engineering, Entrenamiento y despliegue}
+\subtitle{Mateo Monsalve Valencia}
+\author{}
+\date{Septiembre de 2026}
 
 \begin{document}
 
 \frame{\titlepage}
 
-\begin{frame}{Project outcome}
+\begin{frame}{Entrega}
 \begin{columns}[T]
-\column{0.56\textwidth}
-\textbf{Goal:} predict late/default payment while preserving chronological validation and operating a secure CPU-only service.
-\vspace{0.25cm}
+\column{0.64\textwidth}
 \begin{itemize}
-  \item Leakage-safe scikit-learn preparation pipeline.
-  \item Explainable heuristic baseline, then reproducible TPE model search.
-  \item Config-driven model packaging: family and hyperparameters change without API code changes.
-  \item PostgreSQL-backed inference logging, drift monitoring, JWT roles, CI/CD and SAST.
+  \item Feature engineering sin variables con fuga de información.
+  \item Modelo baseline heurístico.
+  \item Entrenamiento e hiperparametrización con TPE (\textit{Tree-Structured Parzen Estimator}).
+  \item Creación y empaquetado mediante configuraciones.
+  \item Historial de inferencias para monitorear drift con PostgreSQL y Heroku.
 \end{itemize}
-\column{0.4\textwidth}
-\begin{block}{Decision convention}
+\column{0.32\textwidth}
+\begin{block}{Convención de decisión}
 \centering
-Default class = \textbf{0}\\[0.15cm]
-Probabilities = \textbf{[P(default), P(on-time)]}\\[0.15cm]
-Training selection uses temporal validation only.
+Clase de incumplimiento = \textbf{0}\\[0.15cm]
+Probabilidades = \textbf{[P(incumplimiento), P(a tiempo)]}\\[0.15cm]
+La selección usa únicamente validación temporal.
 \end{block}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Git history: full branch graph (1/2)}
+\begin{frame}{Grafo Git}
 \begin{center}
-\includegraphics[width=0.98\textwidth,height=0.76\textheight,keepaspectratio]{git_graph_part_1.png}
+\includegraphics[width=0.84\textwidth,height=0.54\textheight,keepaspectratio]{git_graph_gitgraphjs.png}
 \end{center}
-\vspace{-0.2cm}
-\scriptsize The graph includes all reachable branches at deck generation time. Part 2 continues on the next slide.
 \end{frame}
 
-\begin{frame}{Git history: full branch graph (2/2)}
+\begin{frame}{Ramas del repositorio}
 \begin{center}
-\includegraphics[width=0.98\textwidth,height=0.76\textheight,keepaspectratio]{git_graph_part_2.png}
+\includegraphics[width=0.94\textwidth,height=0.72\textheight,keepaspectratio]{graph.png}
 \end{center}
-\vspace{-0.2cm}
-\scriptsize The highlighted review sequence and screenshot placeholders are shown next.
 \end{frame}
 
-\begin{frame}{Reviewed pull requests}
+\begin{frame}{Pull requests}
 \begin{columns}[T]
 \column{0.31\textwidth}
 \centering\textbf{PR \#2}\\
-\scriptsize Feature-engineering pipeline\\[0.15cm]
-\placeholder{PR \#2 screenshot}{0.39\textheight}
+\scriptsize\parbox{\linewidth}{\centering Add feature engineering pipeline}\\[0.15cm]
+\includegraphics[width=\linewidth,height=0.42\textheight,keepaspectratio]{pr2.png}
 \column{0.31\textwidth}
 \centering\textbf{PR \#3}\\
-\scriptsize Heuristic baseline into feature branch\\[0.15cm]
-\placeholder{PR \#3 screenshot}{0.39\textheight}
+\scriptsize\parbox{\linewidth}{\centering Add EDA-based heuristic classifier for baseline}\\[0.15cm]
+\includegraphics[width=\linewidth,height=0.42\textheight,keepaspectratio]{pr3.png}
 \column{0.31\textwidth}
 \centering\textbf{PR \#5}\\
-\scriptsize Model training and evaluation pipeline\\[0.15cm]
-\placeholder{PR \#5 screenshot}{0.39\textheight}
+\scriptsize\parbox{\linewidth}{\centering Add model training and evaluation pipeline}\\[0.15cm]
+\includegraphics[width=\linewidth,height=0.42\textheight,keepaspectratio]{pr5.png}
 \end{columns}
-\vspace{0.2cm}
-\scriptsize PRs \#2, \#3, and \#5 are merged. Replace each panel with its GitHub PR and review screenshot before delivery.
 \end{frame}
 
-\begin{frame}{EDA and scikit-learn preparation flow}
+\begin{frame}{Feature engineering}
 \begin{center}
-\resizebox{\textwidth}{!}{
+\resizebox{0.82\textwidth}{!}{
 \begin{tikzpicture}[
-  node distance=0.8cm and 1.1cm,
-  data/.style={rectangle,rounded corners,draw=creditblue,fill=blue!8,minimum width=2.2cm,minimum height=0.9cm,align=center},
-  stage/.style={rectangle,rounded corners,draw=creditgreen!70!black,fill=green!8,minimum width=2.65cm,minimum height=1.1cm,align=center},
-  output/.style={rectangle,rounded corners,draw=creditorange!80!black,fill=orange!10,minimum width=2.8cm,minimum height=1cm,align=center},
+  font=\tiny,
+  data/.style={rectangle,rounded corners,draw=creditblue,fill=blue!8,text width=1.4cm,minimum height=0.8cm,align=center},
+  pipeline/.style={rectangle,rounded corners,draw=creditgreen!70!black,fill=green!8,text width=3.0cm,minimum height=1.3cm,align=center},
+  split/.style={rectangle,rounded corners,draw=creditorange!80!black,fill=orange!10,text width=1.5cm,minimum height=0.85cm,align=center},
+  output/.style={rectangle,rounded corners,draw=creditorange!80!black,fill=orange!16,text width=1.75cm,minimum height=0.85cm,align=center},
   arrow/.style={-{Stealth[length=3mm]},thick,draw=creditblue}]
-  \node[data] (raw) {Raw \texttt{database.csv}\\10,763 rows};
-  \node[stage,right=of raw] (validate) {Schema and timing validation\\null normalization};
-  \node[stage,right=of validate] (split) {Chronological 70/30 split\\fit on train only};
-  \node[stage,right=of split] (prep) {ColumnTransformer\\impute, encode, scale\\feature rules};
-  \node[output,below=of prep] (features) {Output 1: predictors\\prepared model matrix};
-  \node[output,below=of split] (metadata) {Output 2: labels + metadata\\timestamps, row IDs, diagnostics};
-  \draw[arrow] (raw) -- (validate);
-  \draw[arrow] (validate) -- (split);
-  \draw[arrow] (split) -- (prep);
-  \draw[arrow] (prep) -- (features);
-  \draw[arrow] (split) -- (metadata);
-\end{tikzpicture}}
+  \node[data] (raw) at (0,0) {Datos crudos\\\texttt{dataset.csv}};
+  \node[split] (partition) at (2.15,0) {Partición\\cronológica 70/30};
+  \node[data] (trainraw) at (4.75,1.35) {Filas de\\entrenamiento};
+  \node[data] (validraw) at (4.75,-1.35) {Filas de\\validación};
+  \node[pipeline] (fit) at (8.25,1.35) {\texttt{fit\_transform} en entrenamiento\\Selección $\rightarrow$ limpieza $\rightarrow$ validación\\$\rightarrow$ variables derivadas $\rightarrow$ imputación};
+  \node[pipeline] (transform) at (8.25,-1.35) {\texttt{transform} con pipeline ajustado\\Valores ya aprendidos;\\sin reajustar};
+  \node[output] (trainout) at (11.85,1.35) {\texttt{training.csv}\\$X$, $y$ y metadatos};
+  \node[output] (validout) at (11.85,-1.35) {\texttt{validation.csv}\\$X$, $y$ y metadatos};
+
+  \draw[arrow] (raw) -- (partition);
+  \draw[arrow] (partition) -- (trainraw);
+  \draw[arrow] (partition) -- (validraw);
+  \draw[arrow] (trainraw) -- (fit);
+  \draw[arrow] (fit) -- (trainout);
+  \draw[arrow] (validraw) -- (transform);
+  \draw[arrow] (fit.south) to[out=-90,in=90] (transform.north);
+  \draw[arrow] (transform) -- (validout);
+\end{tikzpicture}
+}
 \end{center}
-\vspace{0.15cm}
-\small Excluded: target, bureau score leakage and metadata. Missingness indicators and validation flags are retained; no rows are silently removed.
 \end{frame}
 
-\begin{frame}{Baseline: explainable heuristic policy}
+\begin{frame}{Modelo baseline}
 \begin{columns}[T]
 \column{0.47\textwidth}
-\begin{block}{What it does}
-Combines EDA-derived credit signals into a transparent rule score. It is a reference policy, not a search candidate, so it anchors improvement claims.
+\begin{block}{Reglas obtenidas del EDA}
+\scriptsize
+\textbullet\ Alta intensidad de consultas crediticias.\\
+\textbullet\ Bajo puntaje de DataCrédito.\\
+\textbullet\ Desfase entre ingreso declarado y buró.\\
+\textbullet\ Mora registrada en el historial.
 \end{block}
 \begin{tabular}{lr}
 \toprule
-Frozen holdout metric & Heuristic \\
+Métrica en holdout congelado & Heurístico \\
 \midrule
-Default precision & 0.0468 \\
-Default recall & 0.2685 \\
-Default F1 & 0.0798 \\
-Average precision & 0.0858 \\
+Precisión incumplimiento & 0.0468 \\
+Recall incumplimiento & 0.2685 \\
+F1 incumplimiento & 0.0798 \\
+Precisión promedio & 0.0858 \\
 ROC-AUC & 0.6241 \\
 \bottomrule
 \end{tabular}
 \column{0.5\textwidth}
 \includegraphics[width=\linewidth,keepaspectratio]{heuristic_confusion_matrix.png}
 \end{columns}
-\vspace{-0.22cm}
-\tiny Frozen chronological holdout: 3,229 rows; default prevalence 3.34\%. Thresholds and calibration are learned from training data only.
+\vspace{0.12cm}
+\small\textbf{Evaluación:} holdout de 3.229 filas; incumplimiento: 3,34\%.
 \end{frame}
 
-\begin{frame}{Training protocol: prevent leakage before optimizing}
+\begin{frame}{Entrenamiento}
 \begin{center}
 \resizebox{0.96\textwidth}{!}{
 \begin{tikzpicture}[
   node distance=0.8cm and 0.8cm,
   stage/.style={rectangle,rounded corners,draw=creditblue,fill=blue!7,minimum width=2.2cm,minimum height=1.0cm,align=center},
+  preparation/.style={rectangle,rounded corners,draw=creditgreen!70!black,fill=green!10,minimum width=2.2cm,minimum height=1.0cm,align=center},
   freeze/.style={rectangle,rounded corners,draw=creditorange!80!black,fill=orange!10,minimum width=2.3cm,minimum height=1.0cm,align=center},
-  arrow/.style={-{Stealth[length=3mm]},thick,draw=creditblue}]
-  \node[stage] (raw) {Raw chronological data};
-  \node[stage,right=of raw] (outer) {70\% training period\\30\% frozen holdout};
-  \node[stage,right=of outer] (cv) {Temporal folds + seeds\\fit transform/calibration};
-  \node[stage,right=of cv] (search) {TPE objective\\mean default F1};
-  \node[freeze,right=of search] (freeze) {Freeze family, parameters\\threshold and artifact};
-  \node[freeze,below=of freeze] (audit) {One diagnostic holdout audit\\never select here};
-  \draw[arrow] (raw)--(outer); \draw[arrow] (outer)--(cv); \draw[arrow] (cv)--(search); \draw[arrow] (search)--(freeze); \draw[arrow] (freeze)--(audit);
+  arrow/.style={-{Stealth[length=3mm]},thick,draw=creditblue},
+  preparation-arrow/.style={-{Stealth[length=3mm]},thick,draw=creditgreen!70!black}]
+  \node[preparation] (raw) {Dataset bruto};
+  \node[preparation,right=of raw] (outer) {70\% entrenamiento\\30\% holdout validación};
+  \node[stage,right=of outer] (cv) {Cross validation\\con N folds};
+  \node[stage,right=of cv] (search) {Hiperparametrización con TPE\\optimizando F1};
+  \node[freeze,right=of search] (freeze) {Seleccionar familia,\\parámetros y artefacto};
+  \draw[preparation-arrow] (raw)--(outer); \draw[arrow] (outer)--(cv); \draw[arrow] (cv)--(search); \draw[arrow] (search)--(freeze);
 \end{tikzpicture}}
 \end{center}
 \vspace{0.2cm}
 \begin{itemize}
-\item Default-class F1 is primary; temporal/seed stability and CPU cost resolve close results.
-\item Calibration and threshold selection use out-of-fold training scores, not holdout labels.
+\item Métrica objetivo: F1 de incumplimiento.
+\item Desempate: estabilidad temporal, variación entre semillas de entrenamiento y costo de inferencia en CPU.
+\item Calibración de probabilidades y selección de umbral con puntajes Out-of-Fold (OOF).
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Models tried and TPE search space}
+\begin{frame}{Modelos y TPE}
 \begin{columns}[T]
 \column{0.48\textwidth}
-\textbf{Learned families}
+\textbf{Modelos evaluados}
 \begin{itemize}
-  \item Logistic regression, decision tree, Gaussian NB, RBF SVM.
-  \item Random forest and Extra Trees.
-  \item XGBoost, LightGBM, PyTorch MLP.
+  \item Regresión logística, árbol, Gaussian NB y SVM RBF.
+  \item Random Forest, Extra Trees, XGBoost y LightGBM.
+  \item MLP de PyTorch.
 \end{itemize}
-\textbf{Reference policies}
+\textbf{Referencias}
 \begin{itemize}
-  \item EDA heuristic and Dummy classifier.
+  \item Baseline heurístico.
+  \item Dummy: estrategia \texttt{constant}, clase fija 1 (pago a tiempo).
 \end{itemize}
 \column{0.48\textwidth}
-\textbf{TPE controls}
+\textbf{Búsqueda TPE}
+\scriptsize
 \begin{itemize}
-  \item 30 trials per learned family, serial/resumable SQLite study.
-  \item Reproducible seed and training-only protocol fingerprint.
-  \item Trees: depth/leaves, estimators, learning rate, sampling, regularization, class weights.
-  \item MLP: widths, learning rate, dropout, batch size, epochs, weight decay.
+  \item 30 intentos por modelo.
+  \item Seed TPE 20260910: generación pseudoaleatoria de intentos.
+  \item Logística: $C$ y pesos; Gaussian NB: \texttt{var\_smoothing}; SVM: $C$, \texttt{gamma} y pesos.
+  \item Árboles: profundidad, hojas, estimadores, variables por split y pesos.
+  \item Gradient boosting (XGBoost/LightGBM): estimadores, profundidad/hojas, tasa de aprendizaje, muestreo, columnas, regularización y balance.
+  \item MLP: capas, tasa de aprendizaje, dropout, lote, épocas y regularización.
 \end{itemize}
 \end{columns}
 \end{frame}
 
-\begin{frame}{CPU TPE rerun: strongest candidates}
+\begin{frame}{Resultados TPE}
 \centering
 \small
 \begin{tabular}{lrrrrr}
 \toprule
-Model & F1 & temporal sd & AP & ROC-AUC & CPU batch ms \\
+Modelo & F1 & desv. temporal & AP & ROC-AUC & lote CPU ms \\
 \midrule
 Random forest & 0.2166 & 0.0333 & 0.1918 & 0.6987 & 106.0 \\
 \textbf{XGBoost} & \textbf{0.2177} & 0.0238 & \textbf{0.2016} & \textbf{0.7018} & \textbf{44.6} \\
@@ -198,47 +203,87 @@ Heuristic & 0.1711 & 0.0223 & 0.1443 & 0.6620 & 52.4 \\
 \bottomrule
 \end{tabular}
 \vspace{0.35cm}
-\begin{block}{Interpretation}
-XGBoost leads F1, AP, ROC-AUC and CPU latency. LightGBM has lower temporal variation. The deployed contract remains the validated XGBoost configuration; the latest selector's stability weighting is a documented governance decision to revisit, not a holdout-driven model swap.
+\begin{block}{Resultado}
+XGBoost obtuvo el mayor F1, AP y ROC-AUC, además de la menor latencia en CPU. LightGBM presentó la menor variación temporal. Se desplegó XGBoost.
 \end{block}
 \end{frame}
 
-\begin{frame}{Model comparison visuals}
+\begin{frame}{Comparación de modelos}
 \begin{columns}
 \column{0.5\textwidth}
 \includegraphics[width=\linewidth]{temporal_f1.png}\\[0.1cm]
-\centering\scriptsize Temporal-validation F1
+\centering\scriptsize F1 en validación temporal
 \column{0.5\textwidth}
 \includegraphics[width=\linewidth]{f1_inference_cost.png}\\[0.1cm]
-\centering\scriptsize F1 versus CPU inference cost
+\centering\scriptsize F1 frente a costo de inferencia en CPU
 \end{columns}
 \end{frame}
 
-\begin{frame}{Selected deployment contract: XGBoost}
+\begin{frame}{Modelo desplegado}
 \begin{columns}[T]
 \column{0.5\textwidth}
-\begin{block}{Config-driven release}
-\texttt{deployment\_model\_config.json} contains the family, fixed hyperparameters, CPU-only runtime, class order and batch limit. The release workflow trains the configured family and packages only its runtime dependency.
+\begin{block}{Liberación controlada por configuración}
+\texttt{deployment\_model\_config.json}: familia, hiperparámetros, orden de clases, CPU y límite de lote. Cambiar el modelo no requiere cambiar la API.
 \end{block}
 \column{0.46\textwidth}
 \scriptsize
 \begin{tabular}{lr}
 \toprule
-Parameter & Value \\
+Parámetro & Valor \\
 \midrule
 estimators & 1,100 \\
-max depth & 5 \\
-learning rate & 0.00818 \\
-min child weight & 1.645 \\
-subsample / columns & 0.672 / 0.546 \\
-L1 / L2 regularization & 0.363 / 0.049 \\
-runtime & CPU, class order [0,1] \\
+profundidad máxima & 5 \\
+tasa de aprendizaje & 0.00818 \\
+peso mínimo de hijo & 1.645 \\
+submuestra / columnas & 0.672 / 0.546 \\
+regularización L1 / L2 & 0.363 / 0.049 \\
+ejecución & CPU, orden de clases [0,1] \\
 \bottomrule
 \end{tabular}
 \end{columns}
 \end{frame}
 
-\begin{frame}{Production deployment: three logical microservices}
+\begin{frame}{Métricas XGBoost}
+\begin{columns}[T]
+\column{0.47\textwidth}
+\begin{tabular}{lr}
+\toprule
+Métrica en holdout congelado & XGBoost \\
+\midrule
+Precisión incumplimiento & 0.1216 \\
+Recall incumplimiento & 0.2500 \\
+F1 incumplimiento & 0.1636 \\
+Precisión promedio & 0.1052 \\
+ROC-AUC & 0.6641 \\
+\bottomrule
+\end{tabular}
+\column{0.5\textwidth}
+\includegraphics[width=\linewidth,keepaspectratio]{xgboost_confusion_matrix.png}
+\end{columns}
+\vspace{0.12cm}
+\small\textbf{Evaluación:} holdout de 3.229 filas; incumplimiento: 3,34\%.
+\end{frame}
+
+\begin{frame}{Stack tecnológico}
+\centering
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{ccc}
+\includegraphics[height=1.45cm]{stack_icons/python-hires.png} &
+\includegraphics[height=1.45cm]{stack_icons/fastapi-hires.png} &
+\includegraphics[height=1.45cm]{stack_icons/plotly-hires.png} \\
+\scriptsize Python & \scriptsize FastAPI & \scriptsize Dash \\[0.42cm]
+\includegraphics[height=1.45cm]{stack_icons/sqlalchemy-hires.png} &
+\includegraphics[height=1.45cm]{stack_icons/postgresql-hires.png} &
+\includegraphics[height=1.45cm]{stack_icons/docker-hires.png} \\
+\scriptsize SQLAlchemy & \scriptsize PostgreSQL & \scriptsize Docker \\[0.42cm]
+\includegraphics[height=1.45cm]{stack_icons/heroku-hires.png} &
+\includegraphics[height=1.45cm]{stack_icons/githubactions-hires.png} &
+\includegraphics[height=1.45cm]{stack_icons/sonarqube-hires.png} \\
+\scriptsize Heroku & \scriptsize GitHub Actions & \scriptsize SonarCloud
+\end{tabular}
+\end{frame}
+
+\begin{frame}{Despliegue}
 \begin{center}
 \resizebox{\textwidth}{!}{
 \begin{tikzpicture}[
@@ -247,69 +292,106 @@ runtime & CPU, class order [0,1] \\
   db/.style={rectangle,rounded corners,draw=creditgreen!70!black,fill=green!10,minimum width=3.2cm,minimum height=1.1cm,align=center},
   ext/.style={rectangle,rounded corners,dashed,draw=gray,minimum width=2.0cm,minimum height=1.0cm,align=center},
   arrow/.style={-{Stealth[length=3mm]},thick,draw=creditblue}]
-  \node[ext] (client) {Browser / API client};
-  \node[service,right=of client] (auth) {1. Auth service\\FastAPI + Ed25519 JWT\\inference / owner roles};
-  \node[service,right=of auth] (api) {2. Inference service\\FastAPI JSON/CSV\\visual inference UI};
-  \node[service,below=1.6cm of api] (monitor) {3. Monitoring service\\scheduled drift batch + Dash UI};
-  \node[db,below=1.6cm of auth] (postgres) {Heroku PostgreSQL\\\texttt{cdp\_2026} schema};
+  \node[ext] (client) {Navegador / API};
+  \node[service,right=of client] (auth) {1. Autenticación\\FastAPI + JWT Ed25519\\roles: inferencia / owner};
+  \node[service,right=of auth] (api) {2. Inferencia\\FastAPI JSON/CSV\\UI visual};
+  \node[service,below=1.6cm of api] (monitor) {3. Monitoreo\\batch de drift + UI Dash};
+  \node[db,below=1.6cm of auth] (postgres) {Heroku PostgreSQL\\schema \texttt{cdp\_2026}};
+  \node[ext,below=1.6cm of client] (scheduler) {Heroku Scheduler\\diario 06:30 UTC};
   \draw[arrow] (client)--(auth); \draw[arrow] (client) to[bend right=15] (api);
-  \draw[arrow] (auth)--(api); \draw[arrow] (auth)--(postgres); \draw[arrow] (api)--(postgres); \draw[arrow] (postgres)--(monitor);
+  \draw[arrow] (auth)--(api); \draw[arrow] (auth)--(postgres); \draw[arrow] (api)--(postgres); \draw[arrow] (postgres)--(monitor); \draw[arrow] (scheduler) to[bend right=8] (monitor);
 \end{tikzpicture}}
 \end{center}
-\vspace{0.15cm}
-\small Stack: Python, FastAPI, Dash, SQLAlchemy, PostgreSQL 17, Docker, Heroku Container Registry, GitHub Actions and SonarCloud. Monitoring is one logical service deployed as separate batch and UI processes for operational isolation.
 \end{frame}
 
-\begin{frame}{Drift-monitoring showcase result}
+\begin{frame}{Monitoreo de drift}
 \begin{columns}[T]
 \column{0.52\textwidth}
-\begin{block}{Forced seven-day window}
+\begin{block}{Prueba de drift}
 \begin{itemize}
-  \item 120 deliberately shifted synthetic rows sent through normal inference validation, idempotency and PostgreSQL logging.
-  \item 121 prediction rows analyzed after catch-up processing.
-  \item 46 aggregate monitoring metrics: \textbf{22 ok}, \textbf{19 alert}, \textbf{4 warning}, \textbf{1 insufficient data}.
-  \item Mean default probability: 0.075477; all 120 showcase decisions were on-time.
+  \item 120 filas sintéticas con desplazamiento deliberado.
+  \item 123 predicciones analizadas en la ventana de siete días.
+  \item 46 métricas: \textbf{22 ok}, \textbf{19 alertas}, \textbf{4 advertencias} y \textbf{1 dato insuficiente}.
 \end{itemize}
 \end{block}
 \column{0.43\textwidth}
-\begin{block}{Correct interpretation}
-The shifted batch demonstrates that feature/score drift and data-quality alerts work. It is \textbf{not} model-validation evidence. Performance/calibration stay ``insufficient data'' until mature outcomes arrive.
-\end{block}
+\centering
+\textbf{Estado actual de métricas}\\[0.2cm]
+\begin{tikzpicture}[x=0.115cm,y=0.7cm,font=\scriptsize]
+  \fill[creditgreen] (0,0) rectangle (22,1);
+  \fill[red!72] (22,0) rectangle (41,1);
+  \fill[creditorange] (41,0) rectangle (45,1);
+  \fill[gray!55] (45,0) rectangle (46,1);
+  \draw[black!50] (0,0) rectangle (46,1);
+  \node[white] at (11,0.5) {22 OK};
+  \node[white] at (31.5,0.5) {19 alertas};
+  \node[black] at (43,0.5) {4};
+  \node[black] at (45.5,0.5) {1};
+\end{tikzpicture}
+
+\vspace{0.2cm}
+\scriptsize
+\begin{tabular}{ll}
+\textcolor{creditgreen}{\rule{0.23cm}{0.23cm}} & OK (47,8\%)\\
+\textcolor{red!72}{\rule{0.23cm}{0.23cm}} & Alerta (41,3\%)\\
+\textcolor{creditorange}{\rule{0.23cm}{0.23cm}} & Advertencia (8,7\%)\\
+\textcolor{gray!55}{\rule{0.23cm}{0.23cm}} & Insuficiente (2,2\%)
+\end{tabular}
 \end{columns}
 \end{frame}
 
-\begin{frame}{SAST findings: context and remediation}
+\begin{frame}{PSI de la ventana de drift}
+\centering
+\small
+\begin{tabular}{lrlr}
+\toprule
+Variable / señal & PSI & Variable / señal & PSI \\
+\midrule
+Tendencia de ingresos & 18.844 & Tipo de crédito & 17.139 \\
+Tipo laboral & 17.081 & Saldo principal & 12.434 \\
+Saldo total & 11.380 & Puntaje DataCrédito & 10.506 \\
+Probabilidad de incumplimiento & 10.435 & Promedio de ingresos & 9.573 \\
+Huella de consulta & 9.483 & Edad del cliente & 9.354 \\
+\bottomrule
+\end{tabular}
+\vspace{0.45cm}
+\begin{block}{Umbrales del monitor}
+\centering
+\small Advertencia: PSI $\geq 0.10$ \hspace{1cm} Alerta: PSI $\geq 0.25$
+\end{block}
+\end{frame}
+
+\begin{frame}{Dashboard de drift desplegado}
+\begin{center}
+\includegraphics[width=0.96\textwidth,height=0.7\textheight,keepaspectratio]{dashboard_feature_drift_deployed_cropped.png}
+\end{center}
+\end{frame}
+
+\begin{frame}{SonarQube SAST}
 \begin{columns}[T]
 \column{0.49\textwidth}
-\textbf{S8544 - dependency locking}\vspace{0.1cm}
+\textbf{S8544 - bloqueo de dependencias}\vspace{0.1cm}
 \begin{itemize}
-  \item Service requirement files use exact validated versions (for example FastAPI, SQLAlchemy, XGBoost CPU).
-  \item The screenshot is historical; dependency versions are now pinned per service image.
-  \item Remaining improvement: add hash-locked generated constraints when supply-chain policy requires artifact integrity verification.
+  \item Dependencias fijadas a versiones exactas por servicio.
+  \item Hallazgo resuelto.
 \end{itemize}
 \column{0.49\textwidth}
-\textbf{S8707 - path traversal through CLI path}\vspace{0.1cm}
+\textbf{S8707 - recorrido de rutas por argumento CLI}\vspace{0.1cm}
 \begin{itemize}
-  \item This was remediated, not dismissed as a false positive.
-  \item The installer no longer accepts a file path from \texttt{sys.argv}; it reads only its co-located, repository-owned deployment contract.
-  \item The trusted CI environment reduces exposure, but removing unnecessary input is the durable control.
+  \item El instalador ya no acepta rutas desde \texttt{sys.argv}.
+  \item Solo carga el contrato de despliegue del repositorio.
+  \item Hallazgo resuelto.
 \end{itemize}
 \end{columns}
-\vspace{0.25cm}
-\begin{block}{Evidence to add before delivery}
-Insert the SonarCloud screenshots: resolved S8544 and closed S8707 finding.
-\end{block}
 \end{frame}
 
-\begin{frame}{Takeaways and next steps}
+\begin{frame}{Servicios desplegados}
 \begin{itemize}
-  \item The pipeline is reproducible, CPU-deployable and separated from local CUDA experimentation.
-  \item Production captures inference events safely and calculates aggregate drift/performance with explicit insufficient-data states.
-  \item The branch and PR history makes engineering review auditable from EDA through production.
-  \item Next: settle the explicit XGBoost-versus-LightGBM tie-break policy, collect matured outcomes, and replace deck placeholders with review/Sonar screenshots.
+  \item Autenticación: \href{https://auth.cdp2026.02labs.me/}{\texttt{https://auth.cdp2026.02labs.me/}}
+  \item API e inferencia visual: \href{https://api.cdp2026.02labs.me/inference/}{\texttt{https://api.cdp2026.02labs.me/inference/}}
+  \item Dashboard de monitoreo: \href{https://monitor.cdp2026.02labs.me/monitor/}{\texttt{https://monitor.cdp2026.02labs.me/monitor/}}
+  \item Health checks: \href{https://api.cdp2026.02labs.me/health/ready}{\texttt{api.cdp2026.02labs.me/health/ready}} y \href{https://monitor.cdp2026.02labs.me/health/ready}{\texttt{monitor.cdp2026.02labs.me/health/ready}}
 \end{itemize}
-\vfill
-\centering\Large Questions
 \end{frame}
 
 \end{document}

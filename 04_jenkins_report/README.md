@@ -1,20 +1,43 @@
-# Informe unificado en español
+# Reporte de resultados en español - LaTeX
 
-Documento para compartir: `../output/pdf/Informe_unificado_Jenkins_GCP_ES.pdf`. El ZIP del mismo nombre incorpora PDF, fuente, imágenes originales y anexos. También se puede leer [INFORME_RESULTADOS_ES.md](INFORME_RESULTADOS_ES.md).
+Documento final: `../output/pdf/Informe_unificado_Jenkins_GCP_ES.pdf`.
+El ZIP del mismo nombre contiene el PDF, las fuentes y las evidencias.
+`Informe_unificado_Jenkins_GCP_ES_LaTeX_fuentes.zip` permite compilar el informe
+por separado.
 
-Fuente editable: `informe.json`. Las imágenes se copian sin modificación desde `output/`; `evidencias.json` conserva sus SHA-256. El informe diferencia builds históricos, preparación posterior del webhook y la ejecución real de Vertex, la facturación observada y AutoML completado con presupuesto autorizado de 1 hora-nodo y evaluación nativa de la clase 0. Separa PR-AUC nativo de AP sklearn y documenta la estabilidad AutoML no medida con una sola ejecución. No publicar resultados ni capturas de actividades no ejecutadas.
+## Edición y compilación
 
-Desde la raíz del repositorio, en Linux con las fuentes DejaVu Sans instaladas:
+Las fuentes editables son `latex/main.tex` (título, autor y estructura),
+`latex/contenido.tex` (texto, tablas y figuras) y `latex/style.tex` (formato).
+**Los archivos LaTeX son la versión editorial principal.**
+
+Desde `latex/`:
 
 ```bash
-python3 -m venv .jenkins/report-venv
-.jenkins/report-venv/bin/pip install -r 04_jenkins_report/requirements.txt
-.jenkins/report-venv/bin/python 04_jenkins_report/build_report.py
-pdftoppm -scale-to 1100 -png output/pdf/Informe_unificado_Jenkins_GCP_ES.pdf tmp/pdfs/revision
+latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
 ```
 
-Crear `tmp/pdfs/` antes del último comando y revisar las páginas renderizadas. El PDF es autocontenido y el ZIP puede enviarse sin contraseñas ni estado del navegador. No se envió el informe a terceros.
+Para actualizar el PDF de entrega y ambos ZIP desde la raíz del repositorio:
 
-Actualización de ramas: tests en todas las ramas y pipeline completo en master; incluye configuración multibranch, push real de una rama sin Jenkinsfile y explicación de localhost como túnel IAP al controlador GCP. Los resultados de las validaciones anteriores permanecen identificados como históricos.
+```bash
+python3 04_jenkins_report/build_report.py
+```
 
-Actualización de interfaz y pruebas: 40 páginas, 36 imágenes seleccionadas; Jenkins en japonés con Locale y configuración reproducible. Nuevos builds #7 (push), #9 (merge PR #18) y master #3 (manual completo): SUCCESS, 160 pruebas cada uno. Incluye el PNG original de configuración GitHub aportado por el usuario y recapturas de resultados históricos en japonés. El merge conserva sus causas push e indexación, sin atribución exclusiva.
+Este comando compila y empaqueta el LaTeX existente; no regenera ni sobrescribe
+el texto editado. Las dependencias están en `latex/README.md`.
+
+## Organización del informe
+
+El informe presenta resultados de Jenkins, desempeño de Python, entrenamiento
+en GCP, comparación de modelos, estabilidad y conclusiones. Las capturas de
+configuración, ejecución y validación se integran en las secciones correspondientes.
+No se incluye un anexo ni una sección de costos. Se conservan 33 imágenes.
+
+`informe.json` y `INFORME_RESULTADOS_ES.md` son exportaciones estructurada y
+legible de la revisión editorial. Si se vuelve a editar directamente el `.tex`,
+esas exportaciones deben sincronizarse por separado. `latex/generate.py` es el
+conversor de la versión anterior; no debe usarse para regenerar esta edición.
+
+Las imágenes no se modificaron; `evidencias.json` conserva procedencia y hashes.
+La plantilla Tufte original y su licencia se mantienen en `latex/template/`.
+La evidencia y los recibos reflejan el corte del 9 de noviembre de 2026.

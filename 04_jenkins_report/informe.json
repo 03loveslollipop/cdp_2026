@@ -1,198 +1,95 @@
 {
-  "title": "Informe unificado de resultados: Jenkins y entrenamiento de clasificación crediticia",
-  "subtitle": "Proyecto cdp_2026 · Evidencia de ejecución, modelos, integración GitHub y estado de GCP",
+  "title": "Entregable final Ciencias de datos en producción: Jenkins y AutoML en Google Cloud Platform",
+  "subtitle": "Resultados de CI/CD, entrenamiento y comparación de modelos",
   "date": "9 de noviembre de 2026",
   "pages": [
     {
-      "title": "Jenkins y clasificación crediticia\nInforme unificado de resultados",
+      "title": "1. Implementación de CI/CD en Jenkins",
+      "level": "section",
       "blocks": [
         {
-          "text": "Proyecto cdp_2026 | Corte: 9 de noviembre de 2026. Este documento reúne la implementación, los resultados medidos y las capturas reales del navegador. Su alcance es académico y de prueba; no acredita un modelo listo para producción."
+          "text": "Se implementó un flujo de integración continua y entrega continua (CI/CD) en Jenkins. El servicio se desplegó en Google Cloud Platform (GCP), utilizando Compute Engine con una instancia e2-medium en la región us-central1."
         },
         {
-          "text": "La primera validación local (#5) y cloud (#1 del job original) completó 165 pruebas, entrenamiento temporal, controles de calidad, aprobación de admin y notificación. Después se activó un segundo job desde GitHub para verificar push y merge reales. Las ejecuciones y sus revisiones se distinguen para no atribuir pruebas nuevas a capturas históricas."
+          "image": "output/playwright/gcp/54-jenkins-gcp-vm-running-details-ja.png",
+          "caption": "Figura 1"
         },
         {
-          "table": [
-            [
-              "Entregable",
-              "Estado comprobado"
-            ],
-            [
-              "Jenkins local y GCP",
-              "Histórico local #5 y cloud #1: SUCCESS, 165 tests. Integración posterior GitHub: job independiente con pruebas ampliadas."
-            ],
-            [
-              "Activación automática",
-              "Webhook activo: tests en todas las ramas; master añade entrenamiento, calidad, aprobación y notificación. Ver 9.5–9.8."
-            ],
-            [
-              "Comparación de modelos Python",
-              "Regresión logística, árbol, random forest y dos referencias evaluados con el mismo holdout."
-            ],
-            [
-              "Vertex AI y AutoML",
-              "Vertex CPU y AutoML: SUCCEEDED desde el dashboard. Comparación medida y evaluación nativa de incumplimiento incluidas."
-            ],
-            [
-              "Control de costos y vencimiento",
-              "Parada programada el 13/11/2026 a las 02:41:05 UTC y limpieza desde un minuto después."
-            ]
-          ],
-          "widths": [
-            1,
-            2.6
-          ]
+          "image": "output/playwright/63-ja-locale-settings.png",
+          "caption": "Figura 2"
         },
         {
-          "text": "Los entrenamientos personalizados de Jenkins y Vertex reprodujeron las métricas de Python. AutoML clásico finalizó el 9/11/2026 a las 04:55:04 JST, con presupuesto autorizado de 1 hora-nodo. ROC-AUC de incumplimiento: Python/Vertex CPU 0,6573 y AutoML 0,6542. La detección sigue siendo limitada; no se demuestra superioridad general. Cloud Run recibe el webhook de GitHub. La actualización del 9/11 amplía Jenkins a todas las ramas; master es la rama principal elegida por el usuario."
-        },
-        {
-          "text": "El PDF incorpora las imágenes. El paquete ZIP añade originales PNG, fuente editable, índices y anexos de operación. No incluye contraseñas, tokens, estado de Terraform ni registros individuales del conjunto de datos."
+          "text": "Se configuraron dos flujos de ejecución en Jenkins: uno para la rama master y otro para las demás ramas. El flujo de master ejecuta las pruebas, el entrenamiento, los controles de calidad, la aprobación y la notificación. En las demás ramas se ejecutan únicamente las pruebas automáticas y se omiten las etapas de entrenamiento y validación de los modelos."
         }
       ]
     },
     {
-      "title": "1. Entorno, cuentas y configuración",
+      "title": "1.1. Activación automática con webhooks de GitHub",
+      "level": "subsection",
       "blocks": [
         {
-          "table": [
-            [
-              "Elemento",
-              "Configuración verificada"
-            ],
-            [
-              "Repositorio",
-              "https://github.com/03loveslollipop/cdp_2026 | rama original: feat/bigquery-ingestion-pipeline"
-            ],
-            [
-              "Organización / aprovisionamiento",
-              "02labs.me (408308144073) | contact@02labs.me"
-            ],
-            [
-              "Proyecto Jenkins",
-              "nb-core-dev-99d0 | VM semester-jenkins | us-central1-a"
-            ],
-            [
-              "Cómputo y persistencia",
-              "e2-medium, 2 vCPU, 4 GB RAM; disco de arranque pd-balanced de 40 GB; volumen Docker persistente."
-            ],
-            [
-              "Controlador",
-              "Jenkins 2.580.2, Java 21, Python 3.13 CPU. Controlador actual: 79 plugins compatibles; capturas históricas: 71/76."
-            ],
-            [
-              "Acceso",
-              "Docker local histórico: 127.0.0.1:18081. Jenkins GCP: 127.0.0.1:18083 por IAP hacia 10.81.0.3:8080. Ver 9.8."
-            ],
-            [
-              "Proyecto de entrenamiento",
-              "nb-risk-ml-dev-99d0, separado de Jenkins. Pipeline personalizado y AutoML completados desde el dashboard japonés."
-            ],
-            [
-              "Facturación",
-              "Billing Account for Education | 01ADCB-D56D56-B45DCC | USD."
-            ]
-          ],
-          "widths": [
-            1,
-            2.6
-          ]
+          "image": "output/playwright/69-ja-all-branches-config.png",
+          "caption": "Figura 3"
         },
         {
-          "text": "Terraform creó la infraestructura de Jenkins y una política independiente de vencimiento. La identidad del controlador solo lee su repositorio de imágenes y sus dos secretos; no recibe permisos de entrenamiento en Vertex. No se generaron claves de cuentas de servicio. El receptor webhook usa Cloud Run y conectividad VPC privada; la consola sigue detrás de IAP."
+          "image": "output/playwright/72-ja-feature-success-stages.png",
+          "caption": "Figura 4"
         },
         {
-          "text": "La VM se eligió por la persistencia y el trabajo continuo de Jenkins, incluidos polling y aprobaciones. Las credenciales y el estado del navegador se conservan fuera de la evidencia compartida. La configuración de cuentas y recursos se registra además en CLOUD_DEPLOYMENT_INVENTORY.md, en la raíz del workspace."
+          "image": "output/playwright/70-github-webhook-settings-user.png",
+          "caption": "Figura 5"
         },
         {
-          "text": "La actualización amplió el lock a 76 plugins compatibles. GitHub 1.47.0 y JUnit 1458.v38661c0638e2 están activos también en GCP. Los cinco plugins adicionales se cargaron dinámicamente comprobando hashes; la VM y su volumen no se reemplazaron y el historial anterior se conserva."
+          "text": "El merge del PR #18 actualizó la rama destino y activó el build #9, que aprobó las 160 pruebas. Jenkins registró tanto el evento de push como la indexación de la rama. Por esta razón, esa ejecución no permite atribuir el inicio únicamente al webhook ni asegurar que cada cambio se ejecute una sola vez."
+        },
+        {
+          "image": "output/playwright/user-provided/73-github-pr18-merged-0e2a0be28509.png",
+          "caption": "Figura 6"
+        },
+        {
+          "text": "También se verificó la calidad del código con SonarCloud. Como se observa en la captura, el control de calidad se aprobó con cero incidencias nuevas."
         }
       ]
     },
     {
-      "title": "2. Procedimiento reproducible de Jenkins",
+      "title": "1.2. Validación inicial de la integración con GitHub",
+      "level": "subsection",
       "blocks": [
         {
-          "text": "1. Preparar un snapshot Git aislado y las credenciales locales con python3 ci/prepare_local.py. Descargar y verificar los plugins con python3 ci/jenkins/fetch_plugins.py. Levantar Jenkins y el receptor de notificaciones con docker compose up -d --build."
+          "text": "Antes de la validación final, se comprobó la integración de GitHub con un job de laboratorio. El push y el merge del PR #16 activaron Jenkins y el build de merge aprobó 186 pruebas. Las capturas siguientes corresponden a esa revisión inicial; sus conteos se presentan separados de las ejecuciones finales."
         },
         {
-          "text": "2. Abrir Jenkins, autenticarse y revisar el job credit-classification. En Configure → Pipeline se seleccionó Pipeline script from SCM, Git, file:///opt/source, rama */ci-review y archivo Jenkinsfile. El checkout pertenece al workspace del job y no requiere subir con dir(\"..\")."
+          "image": "output/playwright/35-jenkins-github-hook-log.png",
+          "caption": "Figura 7"
         },
         {
-          "table": [
-            [
-              "Etapa",
-              "Acción y criterio"
-            ],
-            [
-              "Clone repository",
-              "Limpiar el workspace del job, clonar SCM y conservar el SHA efectivo del checkout. Es la primera etapa."
-            ],
-            [
-              "Validate structure",
-              "Comprobar archivos, configuraciones, objetivo y separación cronológica sin variables excluidas."
-            ],
-            [
-              "Repository tests",
-              "Ejecutar la suite real y producir JUnit XML; un fallo detiene la aprobación."
-            ],
-            [
-              "Train and evaluate",
-              "Entrenar y evaluar candidatos con cinco bloques temporales y semillas 42, 43 y 44."
-            ],
-            [
-              "Quality and stability",
-              "Aplicar umbrales de validación y estabilidad; publicar métricas y gráficos antes de pedir aprobación."
-            ],
-            [
-              "Approve model",
-              "Solicitar revisión a admin; tiempo máximo de espera de 20 minutos."
-            ],
-            [
-              "Record approval / Post",
-              "Registrar aprobador, URL y commit; publicar JUnit y artefactos agregados; enviar notificación autenticada."
-            ]
-          ],
-          "widths": [
-            1,
-            2.4
-          ]
+          "image": "output/playwright/36-github-merge-console-running.png",
+          "caption": "Figura 8"
         },
         {
-          "text": "3. Pulsar Build Now, observar consola y etapas, revisar los artefactos y completar Approve model. Verificar por separado el resultado global, el reporte de pruebas, el recibo de aprobación y la recepción de la notificación."
+          "image": "output/playwright/78-github-pr16-clean-description.png",
+          "caption": "Figura 9"
         },
         {
-          "text": "La ejecución completa tiene un límite de 45 minutos, un executor, dos hilos de CPU y sin builds concurrentes del job. Se conservan diez ejecuciones. El despliegue en GCP usa Terraform, imagen fijada por digest, Secret Manager y el mismo flujo de verificación en el navegador."
+          "image": "output/playwright/81-ja-historical-github-stages.png",
+          "caption": "Figura 10"
+        },
+        {
+          "image": "output/playwright/82-ja-historical-merge-186-tests.png",
+          "caption": "Figura 11"
+        },
+        {
+          "image": "output/playwright/40-github-completion-notifications.png",
+          "caption": "Figura 12"
         }
       ]
     },
     {
-      "title": "3. Evidencia: pipeline en ejecución",
+      "title": "1.3. Resultados del control de calidad del modelo seleccionado",
+      "level": "subsection",
       "blocks": [
         {
-          "text": "Desde el navegador se inició el build cloud #1 y se observaron la consola y Stage View mientras ejecutaba trabajo. Las imágenes siguientes son capturas originales de Playwright; no son recreaciones del resultado."
-        },
-        {
-          "image": "output/playwright/20-cloud-running-console.png",
-          "caption": "Figura 1. Consola del build de Jenkins alojado en GCP durante su ejecución.",
-          "max_height": 240
-        },
-        {
-          "image": "output/playwright/21-cloud-running-stages.png",
-          "caption": "Figura 2. Etapas observadas mientras el pipeline cloud seguía ejecutándose.",
-          "max_height": 240
-        },
-        {
-          "text": "Para reproducir: abrir credit-classification, seleccionar el número de build y entrar a Console Output / Stage View. El archivo index.json de evidencia conserva URL, fecha de captura UTC y SHA-256 de las capturas originales."
-        }
-      ]
-    },
-    {
-      "title": "4. Evidencia: calidad y aprobación humana",
-      "blocks": [
-        {
-          "text": "Los controles se aplican al modelo seleccionado con validación temporal, antes de utilizar el holdout como auditoría. La evidencia agregada está disponible para el revisor durante la pausa de aprobación."
+          "text": "Se agregó un control de calidad para el modelo seleccionado. Las métricas se evaluaron con validación temporal antes de revisar el conjunto de prueba (TEST). Los cuatro criterios definidos se cumplieron, como se muestra en la tabla."
         },
         {
           "table": [
@@ -226,96 +123,82 @@
               "≤ 0,05",
               "Cumple"
             ]
-          ],
-          "widths": [
-            1.9,
-            1,
-            1,
-            1
           ]
         },
         {
-          "image": "output/playwright/22-cloud-approval.png",
-          "caption": "Figura 3. Solicitud real de aprobación de admin después de superar las puertas de calidad.",
-          "max_height": 285
+          "image": "output/playwright/75-ja-master-approval-ready.png",
+          "caption": "Figura 13"
         },
         {
-          "text": "La autorización se registra con identidad, URL del build y SHA de origen. Estos umbrales son reglas versionadas del ejercicio; superarlos no equivale a una certificación de riesgo de modelos para producción."
+          "text": "Antes de aceptar un cambio de modelo, se requiere la aprobación de un administrador. La captura muestra la etapa de aprobación pendiente, con el build #3 de master listo para revisión. Los controles de calidad se cumplieron y el build quedó en espera de la aprobación final."
+        },
+        {
+          "text": "La validación inicial también incluyó una pausa para la aprobación de un administrador. La siguiente captura corresponde a ese primer flujo de Jenkins."
+        },
+        {
+          "image": "output/playwright/22-cloud-approval.png",
+          "caption": "Figura 14"
         }
       ]
     },
     {
-      "title": "5. Evidencia: pruebas y cierre del proceso",
+      "title": "1.4. Ejecución, pruebas y notificaciones",
+      "level": "subsection",
       "blocks": [
         {
-          "image": "output/playwright/84-ja-historical-cloud-165-tests.png",
-          "caption": "Figura 4. Reporte JUnit cloud: 165 pruebas aprobadas, cero fallidas y cero omitidas. Recaptura de la misma ejecución con interfaz japonesa.",
-          "max_height": 220
-        },
-        {
-          "image": "output/playwright/25-cloud-notification-delivered.png",
-          "caption": "Figura 5. El receptor privado aceptó la notificación SUCCESS de finalización del build cloud.",
-          "max_height": 220
+          "text": "Durante la validación inicial se observó el pipeline en ejecución y se verificaron las pruebas y la notificación de cierre. Los builds local #5 y cloud original #1 finalizaron con 165 pruebas aprobadas. Estas ejecuciones pertenecen a una revisión distinta de la suite utilizada en las pruebas posteriores."
         },
         {
           "table": [
             [
-              "Entorno / build",
-              "Estado",
-              "Pruebas",
-              "Duración total"
+              "Validación histórica",
+              "Resultado",
+              "Pruebas aprobadas"
             ],
             [
-              "Local #5",
+              "Jenkins local #5 y cloud original #1",
               "SUCCESS",
-              "165 / 0 / 0",
-              "193,02 s"
+              "165 en cada entorno"
             ],
             [
-              "GCP #1",
+              "Integración GitHub, job de laboratorio #3",
               "SUCCESS",
-              "165 / 0 / 0",
-              "247,30 s"
+              "186"
             ]
-          ],
-          "widths": [
-            1.1,
-            1,
-            1,
-            1.2
           ]
         },
         {
-          "text": "Las duraciones incluyen la espera de aprobación. La notificación es un webhook hacia el receptor privado del laboratorio; no es un correo ni un mensaje enviado a un servicio externo. El recibo de aceptación acredita entrega y se revisó junto con el resultado final de Jenkins."
-        }
-      ]
-    },
-    {
-      "title": "6. Evidencia: resultado final y automatización",
-      "blocks": [
+          "image": "output/playwright/20-cloud-running-console.png",
+          "caption": "Figura 15"
+        },
+        {
+          "image": "output/playwright/21-cloud-running-stages.png",
+          "caption": "Figura 16"
+        },
+        {
+          "image": "output/playwright/84-ja-historical-cloud-165-tests.png",
+          "caption": "Figura 17"
+        },
         {
           "image": "output/playwright/83-ja-historical-cloud-stages.png",
-          "caption": "Figura 6. Todas las etapas del build cloud #1 terminaron correctamente. Recaptura de la misma ejecución con interfaz japonesa.",
-          "max_height": 225
+          "caption": "Figura 18"
+        },
+        {
+          "image": "output/playwright/25-cloud-notification-delivered.png",
+          "caption": "Figura 19"
         },
         {
           "image": "output/playwright/08-local-scm-triggered.png",
-          "caption": "Figura 7. Evidencia histórica local: build iniciado por un cambio SCM detectado automáticamente.",
-          "max_height": 225
-        },
-        {
-          "text": "El polling H/2 * * * * observa la rama configurada cada dos minutos aproximadamente y solo ejecuta cuando encuentra cambios. El build local #5 se originó por SCM; el cloud #1 fue iniciado por admin."
-        },
-        {
-          "text": "La evidencia histórica de polling se obtuvo sobre un snapshot aislado. Posteriormente se publicó la implementación en GitHub y se verificaron pushes reales, incluido el de un merge, con el nuevo job credit-classification-github. Sus capturas y recibos se presentan en la sección 9."
+          "caption": "Figura 20"
         }
       ]
     },
     {
-      "title": "7. Resultados de clasificación crediticia",
+      "title": "2. Resultados del modelo desarrollado en Python",
+      "level": "section",
       "blocks": [
         {
-          "text": "Conjunto de 10.763 registros: 7.534 para entrenamiento y 3.229 para holdout cronológico. Incumplimiento corresponde a Pago_atiempo=0. El random forest fue seleccionado con validación previa al holdout; no se cambió el ganador al inspeccionar resultados de prueba."
+          "text": "Se utilizaron 10.763 registros para evaluar los modelos: 7.534 para entrenamiento y 3.229 para la prueba cronológica. La clase de incumplimiento corresponde a Pago_atiempo=0. El conjunto de prueba contiene 108 incumplimientos y 3.121 pagos a tiempo. El modelo se seleccionó con cinco bloques temporales y las semillas 42, 43 y 44, antes de revisar TEST."
         },
         {
           "table": [
@@ -367,643 +250,123 @@
               "0,5000",
               "0,0334"
             ]
-          ],
-          "widths": [
-            1.8,
-            1,
-            1,
-            1,
-            1,
-            1
           ]
         },
         {
           "image": "output/comparison/comparison.png",
-          "caption": "Figura 8. Comparación medida del holdout; intervalos de muestreo donde están disponibles. Las etiquetas técnicas originales se conservan.",
-          "max_height": 235
+          "caption": "Figura 21"
         },
         {
-          "text": "La exactitud aislada resulta engañosa: el dummy logra 96,66 % sin identificar un solo incumplimiento. El bosque detecta 36 de 108 incumplimientos y genera 493 falsos positivos. Su F1 bajo y el costo operativo de esas alertas requieren revisión antes de cualquier uso real."
+          "text": "Como se observa en la tabla, el árbol de decisión obtuvo el mayor F1 de incumplimiento en TEST, con un valor de 0,1498. El modelo seleccionado durante la validación fue el random forest. Se conservó esa selección para evitar cambiar de modelo después de conocer los resultados de prueba."
         },
         {
-          "text": "AP significa average precision de scikit-learn; no debe mezclarse sin aclaración con auPrc nativo de AutoML. RMSE no es la métrica principal de este problema de clasificación binaria."
+          "text": "La mayor exactitud (accuracy) fue de 0,9666 y correspondió al modelo que siempre predice la clase mayoritaria (dummy). Sin embargo, este modelo no detectó ningún incumplimiento. Por eso, la exactitud por sí sola no describe la capacidad de detectar impagos. El random forest obtuvo 36 TP (verdaderos positivos), 72 FN (falsos negativos), 493 FP (falsos positivos) y 2.628 TN (verdaderos negativos), con un F1 de 0,1130."
         }
       ]
     },
     {
-      "title": "8. Estabilidad, incertidumbre y límites",
+      "title": "3. Resultados del entrenamiento en GCP",
+      "level": "section",
       "blocks": [
         {
-          "text": "Para el bosque seleccionado, F1 medio en validación temporal = 0,1871; desviación entre bloques = 0,0292; desviación entre semillas 42/43/44 = 0,0110. La evaluación emplea cinco bloques cronológicos. El umbral de incumplimiento fijado con validación es aproximadamente 0,08828."
-        },
-        {
-          "image": "output/local-baseline/figures/temporal_f1.png",
-          "caption": "Figura 9. Variación del F1 en las ventanas temporales de evaluación.",
-          "max_height": 255
+          "text": "Se realizaron dos entrenamientos en GCP: uno con un pipeline personalizado de Vertex AI y otro con AutoML Tabular. En ambos casos se utilizó el mismo conjunto cronológico de prueba para comparar los resultados."
         },
         {
           "table": [
             [
-              "Indicador del bosque en holdout",
-              "Estimación",
-              "IC bootstrap 95 %"
+              "Modalidad",
+              "Resultado de ejecución",
+              "Presupuesto o recurso utilizado"
             ],
             [
-              "Accuracy",
-              "0,8250",
-              "[0,8132; 0,8365]"
+              "Vertex AI personalizado",
+              "SUCCEEDED; tarea de entrenamiento de 212 s",
+              "CPU, sin GPU; imagen y protocolo fijados"
             ],
             [
-              "F1 de incumplimiento",
-              "0,1130",
-              "[0,0845; 0,1413]"
-            ],
-            [
-              "ROC-AUC",
-              "0,6573",
-              "[0,6073; 0,7108]"
+              "AutoML Tabular",
+              "SUCCEEDED; modelo y evaluación registrados",
+              "Presupuesto máximo de 1 hora-nodo; early stopping activo"
             ]
-          ],
-          "widths": [
-            1.8,
-            1,
-            1.4
           ]
         },
         {
-          "text": "Los intervalos usan 200 remuestreos estratificados y describen incertidumbre del holdout observado, no consistencia de reentrenamiento. La prevalencia de incumplimiento baja de 5,35 % en entrenamiento a 3,34 % en holdout; la caída de F1 obliga a estudiar deriva temporal, calibración y costos de error."
-        },
-        {
-          "text": "Las coincidencias local/GCP prueban reproducibilidad para la imagen, datos y protocolo ensayados. El holdout ya había sido inspeccionado en el EDA anterior; hace falta una muestra externa nueva para sostener una conclusión independiente de generalización. La disponibilidad de predictores en el momento de decisión sigue siendo un supuesto del contrato de datos."
-        }
-      ]
-    },
-    {
-      "title": "9. GitHub: verificación inicial en laboratorio",
-      "blocks": [
-        {
-          "text": "Evidencia histórica de la configuración inicial del 8/11 UTC. Las secciones 9.5–9.8 documentan la configuración actual ampliada a todas las ramas; el job inicial conserva sus resultados deshabilitado."
-        },
-        {
-          "text": "La cuenta propietaria 03loveslollipop quedó autenticada con ADMIN. Se publicó la implementación en ci/jenkins-lab-20261108 y se creó el webhook 708866067, activo, para el evento push. No se modificó master ni se activaron sus despliegues Heroku."
-        },
-        {
-          "table": [
-            [
-              "Configuración",
-              "Valor desplegado"
-            ],
-            [
-              "Receptor HTTPS",
-              "https://semester-jenkins-webhook-tcwenm7hba-uc.a.run.app/github-webhook/"
-            ],
-            [
-              "Cloud Run / proyecto",
-              "semester-jenkins-webhook / nb-core-dev-99d0 / us-central1"
-            ],
-            [
-              "Capacidad",
-              "1 vCPU, 256 MiB; mínimo 1 y máximo 1; CPU limitada en inactividad."
-            ],
-            [
-              "Red privada",
-              "Direct VPC egress, 10.81.1.0/26 → Jenkins 10.81.0.3:8080."
-            ],
-            [
-              "Firma y secreto",
-              "HMAC SHA-256 validado en relay y Jenkins; secreto en Secret Manager y credencial SYSTEM."
-            ],
-            [
-              "Job / fuente",
-              "credit-classification-github / GitHub HTTPS / */ci/jenkins-lab-20261108"
-            ],
-            [
-              "Trigger",
-              "githubPush(); polling H/2 como respaldo."
-            ],
-            [
-              "Vencimiento",
-              "13/11/2026 02:41:05 UTC; no se amplió el plazo."
-            ]
-          ],
-          "widths": [
-            1.1,
-            2.5
-          ]
-        },
-        {
-          "text": "El receptor rechaza firmas inválidas (403), repositorios distintos y referencias fuera del alcance; solo reenvía el webhook autorizado. La raíz responde 404 y la consola Jenkins no se expone. Antes de cada prueba de trigger se pausó el cron SCM: el build quedó atribuido a Started by GitHub push by 03loveslollipop."
-        },
-        {
-          "text": "La activación solo cubre la rama vigilada del laboratorio. Los checks de PR previos al merge en Jenkins requerirían Multibranch/GitHub Branch Source; el repositorio ya tiene un workflow GitHub Actions separado. La recepción HTTP no sustituye la comprobación de SHA, pruebas y finalización."
-        }
-      ]
-    },
-    {
-      "title": "9.1. Evidencia del trigger y del checkout",
-      "blocks": [
-        {
-          "text": "GitHub entregó el push directo y el push de integración con HTTP 200. Jenkins registró GitHubPushCause, con el cron SCM temporalmente vacío antes de cada evento. Se verificó igualdad entre SHA del evento, revisión SCM y recibo de aprobación. El Jenkinsfile restauró después el polling H/2."
-        },
-        {
-          "image": "output/playwright/35-jenkins-github-hook-log.png",
-          "caption": "Figura 10. Log real del hook en Jenkins: evento recibido por la red privada y nueva revisión de la rama destino.",
-          "max_height": 225
-        },
-        {
-          "image": "output/playwright/36-github-merge-console-running.png",
-          "caption": "Figura 11. Consola en ejecución del build #3: Started by GitHub push y checkout del commit de merge 501952de…",
-          "max_height": 225
-        },
-        {
-          "text": "Las capturas pueden mostrar la zona horaria del navegador; el índice y los recibos conservan UTC. No se utilizó una captura de consola todavía vacía como prueba de ejecución."
-        }
-      ]
-    },
-    {
-      "title": "9.2. Merge real y casos de entrega",
-      "blocks": [
-        {
-          "image": "output/playwright/78-github-pr16-clean-description.png",
-          "caption": "Figura 12. PR #16 integrado en ci/jenkins-lab-20261108; captura renovada tras limpiar la descripción. Master no fue modificado.",
-          "max_height": 300
-        },
-        {
-          "table": [
-            [
-              "Caso observado",
-              "HTTP / efecto"
-            ],
-            [
-              "Push 7775c845…",
-              "200; inicia build #2 del job GitHub."
-            ],
-            [
-              "Merge PR #16 → 501952de…",
-              "200; inicia build #3."
-            ],
-            [
-              "Push a la rama del PR",
-              "202; ignorado por el job de laboratorio."
-            ],
-            [
-              "Reentrega del push original",
-              "200, duplicate: true; no se inicia un build extra."
-            ],
-            [
-              "Firma inválida / ruta raíz",
-              "403 / 404; no expone la consola."
-            ]
-          ],
-          "widths": [
-            1.4,
-            2.3
-          ]
-        },
-        {
-          "text": "Estos resultados se verificaron con la API real de entregas de GitHub y los recibos Jenkins. Abrir o actualizar un PR todavía no ejecuta este job de rama única antes del merge. El workflow GitHub Actions del repositorio es independiente y su resultado no se confunde con el de Jenkins."
-        }
-      ]
-    },
-    {
-      "title": "9.3. Resultado de los builds GitHub",
-      "blocks": [
-        {
-          "table": [
-            [
-              "Build / origen",
-              "Resultado",
-              "Pruebas P/F/O",
-              "Duración total"
-            ],
-            [
-              "#1 / bootstrap",
-              "SUCCESS",
-              "185/0/0",
-              "305.03 s"
-            ],
-            [
-              "#2 / push",
-              "SUCCESS",
-              "186/0/0",
-              "229.81 s"
-            ],
-            [
-              "#3 / merge",
-              "SUCCESS",
-              "186/0/0",
-              "246.33 s"
-            ]
-          ],
-          "widths": [
-            1.5,
-            1,
-            1.2,
-            1.2
-          ]
-        },
-        {
-          "image": "output/playwright/81-ja-historical-github-stages.png",
-          "caption": "Figura 13. Las tres ejecuciones GitHub completaron todas sus etapas. El bootstrap no se atribuye al webhook. Recaptura de la misma ejecución con interfaz japonesa.",
-          "max_height": 220
-        },
-        {
-          "image": "output/playwright/82-ja-historical-merge-186-tests.png",
-          "caption": "Figura 14. JUnit del build de merge: 186 aprobadas, cero fallos y cero omisiones. Recaptura de la misma ejecución con interfaz japonesa.",
-          "max_height": 220
-        },
-        {
-          "text": "Las dos ejecuciones automáticas superaron las puertas del modelo y fueron aprobadas por admin. Las métricas del bosque coinciden con la evaluación original a tolerancia 1e-12. Los 186 casos incluyen las regresiones del hook y del receptor; no se atribuyen retrospectivamente a los builds históricos de 165 pruebas."
-        }
-      ]
-    },
-    {
-      "title": "9.4. Notificaciones y trazabilidad GitHub",
-      "blocks": [
-        {
-          "image": "output/playwright/40-github-completion-notifications.png",
-          "caption": "Figura 15. Receptor privado: SUCCESS y SHA exacto de los builds #1, #2 y #3 del nuevo job.",
-          "max_height": 290
-        },
-        {
-          "text": "Push directo: 7775c84526afb3836b272f6595ee30cddbfb3207. Merge: 501952de01570ea5e29b04cf230c7f886dad387b. Cada recibo incluye URL del build, estado, revisión y hora UTC de aceptación."
-        },
-        {
-          "text": "La documentación conserva el ping inicial HTTP 403, la corrección del secreto y el ping reentregado con HTTP 200. El PR de ensayo también mostró un fallo del workflow GitHub Actions por un import pytest sin uso en una prueba BigQuery anterior; se retiró ese import y Ruff pasó en la revisión final. Ese fallo histórico no se presenta como si el workflow hubiese pasado."
-        },
-        {
-          "text": "Fuentes de evidencia: github-verification.json, cleanup-verification.json y anexos de output/github-webhook/. Los JSON publicados contienen métricas agregadas y metadatos de ejecución; no incluyen tokens, contraseñas ni predicciones individuales."
-        }
-      ]
-    },
-    {
-      "title": "9.5. Configuración actual: todas las ramas",
-      "blocks": [
-        {
-          "text": "El usuario confirmó master como rama principal existente. credit-classification-branches descubre todas las ramas del repositorio; la nueva prueba de merge elevó el total observado a 16. El relay permite refs/heads/* y omite tags y borrados. Cada rama usa una definición CI compartida, incluso sin Jenkinsfile propio."
-        },
-        {
-          "image": "output/playwright/69-ja-all-branches-config.png",
-          "caption": "Configuración actual de descubrimiento Git y proveedor remoto, capturada con interfaz japonesa.",
-          "max_height": 320
-        },
-        {
-          "text": "CI desplegado: 045a2300caf63506fdc0dd4092d7a771a43a1aee. Cada hijo usa githubPush(); el padre escanea Git cada minuto para descubrir ramas nuevas y como respaldo. La captura del pin se incluye en los PNG originales del anexo (60). Se utiliza Git directamente, sin un token GitHub en Jenkins y sin cuota REST anónima para descubrir ramas. El job inicial se deshabilitó y conserva su historial."
-        }
-      ]
-    },
-    {
-      "title": "9.6. Push real: tests sin entrenamiento completo",
-      "blocks": [
-        {
-          "text": "La rama ci/webhook-all-branches-20261109 nació de master sin Jenkinsfile. Se repitió el push real después de activar japonés. Durante la recepción se pausó el escaneo periódico para aislar la causa GitHubPushCause y se restauró a un minuto. Master permaneció en #2 SUCCESS, sin nueva ejecución en cola durante esta comprobación."
-        },
-        {
-          "table": [
-            [
-              "Evidencia",
-              "Resultado"
-            ],
-            [
-              "Entrega GitHub",
-              "3853008546314600448; HTTP 200"
-            ],
-            [
-              "Commit de checkout",
-              "776753337e9464bb71a0769b85abae9ae3ad40d0"
-            ],
-            [
-              "Jenkins",
-              "Build #7; GitHubPushCause; SUCCESS"
-            ],
-            [
-              "Tests",
-              "160 aprobados, 0 fallos, 0 omitidos"
-            ]
-          ],
-          "widths": [
-            1,
-            2.8
-          ]
-        },
-        {
-          "image": "output/playwright/72-ja-feature-success-stages.png",
-          "caption": "Nueva prueba #7 en japonés: tests correctos y etapas de modelo omitidas. #8 seguía en curso en esta captura; después se canceló por repetir una revisión aprobada.",
-          "max_height": 300
-        },
-        {
-          "text": "El escaneo de respaldo también generó un build para la misma revisión; la tabla identifica específicamente el build causado por el webhook. Las pruebas pertenecen a esa revisión de la rama, no al Jenkinsfile compartido. Se conservaron la causa, SHA, JUnit y notificación del build. La prueba no cambia master ni ejecuta AutoML. Los PR de ramas del repositorio generan sus tests por el push de la rama; GitHub Actions mantiene sus checks de PR por separado."
-        }
-      ]
-    },
-    {
-      "title": "9.7. Master: pipeline completo en GCP",
-      "blocks": [
-        {
-          "text": "Se repitió el flujo completo en master #3 por solicitud manual de admin: SUCCESS, 160 pruebas aprobadas, entrenamiento CPU, puertas de calidad/estabilidad, aprobación humana y notificación. La prueba verifica las etapas; no representa un push nuevo a master. La configuración githubPush() conserva la activación de este mismo flujo para futuros pushes o merges a master."
-        },
-        {
-          "image": "output/playwright/76-ja-master-completed-stages.png",
-          "caption": "Master #3 completado desde la interfaz japonesa. Causa: usuario admin; el código de master permanece sin cambios.",
-          "max_height": 310
-        },
-        {
-          "text": "No se creó un commit en master para la verificación, por lo que tampoco se activó el despliegue Heroku asociado a sus pushes. El código CI se fija por SHA y la rama de código se clona por separado; las revisiones efectivas se registran en checkout_revisions del recibo."
-        },
-        {
-          "text": "La migración detectó layouts antiguos src/ y una espera por cuota API. Se corrigió el chequeo de features, se cambió a Git nativo y se fija la revisión antes de esperar al ejecutor. El escaneo de respaldo puede añadir otro build durante un cambio de revisión; el caso webhook y el de respaldo se identifican por separado. Los errores iniciales y las cancelaciones del backfill se conservan; el informe no afirma que todos los commits históricos hayan pasado sus pruebas. El escaneo automático y los webhooks continúan vigilando todas las ramas."
-        }
-      ]
-    },
-    {
-      "title": "9.8. Jenkins está en GCP: acceso mediante IAP",
-      "blocks": [
-        {
-          "text": "Jenkins se ejecuta en la VM semester-jenkins del proyecto nb-core-dev-99d0, zona us-central1-a. localhost:18083 es el extremo del túnel IAP en la computadora que abre el navegador; reenvía tráfico autenticado a 10.81.0.3:8080 dentro de GCP. Para usar esa dirección, la persona que revisa necesita permisos GCP y abrir su propio túnel."
-        },
-        {
-          "image": "output/playwright/gcp/54-jenkins-gcp-vm-running-details-ja.png",
-          "caption": "Consola GCP japonesa: VM semester-jenkins en ejecución y zona us-central1-a. Evidencia del alojamiento cloud del controlador.",
-          "max_height": 310
-        },
-        {
-          "table": [
-            [
-              "Punto de acceso",
-              "Función"
-            ],
-            [
-              "127.0.0.1:18083",
-              "Entrada local del túnel IAP hacia Jenkins GCP."
-            ],
-            [
-              "10.81.0.3:8080",
-              "Controlador en la red privada del proyecto de core."
-            ],
-            [
-              "Cloud Run /github-webhook/",
-              "Receptor HTTPS público que valida y reenvía eventos GitHub."
-            ],
-            [
-              "127.0.0.1:18081",
-              "Contenedor Docker local de la demostración histórica."
-            ]
-          ],
-          "widths": [
-            1.25,
-            2.5
-          ]
-        },
-        {
-          "text": "El mensaje antiguo local Jenkins se corrigió en el controlador y persiste tras reinicio. La consola permanece privada; GitHub usa el relay público. El comando reproducible para abrir IAP está en docs/github-webhook.md. Se mantiene sin cambios la parada del 13/11/2026 a las 02:41:05 UTC y limpieza desde las 02:42:05."
-        }
-      ]
-    },
-    {
-      "title": "9.9. Jenkins en japonés: configuración y pruebas",
-      "blocks": [
-        {
-          "text": "Se instaló Locale 641.v84f22d75fd8b_, compatible con Jenkins 2.580.2. En Manage Jenkins > Appearance se guardó ja como idioma predeterminado, se forzó frente a la preferencia del navegador y se desactivaron excepciones por usuario. La configuración y el pin del plugin están versionados para reproducir el entorno."
-        },
-        {
-          "image": "output/playwright/63-ja-locale-settings.png",
-          "caption": "Idioma seleccionado: japonés (ja). La preferencia global queda guardada.",
-          "max_height": 280
-        },
-        {
-          "text": "La navegación principal y el reporte JUnit se muestran en japonés. Algunos plugins y nombres personalizados de etapas siguen en inglés; no se alteraron logs ni se tradujeron artificialmente las capturas. Las imágenes históricas conservan su idioma original y sus revisiones. El anexo incluye la nueva ejecución en curso (62, 66, 77) y JUnit de 160 pruebas (68)."
-        }
-      ]
-    },
-    {
-      "title": "9.10. GitHub: configuración visual del webhook",
-      "blocks": [
-        {
-          "text": "Captura aportada por el usuario el 9/11/2026 a las 13:04:22 JST desde la sesión GitHub autorizada. Se incorporó el PNG original sin modificaciones; su procedencia y SHA-256 están registrados en el índice de evidencias."
-        },
-        {
-          "image": "output/playwright/70-github-webhook-settings-user.png",
-          "caption": "Webhook activo: relay HTTPS de Cloud Run, JSON, secreto configurado y oculto, SSL habilitado y evento push seleccionado.",
-          "max_height": 400
-        },
-        {
-          "text": "La imagen acredita la configuración visible, no una entrega concreta. Los recibos API de GitHub acreditan los HTTP 200 y relacionan cada SHA con su build. Un merge genera un push en la rama destino; el webhook de push cubre ese caso."
-        }
-      ]
-    },
-    {
-      "title": "9.11. Nueva prueba de merge en rama aislada",
-      "blocks": [
-        {
-          "text": "El PR #18 integra ci/webhook-merge-ja-20261109 en ci/webhook-all-branches-20261109. Su título y descripción se centran en la verificación de CI. Se limpiaron también las menciones al informe en los PR #16 y #17, sin alterar sus ramas destino."
-        },
-        {
-          "image": "output/playwright/73-github-pr18-merged.png",
-          "caption": "PR #18 integrado en la rama de verificación; master no fue modificado.",
-          "max_height": 330
-        },
-        {
-          "table": [
-            [
-              "Comprobación",
-              "Resultado"
-            ],
-            [
-              "Merge y checkout",
-              "58b30ec97bcc0c09e650c072c0cc4380d0599345"
-            ],
-            [
-              "Jenkins #9",
-              "SUCCESS; GitHubPushCause e indexación coexistentes"
-            ],
-            [
-              "Entrega GitHub",
-              "HTTP 200; 3853009689465847808"
-            ],
-            [
-              "Tests y etapas",
-              "160 correctos; etapas de modelo omitidas"
-            ]
-          ],
-          "widths": [
-            1,
-            2.7
-          ]
-        },
-        {
-          "text": "La primera comprobación GitHub Actions detectó un import pytest sin uso heredado de master (F401). Se eliminó en la rama de prueba y se repitieron los checks. La corrección permanece limitada a estas ramas. JUnit japonés del merge está en el PNG 80 del anexo. En #9 el hook y la indexación quedaron registrados conjuntamente; no se atribuye una causa exclusiva al merge. El push #7 sí se aisló con el escaneo pausado."
-        }
-      ]
-    },
-    {
-      "title": "9.12. Aprobación y cierre desde Jenkins japonés",
-      "blocks": [
-        {
-          "text": "Después de tests, entrenamiento CPU y puertas de calidad, master #3 se detuvo para recibir la aprobación de admin. La aprobación se realizó desde el navegador y quedó registrada en approval.txt; la notificación y el estado final se conservan como artefactos verificables."
-        },
-        {
-          "image": "output/playwright/75-ja-master-approval-ready.png",
-          "caption": "Master #3: formulario real de aprobación antes de continuar.",
-          "max_height": 290
-        },
-        {
-          "text": "El nuevo merge dejó el checkout y su SHA correlacionados con la entrega push, pruebas y notificación. Los recibos distinguen GitHubPushCause, solicitud manual e indexación. No se afirma ejecución exactamente una vez: el escaneo de respaldo puede generar otro build. El respaldo #8, de una revisión ya aprobada, se canceló para evitar trabajo redundante; el historial se conserva."
-        }
-      ]
-    },
-    {
-      "title": "10. GCP: acceso, proyecto y datos",
-      "blocks": [
-        {
-          "text": "El usuario autorizó la fase GCP e inició sesión en el navegador persistente semester-gcp. Se verificó contact@02labs.me, cuenta administrada por 02labs.me, y el proyecto novabank-riesgo-ml-dev (nb-risk-ml-dev-99d0, número 727006212991). Se reutilizó este proyecto existente del área de riesgo. La consola permanece en japonés por instrucción del usuario."
-        },
-        {
-          "text": "Se habilitó la API de Vertex AI desde la consola, actualmente presentada como Agent Platform. Se creó un bucket privado Standard en us-central1 con acceso uniforme y prevención de acceso público; se subieron raw.csv, automl.csv, holdout-features.csv y manifest.json. Las etiquetas del holdout se conservan locales."
+          "text": "Los datos se cargaron en el proyecto de entrenamiento de GCP. Se conservó la división cronológica para comparar los modelos sobre las mismas filas de prueba. Las capturas muestran la carga de los archivos y la configuración inicial de la división manual."
         },
         {
           "image": "output/playwright/gcp/11-data-files-uploaded-ja.png",
-          "caption": "GCP, consola en japonés: carga de los cuatro archivos en el bucket dedicado del proyecto de riesgo.",
-          "max_height": 340
-        },
-        {
-          "text": "Exportación real: output/cloud-data-gcp. Particiones cronológicas: 6.027 TRAIN, 1.507 VALIDATE y 3.229 TEST. El nombre oficial de la partición de validación es VALIDATE. Las huellas de dataset y holdout coinciden con el benchmark local."
-        }
-      ]
-    },
-    {
-      "title": "10.1. Dataset y preparación de AutoML",
-      "blocks": [
-        {
-          "text": "Se creó el dataset tabular credit-classification-temporal-20261108, ID 2799060011056103424, región us-central1. La fuente es gs://nb-risk-ml-dev-99d0-credit-lab-20261108/automl.csv. Se solicitó generar estadísticas; esta operación es preparación de datos, no entrenamiento de un modelo."
+          "caption": "Figura 22"
         },
         {
           "image": "output/playwright/gcp/19-automl-manual-temporal-split-ja.png",
-          "caption": "Preparación inicial de AutoML: objetivo Pago_atiempo y split manual data_split. Este formulario inicial se canceló; la ejecución autorizada posterior conserva esa división.",
-          "max_height": 340
-        },
-        {
-          "text": "Se configuró el objetivo Pago_atiempo y el reparto manual para conservar las mismas filas de prueba. La opción de AutoML sobre Pipelines exige Dataflow y servicios adicionales; se revisó su pantalla sin lanzar el workflow. La documentación anexa conserva los pasos y las capturas originales."
+          "caption": "Figura 23"
         }
       ]
     },
     {
-      "title": "10.2. Presupuesto inicial y nueva autorización",
+      "title": "3.1. Reproducción del entrenamiento Python en Vertex AI",
+      "level": "subsection",
       "blocks": [
         {
-          "text": "En la primera etapa, el usuario indicó USD50 de créditos y un límite de aproximadamente USD15. AutoML exige entre 1 y 72 horas-nodo; el intento de configurar 0,7 fue rechazado y el formulario se canceló sin enviar entrenamiento. Posteriormente, el 9/11/2026 JST, el usuario autorizó explícitamente aproximadamente USD21,25 para una ejecución de 1 hora-nodo."
+          "text": "El pipeline credit-cpu-demo-20261108-r3 completó el entrenamiento y guardó el modelo, las métricas y los archivos de evaluación. La tarea utilizó CPU y duró 212 segundos. Las métricas del random forest coincidieron con las obtenidas en Python local, con diferencias inferiores a 10^-12."
         },
         {
-          "image": "output/playwright/gcp/20-automl-minimum-budget-ja.png",
-          "caption": "Restricción observada: presupuesto 0,7 inválido; el formulario exige 1–72. El botón de iniciar entrenamiento permanece deshabilitado.",
-          "max_height": 340
-        },
-        {
-          "text": "La tarifa pública estándar es USD21,252 por hora-nodo de clasificación/regresión. El mínimo superaba el límite inicial de USD15. La nueva autorización permitió enviar exactamente 1000 milli-node-hours, con early stopping. Se mantuvo la opción clásica; el workflow alternativo con Dataflow no se envió. El ejemplo público de ese workflow, USD27,03 sin destilación, no es una cotización de este dataset."
-        },
-        {
-          "text": "Estado final: AutoML completado con exactamente el presupuesto autorizado. La comparación incorpora Python local, Vertex CPU y la evaluación nativa de la clase 0. No se crearon endpoints ni predicciones batch. Las capturas de presupuesto inicial se conservan como historia, separadas del envío posterior."
-        }
-      ]
-    },
-    {
-      "title": "10.3. Pipeline personalizado de bajo costo",
-      "blocks": [
-        {
-          "text": "Se preparó una imagen Python/scikit-learn en Artifact Registry, fijada por digest inmutable, y una especificación KFP real para cargar en el dashboard. Esta preparación por CLI no envía entrenamiento; la ejecución se crea desde la consola japonesa."
-        },
-        {
-          "table": [
-            [
-              "Control",
-              "Configuración"
-            ],
-            [
-              "Región y recursos",
-              "us-central1; 2 CPU, memoria 8G; sin GPU"
-            ],
-            [
-              "Límite del cuerpo de entrenamiento",
-              "600 segundos; no incluye provisión ni espera del servicio"
-            ],
-            [
-              "Reintentos y caché",
-              "Cero reintentos automáticos; caché desactivada"
-            ],
-            [
-              "Identidad",
-              "credit-semester-pipeline; sin claves; bucket y repositorio acotados"
-            ],
-            [
-              "Entrada",
-              "raw.csv; verificación de huellas de dataset y holdout"
-            ],
-            [
-              "Salida",
-              "Artefactos y métricas; sin endpoint permanente"
-            ]
-          ]
-        },
-        {
-          "text": "Se reutiliza el protocolo local: selección previa al holdout, folds temporales y tres semillas. La alarma limita el código, no constituye un tope monetario de facturación. La comparación final se construyó con los artefactos de la ejecución exitosa r3."
-        },
-        {
-          "text": "Demostración Vertex CPU: 212 s en una réplica e2-highmem-2, aproximadamente USD0,0061 de cómputo a tarifa de lista. Contando conservadoramente USD0,03 por cada uno de los 3 pipelines creados, el subtotal es USD0,0961, más SSD temporal, almacenamiento y operaciones. Se espera un importe del orden de centavos y muy inferior a USD15; es una estimación, no una factura ni un tope garantizado. Los recursos de riesgo retenidos siguen generando pequeños cargos de almacenamiento."
-        }
-      ]
-    },
-    {
-      "title": "10.4. Evidencia del pipeline en ejecución",
-      "blocks": [
-        {
-          "text": "La ejecución r3 fue enviada desde el dashboard y pasó a RUNNING el 08/11/2026 a las 09:52:33 UTC, tras dos envíos fallidos antes de crear workers por acceso inicial del agente a Artifact Registry. IAM Troubleshooter confirmó acceso; se conservan todos los estados. Vertex asignó una réplica e2-highmem-2 y disco temporal SSD de 100 GB, sin GPU. Solicitud del componente: 2 CPU y memoria 8G; máquina compatible asignada: 2 vCPU y 16 GiB."
+          "text": "Las capturas de seguimiento muestran el DAG del pipeline y la búsqueda de modelos durante la ejecución. La captura de métricas presenta los resultados del entrenamiento personalizado."
         },
         {
           "image": "output/playwright/gcp/27-pipeline-dag-running-ja.png",
-          "caption": "Ejecución real credit-cpu-demo-20261108-r3 en el dashboard japonés; el DAG muestra RUNNING. No implica por sí solo entrenamiento finalizado.",
-          "max_height": 300
-        },
-        {
-          "text": "El pipeline conserva dos artefactos de salida: results y metrics. La vista de tarea muestra los hashes de entrada, la imagen por digest y el CustomJob asociado. El estado RUNNING confirma orquestación activa; la disponibilidad de métricas se comprueba al finalizar el worker."
-        }
-      ]
-    },
-    {
-      "title": "10.5. Evidencia del entrenamiento y sus logs",
-      "blocks": [
-        {
-          "text": "El CustomJob comenzó su ejecución el 08/11/2026 a las 09:58:45 UTC. El dashboard y Cloud Logging muestran búsqueda real de regresión logística, árbol y random forest, con evaluación temporal. El nodo del pipeline incluye la espera de provisión en su duración; no es una medida de tiempo puro de entrenamiento."
+          "caption": "Figura 24"
         },
         {
           "image": "output/playwright/gcp/33-training-search-live-logs-ja.png",
-          "caption": "Logs reales durante la búsqueda: F1 temporal de candidatos y comienzo de random forest, con el nodo todavía Running. Estos valores no son métricas finales del holdout.",
-          "max_height": 350
-        },
-        {
-          "text": "Se conservan dos envíos fallidos al inicio, antes de crear workers, y la ejecución r3 completada correctamente. La prueba no usa GPUs, Dataflow ni endpoints online. Los artefactos exportados se verificaron antes de añadir la comparación cuantitativa."
-        }
-      ]
-    },
-    {
-      "title": "10.6. Finalización y métricas del dashboard",
-      "blocks": [
-        {
-          "text": "Resultado comprobado: pipeline credit-cpu-demo-20261108-r3, SUCCEEDED el 08/11/2026 a las 10:02:37 UTC. CustomJob 1394998308224630784: SUCCEEDED, 09:58:45–10:02:17 UTC, 212 segundos. El dashboard conserva la relación entre el run, la tarea, los datos y los artefactos. El modelo se conserva como best_model.joblib en el bucket privado; no se desplegó un endpoint."
+          "caption": "Figura 25"
         },
         {
           "image": "output/playwright/gcp/35-cloud-metrics-metadata-ja.png",
-          "caption": "ML Metadata muestra las métricas reales del entrenamiento: accuracy, F1 de incumplimiento, ROC-AUC, AP y variación entre folds/semillas. La consola se mantiene en japonés.",
-          "max_height": 340
+          "caption": "Figura 26"
         },
         {
-          "text": "Se descargaron modelo, tablas, predicciones y figuras del artefacto results, sin enviar nuevos jobs. La huella de cada archivo, el estado completo y los resultados de verificación se conservan en los anexos GCP. La captura 34 documenta el DAG finalizado con sus logs."
+          "text": "La captura muestra las métricas registradas en Vertex AI. Al utilizar los mismos datos y el mismo procedimiento, se obtuvo el mismo resultado que en Python local. GCP permitió organizar la ejecución y guardar los resultados, pero el cambio de entorno no mejoró por sí mismo el modelo."
         }
       ]
     },
     {
-      "title": "10.7. Comparación final: Python, Vertex y AutoML",
+      "title": "3.2. Finalización de AutoML y evaluación de incumplimiento",
+      "level": "subsection",
       "blocks": [
         {
-          "text": "Holdout cronológico: 3.229 filas, 108 incumplimientos (clase 0). Python y Vertex CPU reprodujeron el mismo forest y métricas (diferencias < 1e-12). AutoML se evalúa con su slice nativo de clase 0; la matriz coincide en total y prevalencia con TEST."
+          "text": "El entrenamiento de AutoML finalizó con un presupuesto máximo de 1 hora-nodo, equivalente a 1000 milli-node-hours. El proceso completo duró aproximadamente 2 h 35 min, incluyendo la preparación de los datos y el procesamiento posterior. Ese tiempo total no equivale a 2 h 35 min de horas-nodo facturables."
+        },
+        {
+          "image": "output/playwright/gcp/39-automl-one-node-hour-approved-ja.png",
+          "caption": "Figura 27"
+        },
+        {
+          "image": "output/playwright/gcp/43-automl-training-active-ja.png",
+          "caption": "Figura 28"
+        },
+        {
+          "image": "output/playwright/gcp/44-automl-training-completed-ja.png",
+          "caption": "Figura 29"
+        },
+        {
+          "text": "Se mantuvo la división manual de datos: 6.027 registros para entrenamiento (TRAIN), 1.507 para validación (VALIDATE) y 3.229 para prueba (TEST). Para la clase de incumplimiento, AutoML obtuvo un ROC-AUC de 0,6542 y un F1 de 0,1037 con un umbral de 0,5. El modelo quedó registrado, sin desplegar un servicio de predicción."
+        },
+        {
+          "image": "output/playwright/gcp/48-automl-default-class-curves-ja.png",
+          "caption": "Figura 30"
+        },
+        {
+          "text": "La captura muestra la evaluación de la clase 0, que corresponde al incumplimiento. La evaluación global micro tenía valores más altos, pero incluye la clase mayoritaria. Se utilizó la evaluación de la clase 0 para analizar la detección de impagos."
+        }
+      ]
+    },
+    {
+      "title": "4. Comparación entre Python, Vertex AI y AutoML",
+      "level": "section",
+      "blocks": [
+        {
+          "text": "Se compararon los resultados de Python, Vertex AI y AutoML sobre los mismos 3.229 registros de prueba. Python y Vertex AI utilizaron el mismo random forest y obtuvieron las mismas métricas. Para AutoML se tomó la evaluación de la clase 0 que muestra la consola de GCP."
         },
         {
           "table": [
@@ -1061,161 +424,119 @@
               "0,088279 OOF",
               "0,5 fijo"
             ]
-          ],
-          "widths": [
-            1.5,
-            1,
-            1,
-            1
           ]
         },
         {
           "image": "output/comparison-final/comparacion-final-python-vertex-automl.png",
-          "caption": "Comparación medida. Los intervalos bootstrap solo existen para Python/custom; la ausencia de intervalo AutoML no implica incertidumbre cero. AP sklearn y PR-AUC nativo permanecen separados.",
-          "max_height": 180
+          "caption": "Figura 31"
         },
         {
-          "text": "F1/recall comparan políticas de umbral diferentes además de modelos; ningún umbral se ajustó al TEST. ROC-AUC es similar. AutoML tiene mayor accuracy, pero queda debajo del dummy (0,9666, sin detectar incumplimientos). No se interpreta accuracy como capacidad de detectar riesgo."
+          "text": "Como se observa en la tabla y en la gráfica, los valores de ROC-AUC fueron cercanos: 0,6573 para Python y Vertex AI, y 0,6542 para AutoML. En esta prueba no se observó una mejora clara con AutoML. No se realizó una prueba estadística para determinar si ambos modelos eran equivalentes."
+        },
+        {
+          "text": "AutoML obtuvo una exactitud mayor que el random forest, pero menor que el modelo que siempre predice la clase mayoritaria. Para interpretar el resultado también se deben revisar los valores de la matriz de confusión y el umbral utilizado."
+        },
+        {
+          "text": "No se calculó AP de scikit-learn para AutoML porque no se obtuvieron sus predicciones individuales. La consola presenta un PR-AUC nativo que se calcula de otra manera. Ambos valores se dejaron separados en la tabla, por lo que no se interpreta el valor 0,1201 de PR-AUC como una mejora frente al AP de 0,0994."
         }
       ]
     },
     {
-      "title": "10.8. Evidencia de créditos y facturación",
+      "title": "4.1. Errores observados y efecto del umbral",
+      "level": "subsection",
       "blocks": [
         {
-          "text": "Cuenta educativa: Billing Account for Education, 01ADCB-D56D56-B45DCC, USD. Tras completar AutoML se consultó de nuevo la página de créditos, manteniendo la consola en japonés."
-        },
-        {
-          "image": "output/playwright/gcp/50-billing-credits-after-training-ja.png",
-          "caption": "Observación posterior al entrenamiento: USD28,01 restantes de USD50,00 (56%). Crédito Ciencia de datos en producción, vence 6/10/2027.",
-          "max_height": 340
-        },
-        {
-          "text": "La diferencia acumulada es USD21,99 utilizados en servicios elegibles de toda la cuenta desde la concesión. No se atribuye todo a AutoML y no es una factura desglosada final; el reporte puede tener retraso. El recibo billing-after-automl.json conserva fecha exacta, alcance y SHA-256."
-        },
-        {
-          "text": "La observación anterior (8/11 UTC) fue USD49,86 restantes y USD0,00 netos en el reporte del 1–8/11. Tiene otro corte temporal y queda como evidencia histórica en los anexos. El límite inicial USD15 fue ampliado expresamente para un solo AutoML de aproximadamente USD21,25; no se amplió para inferencia ni reentrenamiento."
-        }
-      ]
-    },
-    {
-      "title": "10.9. AutoML: presupuesto autorizado y configuración",
-      "blocks": [
-        {
-          "text": "El usuario autorizó expresamente aproximadamente USD21,25 para un entrenamiento AutoML clásico. Se reutilizaron proyecto, región y dataset existentes. Nombre del modelo solicitado: credit-automl-temporal-20261109. Target Pago_atiempo; división manual data_split; objetivo maximize-au-prc; early stopping habilitado."
-        },
-        {
-          "image": "output/playwright/gcp/39-automl-one-node-hour-approved-ja.png",
-          "caption": "Consola japonesa: presupuesto válido de 1 hora-nodo y early stopping activo antes de iniciar el entrenamiento.",
-          "max_height": 340
-        },
-        {
-          "text": "La respuesta real del servicio confirma trainBudgetMilliNodeHours=1000 y 84 transformaciones de predictores. No incluyen target, data_split, row_id, puntaje ni fecha_prestamo. El esquema conserva los mismos grupos TRAIN, VALIDATE y TEST. No se exportó el conjunto TEST a BigQuery."
-        }
-      ]
-    },
-    {
-      "title": "10.10. AutoML: envío confirmado y seguimiento",
-      "blocks": [
-        {
-          "text": "El servicio aceptó el job 7023547864391352320 el 08/11/2026 a las 17:17:19 UTC (9/11 02:17:19 JST). El estado inicial fue PENDING. Posteriormente la consola confirmó Training e inicio 17:19:36 UTC (02:19:36 JST), con etapa Data preprocessing. La consola indica que notificará por email al finalizar."
-        },
-        {
-          "image": "output/playwright/gcp/43-automl-training-active-ja.png",
-          "caption": "AutoML activo en la consola japonesa: estado Training, inicio 02:19:36 JST, presupuesto inicial 1 hora-nodo y etapa Data preprocessing.",
-          "max_height": 340
-        },
-        {
-          "text": "Esta captura documenta la etapa activa, no la finalización. Las páginas siguientes añaden el resultado SUCCEEDED y sus métricas reales. Los recibos 36–43 conservan configuración y seguimiento; 44–52 documentan finalización, evaluación y créditos. Solo se envió un AutoML, sin ampliar el presupuesto ni iniciar inferencia batch o endpoints."
-        }
-      ]
-    },
-    {
-      "title": "10.11. AutoML completado y modelo registrado",
-      "blocks": [
-        {
-          "text": "Pipeline 7023547864391352320: PIPELINE_STATE_SUCCEEDED. Creado 8/11 17:17:19 UTC, iniciado 17:19:36 UTC y terminado 19:55:04 UTC = 9/11/2026 04:55:04 JST. Se mantuvo la misma ejecución y el presupuesto 1000 milli-node-hours; no se repitió el entrenamiento."
-        },
-        {
-          "image": "output/playwright/gcp/44-automl-training-completed-ja.png",
-          "caption": "Consola japonesa: 完了 (completado), fin 04:55:04 JST, 1 hora-nodo inicial, split manual y objetivo AUC PRC.",
-          "max_height": 330
-        },
-        {
-          "text": "Modelo registrado 3834067964554903552, versión 1, evaluación 2989617876806692894. La duración de pared de 2 h 35 min incluye preparación y postprocesamiento gestionados; no equivale a horas-nodo facturables. El modelo se conserva sin endpoint."
-        },
-        {
-          "text": "Procedencia: manifest exportado/subido → URI GCS del dataset → división manual data_split → pipeline exitoso → modelo/versión → evaluación de clase 0. Se comprobaron 84 predictores y conteos TEST. Las huellas de datos proceden del manifest local vinculado a esa carga; la API agregada no calcula hashes remotos fila por fila."
-        }
-      ]
-    },
-    {
-      "title": "10.12. Evaluación nativa de incumplimiento",
-      "blocks": [
-        {
-          "text": "Procedimiento: Model Registry → credit-automl-temporal-20261109 → versión 1 → Evaluación. Seleccionar clase 0, mantener umbral fijo 0,5 y revisar curvas ROC/PR. Se leyeron los recibos mediante GET desde la sesión web autenticada; no se extrajeron tokens ni se enviaron jobs por código."
-        },
-        {
-          "image": "output/playwright/gcp/48-automl-default-class-curves-ja.png",
-          "caption": "Clase 0, umbral 0,5: F1 0,1037037; ROC-AUC 0,654; PR-AUC 0,12; precisión 25,9% y recall 6,5%. Curvas reales del modelo.",
-          "max_height": 340
-        },
-        {
-          "text": "Valores exactos del slice 0: ROC-AUC 0,65420777 y PR-AUC nativo 0,120123096. La vista general micro muestra ROC-AUC 0,9763931 y PR-AUC 0,9719521; no se utilizan para representar detección de incumplimiento. El código valida clase, modelo, versión, evaluación y umbral exacto antes de construir la comparación."
-        },
-        {
-          "text": "AP sklearn no está disponible para AutoML sin predicciones individuales. PR-AUC nativo tiene otra definición de integración/agrupación y se conserva en una columna distinta. No se concluye mejora comparando directamente 0,1201 con AP 0,0994."
-        }
-      ]
-    },
-    {
-      "title": "10.13. Matriz real y efecto del umbral",
-      "blocks": [
-        {
-          "text": "En la evaluación se activó el interruptor de conteos de la matriz. Filas: clase real; columnas: clase predicha; orden [0 incumplimiento, 1 pago a tiempo]. Total 3.229 observaciones, 108 incumplimientos."
+          "text": "Para interpretar la matriz, se considera positiva la clase de incumplimiento (Pago_atiempo=0) y negativa la clase de pago a tiempo. Se utilizan TP (verdaderos positivos), TN (verdaderos negativos), FP (falsos positivos) y FN (falsos negativos)."
         },
         {
           "image": "output/playwright/gcp/52-automl-confusion-counts-visible-ja.png",
-          "caption": "Matriz AutoML real a 0,5: [[7,101],[20,3101]]. Siete incumplimientos detectados, 101 omitidos, 20 falsas alarmas y 3.101 pagos a tiempo bien clasificados.",
-          "max_height": 330
+          "caption": "Figura 32"
         },
         {
           "table": [
             [
-              "Conteo / política",
+              "Resultado en TEST",
               "Python y Vertex CPU",
               "AutoML"
             ],
             [
-              "Incumplimientos detectados / total",
-              "36 / 108",
-              "7 / 108"
+              "TP (verdaderos positivos)",
+              "36",
+              "7"
             ],
             [
-              "Falsas alarmas",
+              "TN (verdaderos negativos)",
+              "2.628",
+              "3.101"
+            ],
+            [
+              "FP (falsos positivos)",
               "493",
               "20"
             ],
             [
-              "Umbral P(incumplimiento)",
-              "~0,08828; validación OOF",
+              "FN (falsos negativos)",
+              "72",
+              "101"
+            ],
+            [
+              "Total de incumplimientos (TP + FN)",
+              "108",
+              "108"
+            ],
+            [
+              "Umbral de incumplimiento",
+              "Aprox. 0,08828, elegido con validación OOF",
               "0,5 fijo"
             ]
-          ],
-          "widths": [
-            1.5,
-            1.1,
-            1
           ]
         },
         {
-          "text": "AutoML reduce falsas alarmas a costa de omitir más incumplimientos en esta política. Las métricas dependen del umbral; no demuestran por sí solas superioridad del algoritmo. El forest fue seleccionado y calibrado antes de TEST; tampoco se ajustó AutoML mirando este holdout."
+          "text": "La matriz muestra que AutoML obtuvo menos FP (falsos positivos), pero también menos TP (verdaderos positivos). El random forest registró 36 TP (verdaderos positivos) de los 108 incumplimientos, aproximadamente un tercio, mientras AutoML registró 7 TP (verdaderos positivos), cerca del 6,5 %. Con los umbrales utilizados, AutoML presentó más FN (falsos negativos): 101 frente a 72 del random forest."
+        },
+        {
+          "text": "Los modelos utilizaron umbrales diferentes y estos no se ajustaron con TEST. Por eso, las diferencias de F1, recall y FP (falsos positivos) dependen tanto del modelo como del umbral."
         }
       ]
     },
     {
-      "title": "10.14. Estabilidad y entrenamiento manual frente a AutoML",
+      "title": "5. Estabilidad, consistencia y límites de la comparación",
+      "level": "section",
       "blocks": [
+        {
+          "text": "El random forest obtuvo un F1 medio de 0,1871 en validación temporal. La desviación fue de 0,0292 entre bloques y de 0,0110 entre semillas, dentro de los límites definidos en Jenkins. En TEST, el F1 bajó a 0,1130. Aunque el modelo cumplió los controles internos, su desempeño fue menor en el período de prueba."
+        },
+        {
+          "image": "output/local-baseline/figures/temporal_f1.png",
+          "caption": "Figura 33"
+        },
+        {
+          "table": [
+            [
+              "Indicador del bosque en holdout",
+              "Estimación",
+              "IC bootstrap 95 %"
+            ],
+            [
+              "Accuracy",
+              "0,8250",
+              "[0,8132; 0,8365]"
+            ],
+            [
+              "F1 de incumplimiento",
+              "0,1130",
+              "[0,0845; 0,1413]"
+            ],
+            [
+              "ROC-AUC",
+              "0,6573",
+              "[0,6073; 0,7108]"
+            ]
+          ]
+        },
+        {
+          "text": "Los intervalos de la tabla se calcularon con 200 remuestreos bootstrap estratificados del conjunto de prueba. Estos intervalos describen la incertidumbre de esa muestra y no la variación al entrenar de nuevo el modelo. La proporción de incumplimientos pasó de 5,35 % en entrenamiento a 3,34 % en TEST, por lo que también se deben revisar los cambios entre períodos y la calibración."
+        },
         {
           "table": [
             [
@@ -1243,128 +564,43 @@
               "Mismas huellas y métricas < 1e-12",
               "Mismos conteos TEST y cadena de procedencia"
             ]
-          ],
-          "widths": [
-            1.15,
-            1.4,
-            1.4
           ]
         },
         {
-          "text": "La validación temporal media del forest es F1 0,187117; baja a 0,113030 en TEST. La prevalencia cae de 5,35% en el período de entrenamiento a 3,34% en TEST. Esto motiva revisar deriva temporal y calibración. Los intervalos bootstrap condicionan la mezcla observada; no miden varianza de reentrenamiento. Tres semillas constituyen una comprobación académica pequeña."
-        },
-        {
-          "text": "Manual/Python: control explícito de preparación de variables, folds, selección, calibración, umbrales, semillas y costos. Vertex permite ejecutar ese protocolo con artefactos y orquestación gestionados; reprodujo los resultados, sin mejorar por trasladarlo a cloud."
-        },
-        {
-          "text": "AutoML: reduce el diseño y búsqueda manual y entrega evaluación/curvas gestionadas. Ofrece menos control de la búsqueda interna y usa un presupuesto mayor en este ejercicio pequeño. Su ROC-AUC de incumplimiento (~0,654) es similar al forest (~0,657); no demuestra ventaja general de calidad."
-        },
-        {
-          "text": "Límites: solo se ejecutó un AutoML; su consistencia entre reentrenamientos queda sin medir, no igual a cero. No se gastó en repeticiones o batch para completar artificialmente esa evidencia. El holdout ya había sido visto en EDA y la disponibilidad de predictores a la fecha de decisión sigue siendo un supuesto; hace falta validación externa antes de uso real. RMSE no se aplica como métrica de este problema de clasificación."
+          "text": "Solo se realizó un entrenamiento de AutoML, por lo que no se pudo medir su estabilidad entre entrenamientos. En Python y Vertex AI se comprobó que los resultados coinciden al utilizar los mismos datos, la misma imagen y el mismo procedimiento. Pero esta comprobación no permite asegurar el mismo comportamiento en otras poblaciones."
         }
       ]
     },
     {
-      "title": "11. Costos y eliminación automática",
+      "title": "5.1. Entrenamiento manual frente a AutoML",
+      "level": "subsection",
       "blocks": [
         {
-          "text": "Cuenta: Billing Account for Education, 01ADCB-D56D56-B45DCC, USD. Tras AutoML: USD28,01 restantes de USD50,00; USD21,99 consumidos por diferencia en toda la cuenta, con posible retraso y sin desglose por job. La estimación de lista AutoML autorizada fue USD21,252 por 1 hora-nodo; la duración de pared de 2 h 35 min no se usa como multiplicador. Jenkins se estima por separado."
+          "text": "El entrenamiento manual permitió controlar la preparación de las variables, la selección del modelo, los bloques temporales, las semillas, la calibración y el umbral. En Vertex AI se mantuvo este procedimiento y se guardaron la ejecución y sus resultados. Las métricas coincidieron con las obtenidas localmente."
         },
         {
-          "table": [
-            [
-              "Componente",
-              "Estimación por 730 horas"
-            ],
-            [
-              "VM e2-medium",
-              "USD 24,46"
-            ],
-            [
-              "Disco pd-balanced de 40 GB",
-              "USD 4,00"
-            ],
-            [
-              "IPv4 externa efímera",
-              "USD 3,65"
-            ],
-            [
-              "Artifact Registry, aproximadamente 1,407 GiB",
-              "USD 0,14"
-            ],
-            [
-              "Total orientativo",
-              "USD 32,25 al mes; aproximadamente USD 1,06 al día."
-            ]
-          ],
-          "widths": [
-            2,
-            1.4
-          ]
+          "text": "AutoML permitió automatizar parte de la búsqueda del modelo y obtener las métricas y las curvas desde la consola. En este ejercicio utilizó un presupuesto mayor y ofreció menos control sobre la búsqueda interna. No se obtuvo una mejora clara en el ROC-AUC de incumplimiento. Su uso depende del tiempo disponible, del presupuesto y de los controles que requiera la evaluación."
         },
         {
-          "text": "El receptor caliente añade aproximadamente USD 0,27/día (USD 1,35 por cinco días completos) de CPU/memoria en inactividad, antes de franquicias y créditos, más actividad y almacenamiento. La base Jenkins de USD 1,06/día pasa a unos USD 1,33/día con ese supuesto; no es factura consolidada. Se mantiene caliente para atender GitHub sin el retraso posible de un arranque Direct VPC."
-        },
-        {
-          "text": "Valores antes de créditos, descuentos, impuestos, tráfico y futuras ejecuciones. No representan una factura consolidada de todos los proyectos ni el costo de AutoML. A las 02:32 UTC del 8/11, el período de la VM actual sumaba aproximadamente 2,476 horas, unos USD 0,11 brutos; esa observación no incluye una VM anterior reemplazada."
-        },
-        {
-          "table": [
-            [
-              "Hito de la política",
-              "Fecha / alcance"
-            ],
-            [
-              "Parada de la VM",
-              "13/11/2026 02:41:05 UTC = 11:41:05 JST."
-            ],
-            [
-              "Primera limpieza",
-              "13/11/2026 02:42:05 UTC. La finalización depende de las APIs."
-            ],
-            [
-              "Reintentos",
-              "49 envíos de limpieza cada 30 minutos, hasta 14/11/2026 02:42:05 UTC."
-            ],
-            [
-              "Recursos objetivo",
-              "VM, disco, IP efímera, red/subred/firewall dedicados, imágenes, secretos e identidades; también servicio Run, subred, firewall, secreto e identidad del relay."
-            ],
-            [
-              "Recursos preservados",
-              "Proyectos compartidos, cuenta de facturación y entorno de entrenamiento de riesgo."
-            ]
-          ],
-          "widths": [
-            1.2,
-            2.5
-          ]
-        },
-        {
-          "text": "Se verificaron por lectura FULL los 49 nuevos payloads cleanup-webhook y la parada original; se retiró la generación anterior sin cambiar horarios. Los Cloud Builds de solo lectura validaron los 29 permisos de limpieza, incluido el servicio Run. La eliminación real sigue programada para el futuro; no se ejecutó anticipadamente."
+          "text": "Los tiempos registrados no permiten comparar directamente la velocidad de las dos herramientas. Los 212 segundos corresponden a la tarea personalizada, mientras que el tiempo total de AutoML también incluye la preparación de los datos y otras etapas del servicio."
         }
       ]
     },
     {
-      "title": "12. Trazabilidad, incidencias y próximos pasos",
+      "title": "6. Conclusiones",
+      "level": "section",
       "blocks": [
         {
-          "text": "Origen de las primeras ejecuciones Jenkins: snapshot Git aislado 242e2edf71981a4ea10dd8bb8756d0b614c569b6, construido sobre HEAD original b5c51c7b92c99364cab1857ea1a972a5b838e79f. Los cambios preparados del webhook pertenecen a una revisión posterior; las capturas históricas no se atribuyen a esa nueva versión."
+          "text": "Se implementó el flujo de pruebas y aprobación en Jenkins. Las verificaciones de push, merge y ejecución completa finalizaron correctamente y generaron los archivos de resultados y la notificación. Se configuró la ejecución automática para las ramas del repositorio. En master, el flujo completo se comprobó mediante una ejecución manual."
         },
         {
-          "text": "Incidencias resueltas: el primer build terminó UNSTABLE por faltar BUILD_URL al notificar; se configuró la URL y un fallback probado. También se corrigió la inclusión de cinco pruebas nuevas en el snapshot. Los builds anteriores de 160 pruebas no se presentan como si contuvieran 165. En la preparación del webhook se detectó un JUnit incompatible con Jenkins 2.580.2; se restauró la versión compatible y se incorporaron dos pruebas y un guard de versión de plugins. El primer ping GitHub reveló un salto de línea en el secreto; se normalizó, se probó y la reentrega pasó a HTTP 200. El PR de verificación también expuso un import pytest sin uso, previo a Jenkins, en las pruebas BigQuery; se retiró en la revisión final y se verificó Ruff."
+          "text": "El entrenamiento personalizado de Vertex AI obtuvo las mismas métricas que Python local. AutoML completó el entrenamiento con un presupuesto máximo de 1 hora-nodo. Su ROC-AUC de incumplimiento fue similar, pero con el umbral utilizado detectó menos impagos. La exactitud alta no fue suficiente para detectar la clase minoritaria."
         },
         {
-          "text": "Dataset SHA-256:\n48e34610b823055a5f4e7a107142e25b08ba40920848eab1a68ff6396eb26927\nHoldout SHA-256:\nf0f8ec775541328cfcaf07fa5a8455a089b2f3832549c583de35804f5216329a"
+          "text": "Las pruebas muestran que el proceso funciona y que Python y Vertex AI producen resultados consistentes bajo las condiciones utilizadas. Sin embargo, la detección de incumplimientos sigue siendo limitada para una decisión crediticia real. También queda pendiente medir la estabilidad de AutoML entre varios entrenamientos."
         },
         {
-          "text": "Artefactos de soporte: output/jenkins-receipts/summary.json; output/playwright/index.json; docs/jenkins-execution.md; docs/model-results.md; docs/expiry-policy.md; docs/github-webhook.md; docs/gcp-training.md y el inventario de cuentas de la raíz. evidencias.json identifica cada imagen incorporada con su SHA-256. La evidencia nueva del webhook y las notificaciones se encuentra en output/github-webhook/ y en las fuentes JSON de este informe. La fase GCP añade docs/gcp-execution.md, output/playwright/gcp/index.json y output/training-runtime.json."
-        },
-        {
-          "text": "Implementaciones y documentación del ejercicio completadas: Jenkins, webhook push/merge, entrenamiento CPU y AutoML, métricas, tablas/gráficas y análisis de estabilidad con sus límites. La revisión/integración del PR y la comprobación futura del retiro Jenkins permanecen como pasos operativos. El proyecto multibranch vigila todas las ramas; master ejecuta el flujo completo. La verificación utilizó una rama dedicada y el escaneo inicial; no se modificó master."
-        },
-        {
-          "text": "El laboratorio acredita el flujo completo con evidencias reales. Vertex CPU reproduce Python; AutoML finalizó y se compara con el mismo TEST mediante la cadena de procedencia documentada. Un único run AutoML no mide estabilidad entre reentrenamientos. La calidad crediticia continúa limitada; los resultados no acreditan preparación para producción ni validación externa."
+          "text": "Antes de considerar un despliegue, se debe evaluar el modelo con datos externos, comprobar la disponibilidad de las variables y revisar la calibración, el costo de los errores y el umbral de decisión."
         }
       ]
     }
@@ -1383,36 +619,8 @@
       "url": "https://www.jenkins.io/doc/book/pipeline/syntax/"
     },
     {
-      "label": "Google Cloud: precios de Compute Engine",
-      "url": "https://cloud.google.com/products/compute/pricing/general-purpose?hl=en"
-    },
-    {
-      "label": "Google Cloud: discos, red y Artifact Registry",
-      "url": "https://cloud.google.com/compute/disks-image-pricing"
-    },
-    {
-      "label": "Google Cloud: precios de IPv4 externa",
-      "url": "https://cloud.google.com/vpc/network-pricing"
-    },
-    {
-      "label": "Google Cloud: precios de Artifact Registry",
-      "url": "https://cloud.google.com/artifact-registry/pricing"
-    },
-    {
-      "label": "Google Cloud: precio de instancia mínima Cloud Run",
-      "url": "https://cloud.google.com/run/pricing"
-    },
-    {
       "label": "GitHub: PR #16 integrado en la rama de laboratorio",
       "url": "https://github.com/03loveslollipop/cdp_2026/pull/16"
-    },
-    {
-      "label": "Precios oficiales de entrenamiento y servicios de Vertex/Agent Platform",
-      "url": "https://cloud.google.com/products/gemini-enterprise-agent-platform/pricing"
-    },
-    {
-      "label": "Costos de AutoML Tabular Workflows e infraestructura dependiente",
-      "url": "https://cloud.google.com/gemini-enterprise-agent-platform/tabular-workflows-pricing"
     },
     {
       "label": "Divisiones manuales de datos tabulares: TRAIN, VALIDATE y TEST",

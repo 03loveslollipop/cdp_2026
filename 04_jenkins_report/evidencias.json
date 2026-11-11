@@ -3,220 +3,203 @@
   "screenshots_are_originals": true,
   "assets": [
     {
-      "file": "assets/20-cloud-running-console.png",
-      "source": "output/playwright/20-cloud-running-console.png",
-      "sha256": "fba4bd1a09b62a2dbacecb7f9e119dd5c6ace92d865f3a441847074f77405901",
-      "caption": "Figura 1. Consola del build de Jenkins alojado en GCP durante su ejecución."
-    },
-    {
-      "file": "assets/21-cloud-running-stages.png",
-      "source": "output/playwright/21-cloud-running-stages.png",
-      "sha256": "b6fe935e97d43c69e52378ce230c9a19417e10ab1c0615f5312cdd311b388afb",
-      "caption": "Figura 2. Etapas observadas mientras el pipeline cloud seguía ejecutándose."
-    },
-    {
-      "file": "assets/22-cloud-approval.png",
-      "source": "output/playwright/22-cloud-approval.png",
-      "sha256": "068273e44eb302eb4747fbf714298676c1f75865f35b658c381209413ba5c413",
-      "caption": "Figura 3. Solicitud real de aprobación de admin después de superar las puertas de calidad."
-    },
-    {
-      "file": "assets/84-ja-historical-cloud-165-tests.png",
-      "source": "output/playwright/84-ja-historical-cloud-165-tests.png",
-      "sha256": "e4cd89b30916bdf33cc91da4c8f48c4e3430e0611c1e9c1ee82cce83ff887438",
-      "caption": "Figura 4. Reporte JUnit cloud: 165 pruebas aprobadas, cero fallidas y cero omitidas. Recaptura de la misma ejecución con interfaz japonesa."
-    },
-    {
-      "file": "assets/25-cloud-notification-delivered.png",
-      "source": "output/playwright/25-cloud-notification-delivered.png",
-      "sha256": "d1d5d57bcec19bfd68024e0959fc97b19a615705a384684d2fa2c5778438aaf0",
-      "caption": "Figura 5. El receptor privado aceptó la notificación SUCCESS de finalización del build cloud."
-    },
-    {
-      "file": "assets/83-ja-historical-cloud-stages.png",
-      "source": "output/playwright/83-ja-historical-cloud-stages.png",
-      "sha256": "07a48ac8da0ab861de735db9f64b46de601240a51beaec4c75adcdb1f386143b",
-      "caption": "Figura 6. Todas las etapas del build cloud #1 terminaron correctamente. Recaptura de la misma ejecución con interfaz japonesa."
-    },
-    {
-      "file": "assets/08-local-scm-triggered.png",
-      "source": "output/playwright/08-local-scm-triggered.png",
-      "sha256": "c9a930365d73e4387f9e1e5e23e10cf49d821da333199c4751644f6e6ea3f9d9",
-      "caption": "Figura 7. Evidencia histórica local: build iniciado por un cambio SCM detectado automáticamente."
-    },
-    {
-      "file": "assets/comparison.png",
-      "source": "output/comparison/comparison.png",
-      "sha256": "be3fda42a8fe48d86d658815bb81bfbe88fc5364a0c90c389e5c397f4e00e463",
-      "caption": "Figura 8. Comparación medida del holdout; intervalos de muestreo donde están disponibles. Las etiquetas técnicas originales se conservan."
-    },
-    {
-      "file": "assets/temporal_f1.png",
-      "source": "output/local-baseline/figures/temporal_f1.png",
-      "sha256": "29da562ee3019edd7aeb09dfaf63bc0a7977e3452c4fe51c1458b45023bce0d5",
-      "caption": "Figura 9. Variación del F1 en las ventanas temporales de evaluación."
-    },
-    {
-      "file": "assets/35-jenkins-github-hook-log.png",
-      "source": "output/playwright/35-jenkins-github-hook-log.png",
-      "sha256": "e18c5446bc55a36b4b349148b38a54274f1c048ed72080cb402ab292d876dfb3",
-      "caption": "Figura 10. Log real del hook en Jenkins: evento recibido por la red privada y nueva revisión de la rama destino."
-    },
-    {
-      "file": "assets/36-github-merge-console-running.png",
-      "source": "output/playwright/36-github-merge-console-running.png",
-      "sha256": "71297607a64c8526363c60d46000f2fb5fd8d0e9dc73b540a8702c1494db0040",
-      "caption": "Figura 11. Consola en ejecución del build #3: Started by GitHub push y checkout del commit de merge 501952de…"
-    },
-    {
-      "file": "assets/78-github-pr16-clean-description.png",
-      "source": "output/playwright/78-github-pr16-clean-description.png",
-      "sha256": "1a1f7fee6b1f41607080b49cdf950fa12d903d8065a1f9935692a16eee2c9943",
-      "caption": "Figura 12. PR #16 integrado en ci/jenkins-lab-20261108; captura renovada tras limpiar la descripción. Master no fue modificado."
-    },
-    {
-      "file": "assets/81-ja-historical-github-stages.png",
-      "source": "output/playwright/81-ja-historical-github-stages.png",
-      "sha256": "5bf8e6777f5aed33892054cda36594a946c5dbd7643f0d0cf97e372e75dedd84",
-      "caption": "Figura 13. Las tres ejecuciones GitHub completaron todas sus etapas. El bootstrap no se atribuye al webhook. Recaptura de la misma ejecución con interfaz japonesa."
-    },
-    {
-      "file": "assets/82-ja-historical-merge-186-tests.png",
-      "source": "output/playwright/82-ja-historical-merge-186-tests.png",
-      "sha256": "4626f1894756c1c16dced548d8151cbb1950017d2457149187552ee992aef196",
-      "caption": "Figura 14. JUnit del build de merge: 186 aprobadas, cero fallos y cero omisiones. Recaptura de la misma ejecución con interfaz japonesa."
-    },
-    {
-      "file": "assets/40-github-completion-notifications.png",
-      "source": "output/playwright/40-github-completion-notifications.png",
-      "sha256": "be729e2ddf7c13ef16e22f87496ab2ac5cbc7d8d1e8ec4d56c501543bfeeac8e",
-      "caption": "Figura 15. Receptor privado: SUCCESS y SHA exacto de los builds #1, #2 y #3 del nuevo job."
-    },
-    {
-      "file": "assets/69-ja-all-branches-config.png",
-      "source": "output/playwright/69-ja-all-branches-config.png",
-      "sha256": "055e5893e5206bc25b0141a90d3a34db1774104d44795cef68b407bc54d4df3a",
-      "caption": "Configuración actual de descubrimiento Git y proveedor remoto, capturada con interfaz japonesa."
-    },
-    {
-      "file": "assets/72-ja-feature-success-stages.png",
-      "source": "output/playwright/72-ja-feature-success-stages.png",
-      "sha256": "db08235e86332031a41e3eda05b22fcf0ea90a0b693969e6ade5b158514ddd24",
-      "caption": "Nueva prueba #7 en japonés: tests correctos y etapas de modelo omitidas. #8 seguía en curso en esta captura; después se canceló por repetir una revisión aprobada."
-    },
-    {
-      "file": "assets/76-ja-master-completed-stages.png",
-      "source": "output/playwright/76-ja-master-completed-stages.png",
-      "sha256": "8867f4270822b226e1e4b0a4e4360f2c15a9b6000440d0be9356e980b538b04b",
-      "caption": "Master #3 completado desde la interfaz japonesa. Causa: usuario admin; el código de master permanece sin cambios."
-    },
-    {
       "file": "assets/54-jenkins-gcp-vm-running-details-ja.png",
       "source": "output/playwright/gcp/54-jenkins-gcp-vm-running-details-ja.png",
       "sha256": "291b2c12c27b442259eaa1e66c2a5b3ee3d58da7918f5f6431cb0af9455484e7",
-      "caption": "Consola GCP japonesa: VM semester-jenkins en ejecución y zona us-central1-a. Evidencia del alojamiento cloud del controlador."
+      "caption": "Figura 1"
     },
     {
       "file": "assets/63-ja-locale-settings.png",
       "source": "output/playwright/63-ja-locale-settings.png",
       "sha256": "89166050543d3e8821b9c7269f4b75532b820c428a9bed29e580ee9c045bfc71",
-      "caption": "Idioma seleccionado: japonés (ja). La preferencia global queda guardada."
+      "caption": "Figura 2"
+    },
+    {
+      "file": "assets/69-ja-all-branches-config.png",
+      "source": "output/playwright/69-ja-all-branches-config.png",
+      "sha256": "055e5893e5206bc25b0141a90d3a34db1774104d44795cef68b407bc54d4df3a",
+      "caption": "Figura 3"
+    },
+    {
+      "file": "assets/72-ja-feature-success-stages.png",
+      "source": "output/playwright/72-ja-feature-success-stages.png",
+      "sha256": "db08235e86332031a41e3eda05b22fcf0ea90a0b693969e6ade5b158514ddd24",
+      "caption": "Figura 4"
     },
     {
       "file": "assets/70-github-webhook-settings-user.png",
       "source": "output/playwright/70-github-webhook-settings-user.png",
       "sha256": "9352b1116880e9eb0a78fcea586b81c6dd83e795d96a76488780854d1c76a04b",
-      "caption": "Webhook activo: relay HTTPS de Cloud Run, JSON, secreto configurado y oculto, SSL habilitado y evento push seleccionado."
+      "caption": "Figura 5"
     },
     {
       "file": "assets/73-github-pr18-merged.png",
-      "source": "output/playwright/73-github-pr18-merged.png",
-      "sha256": "2d186339f140d154dc0c400ac99f17bfd6a6137c21b0ac098f79dc7436e7d45b",
-      "caption": "PR #18 integrado en la rama de verificación; master no fue modificado."
+      "source": "output/playwright/user-provided/73-github-pr18-merged-0e2a0be28509.png",
+      "sha256": "0e2a0be28509dfee2fef2d631e4d9874afa12db6131cdcf504696e5524b97151",
+      "caption": "Figura 6",
+      "provenance": "Captura de GitHub sustituida por el usuario; copiada sin modificaciones."
+    },
+    {
+      "file": "assets/35-jenkins-github-hook-log.png",
+      "source": "output/playwright/35-jenkins-github-hook-log.png",
+      "sha256": "e18c5446bc55a36b4b349148b38a54274f1c048ed72080cb402ab292d876dfb3",
+      "caption": "Figura 7"
+    },
+    {
+      "file": "assets/36-github-merge-console-running.png",
+      "source": "output/playwright/36-github-merge-console-running.png",
+      "sha256": "71297607a64c8526363c60d46000f2fb5fd8d0e9dc73b540a8702c1494db0040",
+      "caption": "Figura 8"
+    },
+    {
+      "file": "assets/78-github-pr16-clean-description.png",
+      "source": "output/playwright/78-github-pr16-clean-description.png",
+      "sha256": "1a1f7fee6b1f41607080b49cdf950fa12d903d8065a1f9935692a16eee2c9943",
+      "caption": "Figura 9"
+    },
+    {
+      "file": "assets/81-ja-historical-github-stages.png",
+      "source": "output/playwright/81-ja-historical-github-stages.png",
+      "sha256": "5bf8e6777f5aed33892054cda36594a946c5dbd7643f0d0cf97e372e75dedd84",
+      "caption": "Figura 10"
+    },
+    {
+      "file": "assets/82-ja-historical-merge-186-tests.png",
+      "source": "output/playwright/82-ja-historical-merge-186-tests.png",
+      "sha256": "4626f1894756c1c16dced548d8151cbb1950017d2457149187552ee992aef196",
+      "caption": "Figura 11"
+    },
+    {
+      "file": "assets/40-github-completion-notifications.png",
+      "source": "output/playwright/40-github-completion-notifications.png",
+      "sha256": "be729e2ddf7c13ef16e22f87496ab2ac5cbc7d8d1e8ec4d56c501543bfeeac8e",
+      "caption": "Figura 12"
     },
     {
       "file": "assets/75-ja-master-approval-ready.png",
       "source": "output/playwright/75-ja-master-approval-ready.png",
       "sha256": "cc9eb0c0006bf62ff2d37df3984ad303b1b45a7ee8167dd945a27417f56f86c4",
-      "caption": "Master #3: formulario real de aprobación antes de continuar."
+      "caption": "Figura 13"
+    },
+    {
+      "file": "assets/22-cloud-approval.png",
+      "source": "output/playwright/22-cloud-approval.png",
+      "sha256": "068273e44eb302eb4747fbf714298676c1f75865f35b658c381209413ba5c413",
+      "caption": "Figura 14"
+    },
+    {
+      "file": "assets/20-cloud-running-console.png",
+      "source": "output/playwright/20-cloud-running-console.png",
+      "sha256": "fba4bd1a09b62a2dbacecb7f9e119dd5c6ace92d865f3a441847074f77405901",
+      "caption": "Figura 15"
+    },
+    {
+      "file": "assets/21-cloud-running-stages.png",
+      "source": "output/playwright/21-cloud-running-stages.png",
+      "sha256": "b6fe935e97d43c69e52378ce230c9a19417e10ab1c0615f5312cdd311b388afb",
+      "caption": "Figura 16"
+    },
+    {
+      "file": "assets/84-ja-historical-cloud-165-tests.png",
+      "source": "output/playwright/84-ja-historical-cloud-165-tests.png",
+      "sha256": "e4cd89b30916bdf33cc91da4c8f48c4e3430e0611c1e9c1ee82cce83ff887438",
+      "caption": "Figura 17"
+    },
+    {
+      "file": "assets/83-ja-historical-cloud-stages.png",
+      "source": "output/playwright/83-ja-historical-cloud-stages.png",
+      "sha256": "07a48ac8da0ab861de735db9f64b46de601240a51beaec4c75adcdb1f386143b",
+      "caption": "Figura 18"
+    },
+    {
+      "file": "assets/25-cloud-notification-delivered.png",
+      "source": "output/playwright/25-cloud-notification-delivered.png",
+      "sha256": "d1d5d57bcec19bfd68024e0959fc97b19a615705a384684d2fa2c5778438aaf0",
+      "caption": "Figura 19"
+    },
+    {
+      "file": "assets/08-local-scm-triggered.png",
+      "source": "output/playwright/08-local-scm-triggered.png",
+      "sha256": "c9a930365d73e4387f9e1e5e23e10cf49d821da333199c4751644f6e6ea3f9d9",
+      "caption": "Figura 20"
+    },
+    {
+      "file": "assets/comparison.png",
+      "source": "output/comparison/comparison.png",
+      "sha256": "be3fda42a8fe48d86d658815bb81bfbe88fc5364a0c90c389e5c397f4e00e463",
+      "caption": "Figura 21"
     },
     {
       "file": "assets/11-data-files-uploaded-ja.png",
       "source": "output/playwright/gcp/11-data-files-uploaded-ja.png",
       "sha256": "729ecc3f3e3cc4a383afcbc28a6368c7df6d3a57e34c1cb4736b239dc1f6692b",
-      "caption": "GCP, consola en japonés: carga de los cuatro archivos en el bucket dedicado del proyecto de riesgo."
+      "caption": "Figura 22"
     },
     {
       "file": "assets/19-automl-manual-temporal-split-ja.png",
       "source": "output/playwright/gcp/19-automl-manual-temporal-split-ja.png",
       "sha256": "cebbb2ce4068c6d1658d31ffaa0e1f3212b3f77e646afa948ed3143f1c463833",
-      "caption": "Preparación inicial de AutoML: objetivo Pago_atiempo y split manual data_split. Este formulario inicial se canceló; la ejecución autorizada posterior conserva esa división."
-    },
-    {
-      "file": "assets/20-automl-minimum-budget-ja.png",
-      "source": "output/playwright/gcp/20-automl-minimum-budget-ja.png",
-      "sha256": "cc154cccf692da16c25bcf829f165e1f3b3839fb4dbbda37ca5836999fe79e8d",
-      "caption": "Restricción observada: presupuesto 0,7 inválido; el formulario exige 1–72. El botón de iniciar entrenamiento permanece deshabilitado."
+      "caption": "Figura 23"
     },
     {
       "file": "assets/27-pipeline-dag-running-ja.png",
       "source": "output/playwright/gcp/27-pipeline-dag-running-ja.png",
       "sha256": "42a7fc56053b4f1b7f1279467db4bd762525459e954912d93bc31cd20c616ae1",
-      "caption": "Ejecución real credit-cpu-demo-20261108-r3 en el dashboard japonés; el DAG muestra RUNNING. No implica por sí solo entrenamiento finalizado."
+      "caption": "Figura 24"
     },
     {
       "file": "assets/33-training-search-live-logs-ja.png",
       "source": "output/playwright/gcp/33-training-search-live-logs-ja.png",
       "sha256": "9b1b28aaf48ecbd56853be71cbbcfbea3574c2bb79627338dcc1ff4ffeeba2e6",
-      "caption": "Logs reales durante la búsqueda: F1 temporal de candidatos y comienzo de random forest, con el nodo todavía Running. Estos valores no son métricas finales del holdout."
+      "caption": "Figura 25"
     },
     {
       "file": "assets/35-cloud-metrics-metadata-ja.png",
       "source": "output/playwright/gcp/35-cloud-metrics-metadata-ja.png",
       "sha256": "78c6d1791b4735aa36547fd4e1bfa1d06f5ecf0469626d270af2ab379af7af16",
-      "caption": "ML Metadata muestra las métricas reales del entrenamiento: accuracy, F1 de incumplimiento, ROC-AUC, AP y variación entre folds/semillas. La consola se mantiene en japonés."
-    },
-    {
-      "file": "assets/comparacion-final-python-vertex-automl.png",
-      "source": "output/comparison-final/comparacion-final-python-vertex-automl.png",
-      "sha256": "e9171136df89afaafb75fe62fc40f8d823ad580a519285cabd89e494a9b3a615",
-      "caption": "Comparación medida. Los intervalos bootstrap solo existen para Python/custom; la ausencia de intervalo AutoML no implica incertidumbre cero. AP sklearn y PR-AUC nativo permanecen separados."
-    },
-    {
-      "file": "assets/50-billing-credits-after-training-ja.png",
-      "source": "output/playwright/gcp/50-billing-credits-after-training-ja.png",
-      "sha256": "f56b2d15e088a52a169095b356fc3217310b62172651f60f6a5d90df36509821",
-      "caption": "Observación posterior al entrenamiento: USD28,01 restantes de USD50,00 (56%). Crédito Ciencia de datos en producción, vence 6/10/2027."
+      "caption": "Figura 26"
     },
     {
       "file": "assets/39-automl-one-node-hour-approved-ja.png",
       "source": "output/playwright/gcp/39-automl-one-node-hour-approved-ja.png",
       "sha256": "3148fe7b0ccd705132c7a4b2b33468621af3a21d08948f43b3627e121fcfb236",
-      "caption": "Consola japonesa: presupuesto válido de 1 hora-nodo y early stopping activo antes de iniciar el entrenamiento."
+      "caption": "Figura 27"
     },
     {
       "file": "assets/43-automl-training-active-ja.png",
       "source": "output/playwright/gcp/43-automl-training-active-ja.png",
       "sha256": "495dbbd2aac0269340ff2e0bbc79b966597060dbbe997596aced0ff3b0834fae",
-      "caption": "AutoML activo en la consola japonesa: estado Training, inicio 02:19:36 JST, presupuesto inicial 1 hora-nodo y etapa Data preprocessing."
+      "caption": "Figura 28"
     },
     {
       "file": "assets/44-automl-training-completed-ja.png",
       "source": "output/playwright/gcp/44-automl-training-completed-ja.png",
       "sha256": "590882c31ead0a0fa60bcae0e94aa54c4e03ffbaeeeb906e573026b1851dccf7",
-      "caption": "Consola japonesa: 完了 (completado), fin 04:55:04 JST, 1 hora-nodo inicial, split manual y objetivo AUC PRC."
+      "caption": "Figura 29"
     },
     {
       "file": "assets/48-automl-default-class-curves-ja.png",
       "source": "output/playwright/gcp/48-automl-default-class-curves-ja.png",
       "sha256": "75039e286ac224956045339cfe12e0fb6ea173969d82c34f338fcfede857a7d4",
-      "caption": "Clase 0, umbral 0,5: F1 0,1037037; ROC-AUC 0,654; PR-AUC 0,12; precisión 25,9% y recall 6,5%. Curvas reales del modelo."
+      "caption": "Figura 30"
+    },
+    {
+      "file": "assets/comparacion-final-python-vertex-automl.png",
+      "source": "output/comparison-final/comparacion-final-python-vertex-automl.png",
+      "sha256": "e9171136df89afaafb75fe62fc40f8d823ad580a519285cabd89e494a9b3a615",
+      "caption": "Figura 31"
     },
     {
       "file": "assets/52-automl-confusion-counts-visible-ja.png",
       "source": "output/playwright/gcp/52-automl-confusion-counts-visible-ja.png",
       "sha256": "67fed5c1bd7bb8714382b78e6384b76c6cd95cbfd2f29487847173346d360fb7",
-      "caption": "Matriz AutoML real a 0,5: [[7,101],[20,3101]]. Siete incumplimientos detectados, 101 omitidos, 20 falsas alarmas y 3.101 pagos a tiempo bien clasificados."
+      "caption": "Figura 32"
+    },
+    {
+      "file": "assets/temporal_f1.png",
+      "source": "output/local-baseline/figures/temporal_f1.png",
+      "sha256": "29da562ee3019edd7aeb09dfaf63bc0a7977e3452c4fe51c1458b45023bce0d5",
+      "caption": "Figura 33"
     }
   ]
 }

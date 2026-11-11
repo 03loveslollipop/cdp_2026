@@ -1,0 +1,136 @@
+\section{1. Alcance de la comparación}
+
+Se comparan tres proveedores de nube, Google Cloud Platform (GCP), Amazon Web Services (AWS) y Microsoft Azure, para entrenar y evaluar un modelo de clasificación de créditos. Se ejecutaron pruebas en GCP y AWS, mientras que la comparación de Azure es teórica.
+
+El conjunto contiene 10.763 registros. La prueba cronológica (TEST) tiene 3.229 registros, con 108 incumplimientos y 3.121 pagos a tiempo. Para AutoML se utilizaron 6.027 registros de entrenamiento y 1.507 de validación. En todos los resultados, la clase positiva es el incumplimiento, \nolinkurl{Pago_atiempo=0}.
+
+La comparación utiliza el mismo conjunto de prueba, pero los servicios no aplican exactamente la misma búsqueda, validación interna ni presupuesto. Por ello, los resultados permiten comparar la ejecución de los flujos de entrenamiento y evaluación, así como los costos estimados de cómputo y almacenamiento. Las diferencias de búsqueda, objetivo y validación impiden atribuir las variaciones de calidad de los modelos únicamente al proveedor.
+
+\section{2. Implementación de los pipelines}
+
+En GCP se ejecutó un pipeline de Vertex AI con un contenedor personalizado. El pipeline entrenó los modelos de Python y guardó sus métricas y artefactos. La infraestructura se preparó mediante código y el entrenamiento se inició desde la consola. AutoML se ejecutó con las particiones cronológicas y un presupuesto de una hora-nodo \cite{gcp-pipelines,gcp-automl}.
+
+En AWS se ejecutó un pipeline de SageMaker con un paso de Processing. Se usaron la misma imagen y el mismo código de entrenamiento que en GCP, y se verificaron las huellas del conjunto de datos y del TEST. La infraestructura se preparó con CloudFormation y el pipeline se configuró desde la línea de comandos. Autopilot se ejecutó por separado con los mismos datos de entrenamiento y validación \cite{aws-pipelines,aws-autopilot}.
+
+Para Azure se propone usar Azure Machine Learning. El código existente tendría que adaptarse para leer los datos desde Blob Storage y guardar el modelo y sus métricas. Para AutoML se usarían archivos MLTable separados para entrenamiento y validación. La disponibilidad de recursos y los resultados quedan pendientes de una ejecución \cite{azure-automl}.
+
+\subsection{2.1. Configuración e interfaz}
+
+En GCP se usó la consola para configurar los entrenamientos y revisar su progreso y sus resultados. En AWS se usaron principalmente infraestructura como código y la línea de comandos. SageMaker Studio y Azure ML Studio ofrecen interfaces para estos trabajos, pero no se probaron en esta práctica.
+
+El tiempo de implementación y la curva de aprendizaje no se midieron desde cero. Además, AWS reutilizó el código y la imagen preparados para GCP. Para compararlos sería necesario registrar el tiempo de configuración de cada proveedor en condiciones similares.
+
+\section{3. Recursos y tiempo de ejecución}
+
+Los pipelines personalizados se ejecutaron en CPU. GCP solicitó 2 CPU y 8 GB de memoria y aprovisionó una máquina de 2 vCPU y 16 GiB. AWS utilizó una instancia de 2 vCPU y 8 GiB. No se usó GPU ni se midió la utilización de CPU o memoria.
+
+\begin{fullwidth}\small
+\setlength{\tabcolsep}{5pt}\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{@{}lXXX@{}}
+\toprule
+\textbf{Aspecto} & \textbf{AWS} & \textbf{GCP} & \textbf{Azure} \\
+\midrule
+Pipeline personalizado & 159 s de job; 304 s de pipeline & 212 s de worker; cerca de 10 min de pipeline & No ejecutado \\
+AutoML & 30 min 33 s, 10 candidatos & 2 h 35 min 28 s de pared & No ejecutado \\
+Cómputo personalizado & 2 vCPU, 8 GiB & 2 vCPU, 16 GiB & Propuesta: 2 vCPU, 8 GiB \\
+\bottomrule
+\end{tabularx}
+\end{fullwidth}
+
+Los tiempos incluyen preparación y finalización. En AWS, los candidatos de AutoML se ejecutaron en paralelo. El tiempo de pared de GCP no equivale a las horas-nodo facturables. En Azure no se ejecutó el pipeline, por lo que no hay un tiempo medido.
+
+\section{4. Costos estimados}
+
+Los costos se estimaron en dólares estadounidenses con tarifas públicas y tiempos observados. Las cifras no incluyen todos los servicios ni corresponden a facturas desglosadas. Se usaron las regiones \texttt{us-east-1} de AWS, \texttt{us-central1} de GCP y \texttt{eastus} para el ejemplo de Azure. Las tarifas se consultaron el 9 de noviembre de 2026.
+
+\subsection{4.1. Entrenamiento y ejecución}
+
+\begin{fullwidth}\small
+\setlength{\tabcolsep}{5pt}\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{@{}lXXX@{}}
+\toprule
+\textbf{Concepto} & \textbf{AWS} & \textbf{GCP} & \textbf{Azure teórico} \\
+\midrule
+Pipeline personalizado & USD 0,0051 de cómputo & USD 0,0061 de cómputo; USD 0,03 por ejecución como referencia & USD 0,0057 si la VM se utiliza 212 s \\
+AutoML & USD 1,9199 de cómputo para 10 candidatos & Presupuesto de 1 hora-nodo, estimado en USD 21,25 & USD 0,096 por 1 h de una VM \texttt{D2s\_v5} \\
+\bottomrule
+\end{tabularx}
+\end{fullwidth}
+
+\Needspace{19\baselineskip}
+La figura~\ref{fig:costos-comparados} muestra el costo estimado de cómputo. El pipeline personalizado y AutoML usan escalas distintas. Para GCP AutoML se muestra el presupuesto de entrenamiento; para Azure, los valores de los escenarios hipotéticos.
+
+\wideevidence{figuras/costos.pdf}{}{fig:costos-comparados}
+
+\Needspace{10\baselineskip}
+Los dos intentos anteriores de AWS añadieron aproximadamente USD 1,7706 de cómputo. Uno se detuvo después de iniciar diez instancias grandes. Los tres intentos suman aproximadamente USD 3,6905 de cómputo estimado. En GCP se observaron USD 21,99 de créditos consumidos por servicios elegibles de toda la cuenta; no se atribuyeron por completo a AutoML.
+
+\Needspace{10\baselineskip}
+Para Azure, se presenta un escenario hipotético de una hora en una VM de 2 vCPU y 8 GiB, con base en los costos y la documentación del proveedor. La duración y el costo total de AutoML dependen de la ejecución. Almacenamiento, discos, imágenes, operaciones, registros y tiempo adicional de cómputo pueden generar cargos. Las tarifas públicas se consultaron en la documentación de los tres proveedores \cite{aws-precios,gcp-precios,azure-precios}.
+
+\subsection{4.2. Almacenamiento y despliegue}
+
+Para un mes de almacenamiento en el primer tramo, las tarifas consultadas fueron aproximadamente USD 0,023 por GB-mes en S3 Standard, USD 0,020 por GiB para 730 horas de Cloud Storage Standard regional y USD 0,0208 por GB-mes en Azure Blob Hot LRS. Las clases no tienen garantías idénticas de replicación y las cifras excluyen solicitudes y transferencias \cite{aws-s3,gcp-storage,azure-blob}.
+
+No se desplegó un endpoint en línea y, por tanto, no hay un costo de despliegue medido. En el escenario hipotético de Azure, una VM a USD 0,096 por hora durante 24 horas costaría USD 2,304 de cómputo. Un endpoint podría usar otra instancia y generar cargos adicionales de red y servicios.
+
+\Needspace{18\baselineskip}
+\section{5. Resultados de clasificación}
+
+Los pipelines personalizados de GCP y AWS seleccionaron el mismo random forest. Las huellas de los datos y las métricas coincidieron con una tolerancia de \(10^{-12}\). El umbral del modelo personalizado se calibró con validación temporal. Para AutoML se usó un umbral de probabilidad de incumplimiento de 0,5.
+
+\begin{fullwidth}\small
+\setlength{\tabcolsep}{5pt}\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{@{}lXXXXX@{}}
+\toprule
+\textbf{Métrica} & \textbf{AWS personalizado} & \textbf{GCP personalizado} & \textbf{AWS AutoML} & \textbf{GCP AutoML} & \textbf{Azure} \\
+\midrule
+Accuracy & 0,8250 & 0,8250 & 0,6959 & 0,9625 & Sin ejecución \\
+Precisión clase 0 & 0,0681 & 0,0681 & 0,0550 & 0,2593 & Sin ejecución \\
+Recall clase 0 & 0,3333 & 0,3333 & 0,5000 & 0,0648 & Sin ejecución \\
+F1 clase 0 & 0,1130 & 0,1130 & 0,0991 & 0,1037 & Sin ejecución \\
+ROC-AUC clase 0 & 0,6573 & 0,6573 & 0,6277 & 0,6542 & Sin ejecución \\
+\bottomrule
+\end{tabularx}
+\end{fullwidth}
+
+La figura~\ref{fig:metricas-comparadas} muestra las métricas de incumplimiento en TEST. Azure no aparece porque no se ejecutó el entrenamiento.
+
+\wideevidence{figuras/metricas.pdf}{}{fig:metricas-comparadas}
+
+El modelo de Autopilot detectó 54 de los 108 incumplimientos del TEST. Los conteos fueron TP (verdaderos positivos) = 54, TN (verdaderos negativos) = 2.193, FP (falsos positivos) = 928 y FN (falsos negativos) = 54. En GCP AutoML los conteos fueron TP = 7, TN = 3.101, FP = 20 y FN = 101. El modelo de AWS identificó más incumplimientos, pero también clasificó más pagos a tiempo como incumplimientos.
+
+El modelo de AWS se evaluó localmente con sus contenedores oficiales porque el laboratorio denegó Batch Transform. En GCP se usó la evaluación nativa. La precisión media de sklearn y el PR-AUC nativo se calculan de forma diferente y se mantienen separados.
+
+\subsection{5.1. Alcance de la búsqueda AutoML}
+
+En AWS se realizaron dos búsquedas. La primera probó dos candidatos y obtuvo ROC-AUC de validación de 0,6798. La segunda probó diez y obtuvo 0,6854. En TEST, los modelos seleccionados obtuvieron 0,6477 y 0,6277, respectivamente. La búsqueda más amplia mejoró la validación, pero no el ROC-AUC del TEST.
+
+GCP optimizó PR-AUC y AWS optimizó ROC-AUC. En Azure se podría usar una métrica ponderada de precisión media o ROC-AUC. Estas diferencias afectan la selección del modelo y deben tenerse en cuenta al comparar los resultados.
+
+\section{6. Integración, monitoreo y gobierno}
+
+Jenkins ejecutó pruebas, controles de calidad y aprobación en el flujo de GCP. SageMaker Pipelines se ejecutó por separado y Autopilot se inició como un trabajo independiente; no se probó su activación desde Jenkins. Los tres proveedores ofrecen API y herramientas para automatizar entrenamiento, registro y despliegue de modelos \cite{aws-pipelines,gcp-pipelines,azure-mlops}.
+
+\begin{fullwidth}\small
+\setlength{\tabcolsep}{5pt}\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\linewidth}{@{}lXXX@{}}
+\toprule
+\textbf{Capacidad} & \textbf{AWS} & \textbf{GCP} & \textbf{Azure} \\
+\midrule
+Pipelines y CI/CD & SageMaker Pipelines y servicios CI/CD o Jenkins & Vertex AI Pipelines y Jenkins o Cloud Build & Azure ML pipelines y Azure DevOps o GitHub Actions \\
+Modelos y monitoreo & Model Registry, Model Monitor y CloudWatch & Model Registry, Model Monitoring y Cloud Logging & Registro de modelos, Azure Monitor y model monitoring \\
+Acceso y auditoría & IAM y CloudTrail & IAM y Cloud Audit Logs & Entra ID, Azure RBAC, Policy y registros de auditoría \\
+\bottomrule
+\end{tabularx}
+\end{fullwidth}
+
+\Needspace{12\baselineskip}
+Las capacidades de monitoreo, gobierno y despliegue continuo indicadas en la tabla son opciones documentadas; no todas se configuraron en esta práctica \cite{aws-registro,gcp-seguridad,azure-policy}. AWS indica que Model Monitor ya no está disponible para clientes nuevos \cite{aws-monitor}. El rol de AWS del laboratorio es compartido y amplio, por lo que no demuestra mínimo privilegio. En un entorno empresarial sería necesario definir roles para datos, entrenamiento, aprobación y operación, y revisar las políticas de red, auditoría y retención según los requisitos de la organización.
+
+\Needspace{20\baselineskip}
+\section{7. Conclusiones}
+
+Los pipelines personalizados de GCP y AWS obtuvieron el mismo resultado en el conjunto de prueba. Los resultados de AutoML fueron distintos, pero también cambiaron las búsquedas y los objetivos. Por ello, esta comparación no permite atribuir la calidad del modelo únicamente al proveedor.
+
+La búsqueda de diez candidatos de AWS tuvo un costo estimado de USD 1,9199 de cómputo. El entrenamiento AutoML de GCP se configuró con un presupuesto de una hora-nodo, estimado en USD 21,25. Estos valores tienen alcances distintos y no son facturas finales. Azure dispone de servicios para un flujo equivalente; su tiempo, costo y resultados quedan como hipótesis hasta realizar una ejecución.
